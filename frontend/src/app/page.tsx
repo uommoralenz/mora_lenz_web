@@ -3,6 +3,7 @@
 import { HeroSection } from "@/app/components/HeroSection";
 import { AboutSection } from "@/app/components/AboutSection";
 import { PhotoGallery } from "@/app/components/PhotoGallery";
+import { EventsActivities } from "@/app/components/Events&Activities";
 import { AdSection } from "@/app/components/AdSection";
 import { Footer } from "@/app/components/Footer";
 
@@ -12,6 +13,7 @@ export default function Home() {
       <HeroSection />
       <AboutSection />
       <PhotoGallery />
+      <EventsActivities />
       <AdSection />
       <Footer />
     </div>
