@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 
@@ -21,11 +21,14 @@ export function PositionCard({
   imageUrl,
   order = ["photo", "about", "name", "position"], // default order
 }: PositionCardProps) {
+  const fallback = 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=300&h=300&fit=crop&crop=faces&auto=format&q=60';
+  const photoSrc = imageUrl && imageUrl.trim().length > 0 ? imageUrl : fallback;
+
   const blocks: Record<Block, React.ReactNode> = {
     photo: (
       <div key="photo" className="mx-auto mb-6 h-24 w-24 rounded-full p-[3px] bg-gradient-to-b from-blue-500 to-indigo-500">
         <img
-          src={imageUrl}
+          src={photoSrc}
           alt={name}
           className="h-full w-full rounded-full object-cover bg-slate-900"
           loading="lazy"
@@ -38,7 +41,7 @@ export function PositionCard({
         key="about"
         className="mx-auto max-w-3xl text-slate-100/90 italic leading-relaxed text-base sm:text-lg"
       >
-        “{about}”
+        "{about}"
       </p>
     ),
     name: (
