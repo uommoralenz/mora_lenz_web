@@ -15,6 +15,7 @@ export default function Home() {
       <AboutSection />
       <PhotoGallery />
       <EventsActivities />
+      <TeamSection />
       <AdSection />
       <Footer />
     </div>
