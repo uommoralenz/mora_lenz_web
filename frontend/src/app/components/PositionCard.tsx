@@ -51,7 +51,7 @@ export function PositionCard({
     ),
     position: (
       <div key="position" className="mt-3">
-        <span className="inline-block rounded-md bg-blue-600 px-3 py-1 text-sm sm:text-base font-semibold text-white">
+        <span className="inline-block rounded-md px-3 py-1 text-sm sm:text-base font-semibold text-white">
           {position}
         </span>
       </div>
