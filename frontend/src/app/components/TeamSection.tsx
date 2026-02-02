@@ -183,7 +183,7 @@ export function TeamSection() {
   ];
 
   return (
-    <section className="bg-gradient-to-b from-black via-[#0b1630] to-black-950">
+    <section id="team" className="bg-gradient-to-b from-black via-[#0b1630] to-black-950">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <h2 className="text-4xl md:text-5xl font-bold tracking-wide text-center">

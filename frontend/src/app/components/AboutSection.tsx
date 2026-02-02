@@ -28,7 +28,7 @@ const features = [
 
 export function AboutSection() {
   return (
-    <section className="py-20 bg-black relative overflow-hidden">
+    <section id="about" className="py-20 bg-black relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600 rounded-full blur-3xl"></div>

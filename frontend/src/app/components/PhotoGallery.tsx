@@ -78,7 +78,7 @@ export function PhotoGallery() {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-b from-gray-900 to-black">
+    <section id="gallery" className="py-20 bg-gradient-to-b from-gray-900 to-black">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
