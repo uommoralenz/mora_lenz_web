@@ -4,8 +4,12 @@ import { Instagram, Facebook, Youtube, Mail, MapPin, Phone } from "lucide-react"
 
 export function Footer() {
   return (
-    <footer id="contact" className="bg-black border-t border-gray-800 py-12">
-      <div className="container mx-auto px-6">
+    <footer id="contact" className="relative overflow-hidden bg-gradient-to-b from-slate-950 to-black border-t border-white/5 py-12">
+      {/* Subtle glow */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-purple-500/5 rounded-full blur-[80px]"></div>
+      </div>
+      <div className="container mx-auto px-6 relative z-10">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div>

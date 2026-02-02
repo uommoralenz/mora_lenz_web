@@ -81,8 +81,14 @@ export function EventsActivities() {
   }, []);
 
   return (
-    <section id="events" className="py-20 px-6 bg-black text-white">
-      <div className="max-w-7xl mx-auto">
+    <section id="events" className="py-20 px-6 text-white relative overflow-hidden bg-gradient-to-b from-emerald-950/40 via-cyan-950/30 to-blue-950/50">
+      {/* Animated background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-[350px] h-[350px] bg-cyan-500/10 rounded-full blur-[80px] animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-[450px] h-[450px] bg-blue-600/15 rounded-full blur-[100px] animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="absolute top-1/2 right-1/4 w-[300px] h-[300px] bg-teal-400/10 rounded-full blur-[60px]"></div>
+      </div>
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* Upcoming Events */}
         <div className="mb-20">
           <h2 className="text-4xl md:text-5xl font-bold mb-12 text-center">

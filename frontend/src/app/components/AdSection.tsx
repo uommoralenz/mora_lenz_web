@@ -29,8 +29,13 @@ const ads = [
 
 export function AdSection() {
   return (
-    <section className="py-20 bg-gradient-to-b from-black to-gray-900">
-      <div className="container mx-auto px-6">
+    <section className="py-20 relative overflow-hidden bg-gradient-to-b from-violet-950/50 via-fuchsia-950/30 to-slate-950">
+      {/* Decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-10 right-20 w-[400px] h-[400px] bg-fuchsia-500/15 rounded-full blur-[100px]"></div>
+        <div className="absolute bottom-10 left-20 w-[350px] h-[350px] bg-purple-600/20 rounded-full blur-[80px]"></div>
+      </div>
+      <div className="container mx-auto px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

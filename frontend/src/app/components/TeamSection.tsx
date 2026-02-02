@@ -183,8 +183,14 @@ export function TeamSection() {
   ];
 
   return (
-    <section id="team" className="bg-gradient-to-b from-black via-[#0b1630] to-black-950">
-      <div className="max-w-7xl mx-auto px-6">
+    <section id="team" className="py-20 relative overflow-hidden bg-gradient-to-b from-blue-950/50 via-sky-950/40 to-violet-950/50">
+      {/* Decorative gradient orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/3 w-[500px] h-[500px] bg-sky-500/15 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-0 right-1/3 w-[400px] h-[400px] bg-violet-600/20 rounded-full blur-[100px]"></div>
+        <div className="absolute top-1/2 left-0 w-[300px] h-[300px] bg-cyan-400/10 rounded-full blur-[80px]"></div>
+      </div>
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
         {/* Header */}
         <h2 className="text-4xl md:text-5xl font-bold tracking-wide text-center">
         <span className="text-white">Our </span>

@@ -78,8 +78,13 @@ export function PhotoGallery() {
   };
 
   return (
-    <section id="gallery" className="py-20 bg-gradient-to-b from-gray-900 to-black">
-      <div className="container mx-auto px-6">
+    <section id="gallery" className="py-20 relative overflow-hidden bg-gradient-to-b from-indigo-950/60 via-slate-900 to-emerald-950/40">
+      {/* Decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-teal-500/10 rounded-full blur-[100px]"></div>
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-600/15 rounded-full blur-[120px]"></div>
+      </div>
+      <div className="container mx-auto px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
