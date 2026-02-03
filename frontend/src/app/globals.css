@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@variant dark (.dark &);
 
 /* Slick carousel base styles */
 @import "slick-carousel/slick/slick.css";
@@ -32,7 +32,7 @@
   --foreground: #1a1a2e;
 }
 
-.dark {
+:root.dark {
   --background: #000000;
   --foreground: #ffffff;
 }
