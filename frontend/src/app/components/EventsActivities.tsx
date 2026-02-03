@@ -14,6 +14,7 @@ interface Event {
 
 export function EventsActivities() {
   const [timeLeft, setTimeLeft] = useState<{ [key: number]: string }>({});
+  const [currentPastEventIndex, setCurrentPastEventIndex] = useState(0);
 
   // Sample data - replace with your actual data
   const upcomingEvents: Event[] = [
@@ -38,7 +39,7 @@ export function EventsActivities() {
   const pastEvents: Event[] = [
     {
       id: 3,
-      name: "Medea Awards 2025",
+      name: "Media Awards 2025",
       image: "/events/past/media-awards-2025.webp",
       date: new Date("2025-12-20T18:00:00"),
       description: "Sri Lanka's Biggest media competition of the year organized by Mora Lenz. Celebrating excellence in media and creativity.",
@@ -49,6 +50,27 @@ export function EventsActivities() {
       image: "/events/past/Sandwani-3.webp",
       date: new Date("2025-10-10T14:00:00"),
       description: "A musical event organized by MoraLenz engaging with talented individuals in the field of music.",
+    },
+    {
+      id: 5,
+      name: "dummy event 1",
+      image: "/events/past/media-awards-2025.webp",
+      date: new Date("2025-12-20T18:00:00"),
+      description: "The island has a documented history of over 3,000 years, with evidence of prehistoric human settlement dating back 125,000 years.",
+    },
+    {
+      id: 6,
+      name: "dummy event 2",
+      image: "/events/past/Sandwani-3.webp",
+      date: new Date("2025-12-20T18:00:00"),
+      description: "explorers across the world as early as the Anuradhapura period. The Portuguese Empire established a colony in the sixteenth century, during a period of political",
+    },
+    {
+      id: 7,
+      name: "dummy event 3",
+      image: "/events/past/media-awards-2025.webp",
+      date: new Date("2025-12-20T18:00:00"),
+      description: "explorers across the world as early as the Anuradhapura period. The Portuguese Empire established a colony in the sixteenth century, during a period of political",
     },
   ];
 
@@ -79,6 +101,44 @@ export function EventsActivities() {
 
     return () => clearInterval(timer);
   }, []);
+
+  // Auto-rotate past events carousel
+  const itemsPerPage = 3;
+  const maxIndex = pastEvents.length - itemsPerPage;
+  const [autoRotateKey, setAutoRotateKey] = useState(0);
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentPastEventIndex((prev) => {
+        const nextIndex = prev + 1;
+        // Loop back to 0 when reaching the end
+        return nextIndex > maxIndex ? 0 : nextIndex;
+      });
+    }, 4000); // Change every 4 seconds
+
+    return () => clearInterval(interval);
+  }, [maxIndex, autoRotateKey]); // Reset interval when autoRotateKey changes
+
+  const nextPastEvent = () => {
+    setCurrentPastEventIndex((prev) => {
+      const nextIndex = prev + 1;
+      return nextIndex > maxIndex ? 0 : nextIndex;
+    });
+    setAutoRotateKey(prev => prev + 1); // Reset auto-rotate timer
+  };
+
+  const prevPastEvent = () => {
+    setCurrentPastEventIndex((prev) => {
+      const prevIndex = prev - 1;
+      return prevIndex < 0 ? maxIndex : prevIndex;
+    });
+    setAutoRotateKey(prev => prev + 1); // Reset auto-rotate timer
+  };
+
+  const goToPastEvent = (index: number) => {
+    setCurrentPastEventIndex(index);
+    setAutoRotateKey(prev => prev + 1); // Reset auto-rotate timer
+  };
 
   return (
     <section id="events" className="py-20 px-6 text-white relative overflow-hidden bg-gradient-to-b from-emerald-950/40 via-cyan-950/30 to-blue-950/50">
@@ -143,35 +203,93 @@ export function EventsActivities() {
           <h2 className="text-4xl md:text-5xl font-bold mb-12 text-center">
             Past Events
           </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pastEvents.map((event) => (
-              <div
-                key={event.id}
-                className="bg-zinc-900 rounded-lg overflow-hidden opacity-75 hover:opacity-100 transition-opacity duration-300"
+          
+          {/* Carousel Container */}
+          <div className="relative max-w-7xl mx-auto px-12">
+            {/* Cards Container */}
+            <div className="relative overflow-hidden">
+              <div 
+                className="flex transition-transform duration-500 ease-out"
+                style={{ 
+                  transform: `translateX(-${currentPastEventIndex * (100 / itemsPerPage)}%)`
+                }}
               >
-                <div className="relative h-48 w-full">
-                  <Image
-                    src={event.image}
-                    alt={event.name}
-                    fill
-                    className="object-cover grayscale hover:grayscale-0 transition-all duration-300"
-                  />
-                </div>
-                <div className="p-4">
-                  <h3 className="text-xl font-bold mb-2">{event.name}</h3>
-                  <p className="text-zinc-400 text-sm mb-2">
-                    {event.description}
-                  </p>
-                  <p className="text-xs text-zinc-500">
-                    {event.date.toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </p>
-                </div>
+                {pastEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    className="flex-shrink-0 px-3"
+                    style={{ width: `${100 / itemsPerPage}%` }}
+                  >
+                    <div className="relative rounded-lg overflow-hidden group cursor-pointer">
+                      {/* Image with text overlay */}
+                      <div className="relative h-[512px] w-full">
+                        <Image
+                          src={event.image}
+                          alt={event.name}
+                          fill
+                          className="object-cover grayscale group-hover:grayscale-0 transition-all duration-300"
+                        />
+                        
+                        {/* Blurred bottom overlay */}
+                        <div className="absolute bottom-0 left-0 right-0 h-40 backdrop-blur-md bg-gradient-to-t from-black/60 to-transparent"></div>
+                        
+                        {/* Text content on image */}
+                        <div className="absolute bottom-0 left-0 right-0 p-6">
+                          <h3 className="text-2xl font-bold mb-2 text-white drop-shadow-lg">{event.name}</h3>
+                          <p className="text-zinc-200 text-sm mb-2 line-clamp-3 drop-shadow-md">
+                            {event.description}
+                          </p>
+                          <p className="text-sm text-cyan-300 drop-shadow-md">
+                            {event.date.toLocaleDateString("en-US", {
+                              month: "long",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* Navigation Arrows */}
+            <button
+              onClick={prevPastEvent}
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 hover:scale-110 hover:-translate-x-1 text-white p-3 rounded-full transition-all duration-300 z-10 active:scale-95"
+              aria-label="Previous events"
+            >
+              <svg className="w-6 h-6 transition-transform duration-300 group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            
+            <button
+              onClick={nextPastEvent}
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 hover:scale-110 hover:translate-x-1 text-white p-3 rounded-full transition-all duration-300 z-10 active:scale-95"
+              aria-label="Next events"
+            >
+              <svg className="w-6 h-6 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            {/* Dots Indicator */}
+            <div className="flex justify-center gap-2 mt-8">
+              {Array.from({ length: maxIndex + 1 }).map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToPastEvent(index)}
+                  className={`transition-all duration-300 rounded-full ${
+                    index === currentPastEventIndex
+                      ? 'bg-cyan-400 w-8 h-2'
+                      : 'bg-zinc-600 hover:bg-zinc-500 w-2 h-2'
+                  }`}
+                  aria-label={`Go to position ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
