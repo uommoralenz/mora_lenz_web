@@ -70,7 +70,6 @@ model Member {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-
   @@index([pillerorPannel, position])
   @@map("members")
 }
