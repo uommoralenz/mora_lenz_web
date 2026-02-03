@@ -20,16 +20,16 @@ export function EventsActivities() {
   const upcomingEvents: Event[] = [
     {
       id: 1,
-      name: "Art Exhibition",
-      image: "/events/upcoming/Art exsi.jpg",
+      name: "Dummy event",
+      image: "/events/upcoming/media-awards-2025.webp",
       date: new Date("2026-02-15T19:00:00"),
       description: "Join us for an evening of contemporary art showcasing local artists.",
       location: "Centra Court",
     },
     {
       id: 2,
-      name: "Photography Workshop",
-      image: "/events/upcoming/work shop.jpg",
+      name: "Dummy thama itin mekath",
+      image: "/events/upcoming/Sandwani-3.webp",
       date: new Date("2026-03-20T10:00:00"),
       description: "A hands-on workshop for photography enthusiasts of all levels.",
       location: "Rubert Peiris Auditorium",
@@ -158,40 +158,47 @@ export function EventsActivities() {
             {upcomingEvents.map((event) => (
               <div
                 key={event.id}
-                className="bg-white dark:bg-zinc-900 rounded-lg overflow-hidden hover:transform hover:scale-105 transition-all duration-300 shadow-lg dark:shadow-none"
+                className="relative rounded-lg overflow-hidden hover:transform hover:scale-105 transition-all duration-300 shadow-lg group cursor-pointer"
               >
-                <div className="relative h-48 w-full">
+                {/* Full Image Card */}
+                <div className="relative h-96 w-full">
                   <Image
                     src={event.image}
                     alt={event.name}
                     fill
                     className="object-cover"
                   />
-                </div>
-                <div className="p-4">
-                  <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{event.name}</h3>
-                  {event.location && (
-                    <p className="text-gray-500 dark:text-zinc-400 text-xs mb-2">
-                      📍 {event.location}
+                  
+                  {/* Countdown Badge - Top Right - Circular */}
+                  <div className="absolute top-4 right-4 w-16 h-16 rounded-full bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center">
+                    <p className="text-yellow-400 text-2xl font-bold leading-none">
+                      {timeLeft[event.id] ? 
+                        `${Math.floor((event.date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))}` 
+                        : "0"}
                     </p>
-                  )}
-                  <div className="bg-gray-100 dark:bg-zinc-800 rounded-lg p-3 mb-3">
-                    <p className="text-xs text-gray-500 dark:text-zinc-400 mb-1">Countdown</p>
-                    <p className="text-lg font-mono text-yellow-600 dark:text-yellow-400">
-                      {timeLeft[event.id] || "Calculating..."}
+                    <p className="text-white text-[9px] mt-0.5">DAYS</p>
+                  </div>
+                  
+                  {/* Blurred bottom overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 h-32 backdrop-blur-sm bg-gradient-to-t from-black/50 to-transparent"></div>
+                  
+                  {/* Text content on image */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <h3 className="text-xl font-bold mb-1 text-white drop-shadow-lg">{event.name}</h3>
+                    {event.location && (
+                      <p className="text-cyan-300 text-xs mb-1 drop-shadow-md">
+                        📍 {event.location}
+                      </p>
+                    )}
+                    <p className="text-zinc-200 text-xs mb-1 line-clamp-2 drop-shadow-md">{event.description}</p>
+                    <p className="text-xs text-zinc-300 drop-shadow-md">
+                      📅 {event.date.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                     </p>
                   </div>
-                  <p className="text-gray-600 dark:text-zinc-300 text-sm mb-3">{event.description}</p>
-                  <p className="text-sm text-gray-500 dark:text-zinc-500">
-                    {event.date.toLocaleDateString("en-US", {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
                 </div>
               </div>
             ))}
@@ -231,7 +238,7 @@ export function EventsActivities() {
                         />
                         
                         {/* Blurred bottom overlay */}
-                        <div className="absolute bottom-0 left-0 right-0 h-40 backdrop-blur-md bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div className="absolute bottom-0 left-0 right-0 h-40 backdrop-blur-sm bg-gradient-to-t from-black/40 to-transparent"></div>
                         
                         {/* Text content on image */}
                         <div className="absolute bottom-0 left-0 right-0 p-6">
