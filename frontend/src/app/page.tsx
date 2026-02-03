@@ -7,6 +7,8 @@ import { EventsActivities } from "@/app/components/EventsActivities";
 import { AdSection } from "@/app/components/AdSection";
 import { Footer } from "@/app/components/Footer";
 import { TeamSection } from "@/app/components/TeamSection";
+import PanelsPillarsSection from "@/app/components/PanelsPillarsSection";
+import ContactSection from "@/app/components/ContactSection";
 
 export default function Home() {
   return (
@@ -16,7 +18,9 @@ export default function Home() {
       <PhotoGallery />
       <EventsActivities />
       <TeamSection />
+      <PanelsPillarsSection />
       <AdSection />
+      <ContactSection />
       <Footer />
     </div>
   );
