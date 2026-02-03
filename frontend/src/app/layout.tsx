@@ -13,8 +13,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
+        className="transition-colors duration-300"
         style={{
           fontFamily:
             "system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",

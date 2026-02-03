@@ -4,7 +4,7 @@ import { Instagram, Facebook, Youtube, Mail, MapPin, Phone } from "lucide-react"
 
 export function Footer() {
   return (
-    <footer id="contact" className="relative overflow-hidden bg-gradient-to-b from-slate-950 to-black border-t border-white/5 py-12">
+    <footer id="contact" className="relative overflow-hidden bg-gradient-to-b from-slate-100 to-gray-200 dark:from-slate-950 dark:to-black border-t border-gray-200 dark:border-white/5 py-12 transition-colors duration-300">
       {/* Subtle glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-purple-500/5 rounded-full blur-[80px]"></div>
@@ -13,38 +13,38 @@ export function Footer() {
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div>
-            <h3 className="text-3xl font-black text-white mb-4">
+            <h3 className="text-3xl font-black text-gray-900 dark:text-white mb-4">
               Mora<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Lenz</span>
             </h3>
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
               Capturing moments, creating stories. The premier media club for creative minds.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-white font-bold mb-4">Quick Links</h4>
+            <h4 className="text-gray-900 dark:text-white font-bold mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-purple-400 transition-colors text-sm">About Us</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-purple-400 transition-colors text-sm">Gallery</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-purple-400 transition-colors text-sm">Events</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-purple-400 transition-colors text-sm">Join Us</a></li>
+              <li><a href="#" className="text-gray-600 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-400 transition-colors text-sm">About Us</a></li>
+              <li><a href="#" className="text-gray-600 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-400 transition-colors text-sm">Gallery</a></li>
+              <li><a href="#" className="text-gray-600 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-400 transition-colors text-sm">Events</a></li>
+              <li><a href="#" className="text-gray-600 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-400 transition-colors text-sm">Join Us</a></li>
             </ul>
           </div>
 
           {/* Contact */}
           <div>
-            <h4 className="text-white font-bold mb-4">Contact</h4>
+            <h4 className="text-gray-900 dark:text-white font-bold mb-4">Contact</h4>
             <ul className="space-y-3">
-              <li className="flex items-center gap-2 text-gray-400 text-sm">
+              <li className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm">
                 <Mail className="w-4 h-4" />
                 <span>info@moralenz.com</span>
               </li>
-              <li className="flex items-center gap-2 text-gray-400 text-sm">
+              <li className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm">
                 <Phone className="w-4 h-4" />
                 <span>+94 11 234 5678</span>
               </li>
-              <li className="flex items-start gap-2 text-gray-400 text-sm">
+              <li className="flex items-start gap-2 text-gray-600 dark:text-gray-400 text-sm">
                 <MapPin className="w-4 h-4 mt-1" />
                 <span>University Campus<br />Colombo, Sri Lanka</span>
               </li>
@@ -53,23 +53,23 @@ export function Footer() {
 
           {/* Social */}
           <div>
-            <h4 className="text-white font-bold mb-4">Follow Us</h4>
+            <h4 className="text-gray-900 dark:text-white font-bold mb-4">Follow Us</h4>
             <div className="flex gap-4">
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition-colors">
-                <Instagram className="w-5 h-5 text-white" />
+              <a href="#" className="w-10 h-10 bg-gray-200 dark:bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition-colors group">
+                <Instagram className="w-5 h-5 text-gray-700 dark:text-white group-hover:text-white" />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
-                <Facebook className="w-5 h-5 text-white" />
+              <a href="#" className="w-10 h-10 bg-gray-200 dark:bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors group">
+                <Facebook className="w-5 h-5 text-gray-700 dark:text-white group-hover:text-white" />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors">
-                <Youtube className="w-5 h-5 text-white" />
+              <a href="#" className="w-10 h-10 bg-gray-200 dark:bg-gray-800 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors group">
+                <Youtube className="w-5 h-5 text-gray-700 dark:text-white group-hover:text-white" />
               </a>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-gray-800 pt-8 text-center">
-          <p className="text-gray-500 text-sm">
+        <div className="border-t border-gray-300 dark:border-gray-800 pt-8 text-center">
+          <p className="text-gray-500 dark:text-gray-500 text-sm">
             © 2026 MoraLenz Media Club. All rights reserved.
           </p>
         </div>
