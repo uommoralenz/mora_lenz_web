@@ -78,7 +78,7 @@ export function PhotoGallery() {
   };
 
   return (
-    <section id="gallery" className="py-20 relative overflow-hidden bg-gradient-to-b from-indigo-950/60 via-slate-900 to-emerald-950/40">
+    <section id="gallery" className="py-20 relative overflow-hidden bg-gradient-to-b from-indigo-50/60 via-slate-100 to-emerald-50/40 dark:from-indigo-950/60 dark:via-slate-900 dark:to-emerald-950/40 transition-colors duration-300">
       {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-teal-500/10 rounded-full blur-[100px]"></div>
@@ -92,10 +92,10 @@ export function PhotoGallery() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-5xl md:text-6xl font-black text-white mb-4">
+          <h2 className="text-5xl md:text-6xl font-black text-gray-900 dark:text-white mb-4">
             Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Gallery</span>
           </h2>
-          <p className="text-xl text-gray-400">
+          <p className="text-xl text-gray-600 dark:text-gray-400">
             Explore our latest captures and creative work
           </p>
         </motion.div>

@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@variant dark (.dark &);
+
 /* Slick carousel base styles */
 @import "slick-carousel/slick/slick.css";
 @import "slick-carousel/slick/slick-theme.css";
@@ -26,6 +28,11 @@
 }
 
 :root {
+  --background: #ffffff;
+  --foreground: #1a1a2e;
+}
+
+:root.dark {
   --background: #000000;
   --foreground: #ffffff;
 }
@@ -33,4 +40,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }

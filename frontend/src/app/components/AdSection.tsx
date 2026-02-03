@@ -29,7 +29,7 @@ const ads = [
 
 export function AdSection() {
   return (
-    <section className="py-20 relative overflow-hidden bg-gradient-to-b from-violet-950/50 via-fuchsia-950/30 to-slate-950">
+    <section className="py-20 relative overflow-hidden bg-gradient-to-b from-violet-100/50 via-fuchsia-100/30 to-slate-100 dark:from-violet-950/50 dark:via-fuchsia-950/30 dark:to-slate-950 transition-colors duration-300">
       {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 right-20 w-[400px] h-[400px] bg-fuchsia-500/15 rounded-full blur-[100px]"></div>
@@ -43,10 +43,10 @@ export function AdSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-5xl md:text-6xl font-black text-white mb-4">
+          <h2 className="text-5xl md:text-6xl font-black text-gray-900 dark:text-white mb-4">
             Latest <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Updates</span>
           </h2>
-          <p className="text-xl text-gray-400">
+          <p className="text-xl text-gray-600 dark:text-gray-400">
             Don't miss out on exciting opportunities
           </p>
         </motion.div>

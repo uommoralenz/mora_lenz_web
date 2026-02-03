@@ -54,8 +54,8 @@ export function PositionCard({
   if (size === "lg") {
     return (
       <article
-        className={`relative bg-slate-800/70 border border-white/10 shadow-lg overflow-hidden mx-auto 
-          flex flex-col md:flex-row items-center gap-4 md:gap-6 
+        className={`relative bg-white/80 dark:bg-slate-800/70 border border-gray-200 dark:border-white/10 shadow-lg dark:shadow-lg overflow-hidden mx-auto 
+          flex flex-col md:flex-row items-center gap-4 md:gap-6 transition-colors duration-300
           ${sizeStyles[size].card} ${className}`}
         style={{ backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}
       >
@@ -64,7 +64,7 @@ export function PositionCard({
           <img
             src={photoSrc}
             alt={name}
-            className="h-full w-full rounded-full object-cover bg-slate-900"
+            className="h-full w-full rounded-full object-cover bg-gray-100 dark:bg-slate-900"
             loading="lazy"
             decoding="async"
           />
@@ -72,13 +72,13 @@ export function PositionCard({
 
         {/* Text - centered on mobile, left-aligned on desktop */}
         <div className="flex-1 text-center md:text-left">
-          <p className={`text-slate-100/80 italic leading-relaxed ${sizeStyles[size].about}`}>
+          <p className={`text-gray-600 dark:text-slate-100/80 italic leading-relaxed ${sizeStyles[size].about}`}>
             "{about}"
           </p>
-          <h3 className={`mt-4 font-bold text-sky-400 ${sizeStyles[size].name}`}>
+          <h3 className={`mt-4 font-bold text-sky-600 dark:text-sky-400 ${sizeStyles[size].name}`}>
             {name}
           </h3>
-          <p className={`mt-1 text-slate-300 ${sizeStyles[size].position}`}>
+          <p className={`mt-1 text-gray-500 dark:text-slate-300 ${sizeStyles[size].position}`}>
             {position}
           </p>
         </div>
@@ -93,7 +93,7 @@ export function PositionCard({
         <img
           src={photoSrc}
           alt={name}
-          className="h-full w-full rounded-full object-cover bg-slate-900"
+          className="h-full w-full rounded-full object-cover bg-gray-100 dark:bg-slate-900"
           loading="lazy"
           decoding="async"
         />
@@ -102,19 +102,19 @@ export function PositionCard({
     about: (
       <p
         key="about"
-        className={`mx-auto text-slate-100/80 leading-relaxed text-center ${sizeStyles[size].about}`}
+        className={`mx-auto text-gray-600 dark:text-slate-100/80 leading-relaxed text-center ${sizeStyles[size].about}`}
       >
         "{about}"
       </p>
     ),
     name: (
-      <h3 key="name" className={`font-bold text-white text-center ${sizeStyles[size].name}`}>
+      <h3 key="name" className={`font-bold text-gray-900 dark:text-white text-center ${sizeStyles[size].name}`}>
         {name}
       </h3>
     ),
     position: (
       <div key="position" className="mt-1">
-        <span className={`inline-block text-sky-400 font-medium text-center ${sizeStyles[size].position}`}>
+        <span className={`inline-block text-sky-600 dark:text-sky-400 font-medium text-center ${sizeStyles[size].position}`}>
           {position}
         </span>
       </div>
@@ -123,7 +123,7 @@ export function PositionCard({
 
   return (
     <article
-      className={`group relative bg-slate-800/70 border border-white/10 shadow-lg overflow-hidden text-center ${sizeStyles[size].card} ${className}`}
+      className={`group relative bg-white/80 dark:bg-slate-800/70 border border-gray-200 dark:border-white/10 shadow-lg overflow-hidden text-center transition-colors duration-300 ${sizeStyles[size].card} ${className}`}
       style={{ backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}
     >
       <div className="relative">

@@ -18,13 +18,13 @@ const ContactSection: React.FC = () => {
   };
 
   return (
-    <section className="py-16 bg-gradient-to-b from-gray-800 to-gray-700 text-white">
+    <section className="py-16 bg-gradient-to-b from-slate-100 via-slate-50/80 to-slate-100 dark:from-slate-950 dark:via-slate-900/80 dark:to-slate-950 text-gray-900 dark:text-white transition-colors duration-300">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-8">Get In Touch</h2>
+        <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">Get In Touch</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <form onSubmit={handleSubmit} className="bg-gray-700 p-6 rounded-lg shadow-md">
+          <form onSubmit={handleSubmit} className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-sm p-6 rounded-lg border border-purple-200 dark:border-purple-500/20 shadow-lg dark:shadow-md">
             <div className="mb-4">
-              <label htmlFor="name" className="block text-sm font-medium mb-2">Name</label>
+              <label htmlFor="name" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Name</label>
               <input
                 type="text"
                 id="name"
@@ -32,11 +32,11 @@ const ContactSection: React.FC = () => {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-3 rounded-lg bg-gray-100 dark:bg-slate-900/80 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div className="mb-4">
-              <label htmlFor="email" className="block text-sm font-medium mb-2">Email</label>
+              <label htmlFor="email" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Email</label>
               <input
                 type="email"
                 id="email"
@@ -44,18 +44,18 @@ const ContactSection: React.FC = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-3 rounded-lg bg-gray-100 dark:bg-slate-900/80 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div className="mb-4">
-              <label htmlFor="subject" className="block text-sm font-medium mb-2">Subject</label>
+              <label htmlFor="subject" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Subject</label>
               <select
                 id="subject"
                 name="subject"
                 value={formData.subject}
                 onChange={handleChange}
                 required
-                className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-3 rounded-lg bg-gray-100 dark:bg-slate-900/80 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
                 <option value="">Select a subject</option>
                 <option value="General Inquiry">General Inquiry</option>
@@ -64,7 +64,7 @@ const ContactSection: React.FC = () => {
               </select>
             </div>
             <div className="mb-4">
-              <label htmlFor="message" className="block text-sm font-medium mb-2">Message</label>
+              <label htmlFor="message" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Message</label>
               <textarea
                 id="message"
                 name="message"
@@ -72,12 +72,12 @@ const ContactSection: React.FC = () => {
                 onChange={handleChange}
                 required
                 rows={4}
-                className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-3 rounded-lg bg-gray-100 dark:bg-slate-900/80 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
               ></textarea>
             </div>
             <button
               type="submit"
-              className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition"
+              className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition"
             >
               Send
             </button>
@@ -85,24 +85,24 @@ const ContactSection: React.FC = () => {
           </form>
 
           <div className="space-y-6">
-            <div className="bg-gray-700 p-6 rounded-lg shadow-md">
-              <Mail className="text-blue-400 mb-2" />
-              <h3 className="text-xl font-semibold mb-2">Email</h3>
-              <p className="text-gray-300">uommediaunit@gmail.com</p>
+            <div className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-sm p-6 rounded-lg border border-purple-200 dark:border-purple-500/20 shadow-lg dark:shadow-md">
+              <Mail className="text-purple-500 dark:text-purple-400 mb-2" />
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Email</h3>
+              <p className="text-gray-600 dark:text-gray-300">uommediaunit@gmail.com</p>
             </div>
-            <div className="bg-gray-700 p-6 rounded-lg shadow-md">
-              <MapPin className="text-blue-400 mb-2" />
-              <h3 className="text-xl font-semibold mb-2">Location</h3>
-              <p className="text-gray-300">University of Moratuwa, Katubedda, Moratuwa, Sri Lanka</p>
+            <div className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-sm p-6 rounded-lg border border-purple-200 dark:border-purple-500/20 shadow-lg dark:shadow-md">
+              <MapPin className="text-purple-500 dark:text-purple-400 mb-2" />
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Location</h3>
+              <p className="text-gray-600 dark:text-gray-300">University of Moratuwa, Katubedda, Moratuwa, Sri Lanka</p>
             </div>
             <div className="flex space-x-4">
-              <a href="#" className="text-blue-400 hover:text-blue-500">
+              <a href="#" className="text-purple-400 hover:text-purple-300">
                 <Facebook size={24} />
               </a>
-              <a href="#" className="text-blue-400 hover:text-blue-500">
+              <a href="#" className="text-purple-400 hover:text-purple-300">
                 <Instagram size={24} />
               </a>
-              <a href="#" className="text-blue-400 hover:text-blue-500">
+              <a href="#" className="text-purple-400 hover:text-purple-300">
                 <Linkedin size={24} />
               </a>
             </div>

@@ -213,7 +213,7 @@ export function TeamSection() {
   return (
     <section
       id="team"
-      className="py-20 relative overflow-hidden bg-gradient-to-b from-blue-950/50 via-sky-950/40 to-violet-950/50"
+      className="py-20 relative overflow-hidden bg-gradient-to-b from-blue-50/50 via-sky-50/40 to-violet-50/50 dark:from-blue-950/50 dark:via-sky-950/40 dark:to-violet-950/50 transition-colors duration-300"
     >
       {/* Decorative gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -224,19 +224,19 @@ export function TeamSection() {
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         {/* Header */}
         <h2 className="text-4xl md:text-5xl font-bold tracking-wide text-center">
-          <span className="text-white">Our </span>
+          <span className="text-gray-900 dark:text-white">Our </span>
           <span className="bg-gradient-to-r from-sky-300 to-cyan-400 bg-clip-text text-transparent">
             Team
           </span>
         </h2>
-        <p className="text-sm md:text-base text-center font-medium text-white/80 leading-relaxed max-w-3xl mx-auto">
+        <p className="text-sm md:text-base text-center font-medium text-gray-700 dark:text-white/80 leading-relaxed max-w-3xl mx-auto">
           Meet the talented individuals who make Mora Lenz Media Club a thriving
           community of creative professionals.
         </p>
 
         {/* Advisors Section */}
         <div className="flex justify-center">
-          <h3 className="mt-14 mb-6 text-2xl md:text-3xl font-semibold tracking-wide text-gray-100 relative inline-block">
+          <h3 className="mt-14 mb-6 text-2xl md:text-3xl font-semibold tracking-wide text-gray-800 dark:text-gray-100 relative inline-block">
             Advisors & Senior Leadership
             <span className="absolute left-1/2 -bottom-2 w-24 h-[2px] -translate-x-1/2 bg-gradient-to-r from-transparent via-sky-400 to-transparent"></span>
           </h3>
@@ -257,7 +257,7 @@ export function TeamSection() {
 
         {/* Executive Committee Section */}
         <div className="flex justify-center">
-          <h3 className="mt-14 mb-6 text-2xl md:text-3xl font-semibold tracking-wide text-gray-100 relative inline-block">
+          <h3 className="mt-14 mb-6 text-2xl md:text-3xl font-semibold tracking-wide text-gray-800 dark:text-gray-100 relative inline-block">
             Executive Committee 2024/25
             <span className="absolute left-1/2 -bottom-2 w-24 h-[2px] -translate-x-1/2 bg-gradient-to-r from-transparent via-sky-400 to-transparent"></span>
           </h3>

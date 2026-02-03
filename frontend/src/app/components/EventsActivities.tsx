@@ -141,7 +141,7 @@ export function EventsActivities() {
   };
 
   return (
-    <section id="events" className="py-20 px-6 text-white relative overflow-hidden bg-gradient-to-b from-emerald-950/40 via-cyan-950/30 to-blue-950/50">
+    <section id="events" className="py-20 px-6 text-gray-900 dark:text-white relative overflow-hidden bg-gradient-to-b from-emerald-50/40 via-cyan-50/30 to-blue-50/50 dark:from-emerald-950/40 dark:via-cyan-950/30 dark:to-blue-950/50 transition-colors duration-300">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-[350px] h-[350px] bg-cyan-500/10 rounded-full blur-[80px] animate-pulse"></div>
@@ -158,7 +158,7 @@ export function EventsActivities() {
             {upcomingEvents.map((event) => (
               <div
                 key={event.id}
-                className="bg-zinc-900 rounded-lg overflow-hidden hover:transform hover:scale-105 transition-all duration-300"
+                className="bg-white dark:bg-zinc-900 rounded-lg overflow-hidden hover:transform hover:scale-105 transition-all duration-300 shadow-lg dark:shadow-none"
               >
                 <div className="relative h-48 w-full">
                   <Image
@@ -169,20 +169,20 @@ export function EventsActivities() {
                   />
                 </div>
                 <div className="p-4">
-                  <h3 className="text-xl font-bold mb-2">{event.name}</h3>
+                  <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{event.name}</h3>
                   {event.location && (
-                    <p className="text-zinc-400 text-xs mb-2">
+                    <p className="text-gray-500 dark:text-zinc-400 text-xs mb-2">
                       📍 {event.location}
                     </p>
                   )}
-                  <div className="bg-zinc-800 rounded-lg p-3 mb-3">
-                    <p className="text-xs text-zinc-400 mb-1">Countdown</p>
-                    <p className="text-lg font-mono text-yellow-400">
+                  <div className="bg-gray-100 dark:bg-zinc-800 rounded-lg p-3 mb-3">
+                    <p className="text-xs text-gray-500 dark:text-zinc-400 mb-1">Countdown</p>
+                    <p className="text-lg font-mono text-yellow-600 dark:text-yellow-400">
                       {timeLeft[event.id] || "Calculating..."}
                     </p>
                   </div>
-                  <p className="text-zinc-300 text-sm mb-3">{event.description}</p>
-                  <p className="text-sm text-zinc-500">
+                  <p className="text-gray-600 dark:text-zinc-300 text-sm mb-3">{event.description}</p>
+                  <p className="text-sm text-gray-500 dark:text-zinc-500">
                     {event.date.toLocaleDateString("en-US", {
                       weekday: "long",
                       year: "numeric",
