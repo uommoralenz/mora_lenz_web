@@ -28,7 +28,7 @@ const features = [
 
 export function AboutSection() {
   return (
-    <section id="about" className="py-20 relative overflow-hidden bg-gradient-to-b from-black via-purple-950/40 to-indigo-950/60">
+    <section id="about" className="py-20 relative overflow-hidden bg-gradient-to-b from-gray-50 via-purple-50/40 to-indigo-50/60 dark:from-black dark:via-purple-950/40 dark:to-indigo-950/60 transition-colors duration-300">
       {/* Animated gradient orbs */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
@@ -44,13 +44,13 @@ export function AboutSection() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
+            <h2 className="text-5xl md:text-6xl font-black text-gray-900 dark:text-white mb-6">
               About <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">MoraLenz</span>
             </h2>
-            <p className="text-lg text-gray-300 mb-6 leading-relaxed">
+            <p className="text-lg text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
               MoraLenz is the premier media club at our university, dedicated to nurturing creativity and technical excellence in photography, videography, and digital media production.
             </p>
-            <p className="text-lg text-gray-300 mb-8 leading-relaxed">
+            <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 leading-relaxed">
               Founded by passionate students, we've grown into a thriving community of visual storytellers, providing members with cutting-edge equipment, expert mentorship, and countless opportunities to showcase their talent.
             </p>
             <button className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full hover:scale-105 transition-transform font-semibold">
@@ -68,11 +68,11 @@ export function AboutSection() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-2xl border border-gray-700 hover:border-purple-500 transition-colors"
+                  className="bg-gradient-to-br from-white to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 transition-colors shadow-lg dark:shadow-none"
                 >
-                  <Icon className="w-12 h-12 text-purple-400 mb-4" />
-                  <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
-                  <p className="text-gray-400 text-sm">{feature.description}</p>
+                  <Icon className="w-12 h-12 text-purple-500 dark:text-purple-400 mb-4" />
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">{feature.description}</p>
                 </motion.div>
               );
             })}

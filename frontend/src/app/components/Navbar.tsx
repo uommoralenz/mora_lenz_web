@@ -38,6 +38,32 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  useEffect(() => {
+    // Check for saved theme preference or system preference
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'light') {
+      setIsDarkMode(false);
+      document.documentElement.classList.remove('dark');
+    } else if (savedTheme === 'dark' || prefersDark) {
+      setIsDarkMode(true);
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    if (isDarkMode) {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    } else {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -77,7 +103,7 @@ export function Navbar() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-slate-900/95 backdrop-blur-md shadow-lg shadow-black/10"
+          ? "bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-lg shadow-black/10"
           : "bg-transparent"
       }`}
     >
@@ -92,7 +118,7 @@ export function Navbar() {
             <div className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
               <img src="/favicon.ico" alt="Mora Lenz Logo" className="w-full h-full object-cover"/>
             </div>
-            <span className="text-white font-bold text-xl hidden sm:block">
+            <span className="text-gray-900 dark:text-white font-bold text-xl hidden sm:block">
               Mora Lenz
             </span>
           </a>
@@ -111,8 +137,8 @@ export function Navbar() {
                     onClick={() => handleDropdownToggle(item.label)}
                     className={`flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                       activeDropdown === item.label
-                        ? "text-white bg-white/10"
-                        : "text-slate-300 hover:text-white hover:bg-white/5"
+                        ? "text-gray-900 dark:text-white bg-gray-900/10 dark:bg-white/10"
+                        : "text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-900/5 dark:hover:bg-white/5"
                     }`}
                   >
                     {item.label}
@@ -126,7 +152,7 @@ export function Navbar() {
                   <a
                     href={item.href || "#home"}
                     onClick={(e) => handleNavClick(e, item.href || "#home")}
-                    className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200 cursor-pointer"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-900/5 dark:hover:bg-white/5 rounded-lg transition-all duration-200 cursor-pointer"
                   >
                     {item.label}
                   </a>
@@ -141,20 +167,20 @@ export function Navbar() {
                         : "opacity-0 -translate-y-2 pointer-events-none"
                     }`}
                   >
-                    <div className="bg-slate-800/95 backdrop-blur-md rounded-xl border border-white/10 shadow-xl shadow-black/20 overflow-hidden">
+                    <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl border border-gray-200 dark:border-white/10 shadow-xl shadow-black/10 dark:shadow-black/20 overflow-hidden">
                       <div className="p-2">
                         {item.children.map((child) => (
                           <a
                             key={child.label}
                             href={child.href}
                             onClick={(e) => handleNavClick(e, child.href)}
-                            className="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors duration-200 group cursor-pointer"
+                            className="block px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors duration-200 group cursor-pointer"
                           >
-                            <span className="text-white font-medium text-sm group-hover:text-emerald-400 transition-colors">
+                            <span className="text-gray-900 dark:text-white font-medium text-sm group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                               {child.label}
                             </span>
                             {child.description && (
-                              <p className="text-slate-400 text-xs mt-0.5">
+                              <p className="text-gray-500 dark:text-slate-400 text-xs mt-0.5">
                                 {child.description}
                               </p>
                             )}
@@ -173,7 +199,7 @@ export function Navbar() {
             <a
               href="#contact"
               onClick={(e) => handleNavClick(e, "#contact")}
-              className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors duration-200 cursor-pointer"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200 cursor-pointer"
             >
               Join Us
             </a>
@@ -185,38 +211,56 @@ export function Navbar() {
               Explore Events
               <ArrowRightIcon className="w-4 h-4" />
             </a>
+            
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="relative w-9 h-9 flex items-center justify-center rounded-full bg-gray-900/10 dark:bg-white/10 hover:bg-gray-900/20 dark:hover:bg-white/20 transition-all duration-300 group"
+              aria-label="Toggle theme"
+            >
+              <ThemeIcon isDark={isDarkMode} />
+            </button>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors duration-200"
-            aria-label="Toggle menu"
-          >
+          {/* Mobile Theme Toggle & Menu Button */}
+          <div className="md:hidden flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              className="relative w-8 h-8 flex items-center justify-center rounded-full bg-gray-900/10 dark:bg-white/10 hover:bg-gray-900/20 dark:hover:bg-white/20 transition-all duration-300"
+              aria-label="Toggle theme"
+            >
+              <ThemeIcon isDark={isDarkMode} />
+            </button>
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-900/10 dark:hover:bg-white/10 transition-colors duration-200"
+              aria-label="Toggle menu"
+            >
             <div className="w-6 h-5 relative flex flex-col justify-between">
               <span
-                className={`w-full h-0.5 bg-white rounded-full transition-all duration-300 origin-center ${
+                className={`w-full h-0.5 bg-gray-900 dark:bg-white rounded-full transition-all duration-300 origin-center ${
                   isOpen ? "rotate-45 translate-y-2" : ""
                 }`}
               />
               <span
-                className={`w-full h-0.5 bg-white rounded-full transition-all duration-300 ${
+                className={`w-full h-0.5 bg-gray-900 dark:bg-white rounded-full transition-all duration-300 ${
                   isOpen ? "opacity-0 scale-0" : ""
                 }`}
               />
               <span
-                className={`w-full h-0.5 bg-white rounded-full transition-all duration-300 origin-center ${
+                className={`w-full h-0.5 bg-gray-900 dark:bg-white rounded-full transition-all duration-300 origin-center ${
                   isOpen ? "-rotate-45 -translate-y-2" : ""
                 }`}
               />
             </div>
-          </button>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Mobile Menu */}
       <div
-        className={`md:hidden absolute top-full left-0 right-0 bg-slate-900/98 backdrop-blur-md border-t border-white/10 transition-all duration-300 ${
+        className={`md:hidden absolute top-full left-0 right-0 bg-white/98 dark:bg-slate-900/98 backdrop-blur-md border-t border-gray-200 dark:border-white/10 transition-all duration-300 ${
           isOpen
             ? "opacity-100 translate-y-0 pointer-events-auto"
             : "opacity-0 -translate-y-4 pointer-events-none"
@@ -224,12 +268,12 @@ export function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-4 py-4">
           {navItems.map((item) => (
-            <div key={item.label} className="border-b border-white/5 last:border-0">
+            <div key={item.label} className="border-b border-gray-200 dark:border-white/5 last:border-0">
               {item.children ? (
                 <div>
                   <button
                     onClick={() => handleDropdownToggle(item.label)}
-                    className="w-full flex items-center justify-between px-4 py-3 text-white font-medium"
+                    className="w-full flex items-center justify-between px-4 py-3 text-gray-900 dark:text-white font-medium"
                   >
                     {item.label}
                     <ChevronDownIcon
@@ -248,7 +292,7 @@ export function Navbar() {
                         key={child.label}
                         href={child.href}
                         onClick={(e) => handleNavClick(e, child.href)}
-                        className="block px-8 py-2.5 text-slate-400 hover:text-emerald-400 transition-colors cursor-pointer"
+                        className="block px-8 py-2.5 text-gray-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
                       >
                         {child.label}
                       </a>
@@ -259,7 +303,7 @@ export function Navbar() {
                 <a
                   href={item.href || "#home"}
                   onClick={(e) => handleNavClick(e, item.href || "#home")}
-                  className="block px-4 py-3 text-white font-medium hover:text-emerald-400 transition-colors cursor-pointer"
+                  className="block px-4 py-3 text-gray-900 dark:text-white font-medium hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
                 >
                   {item.label}
                 </a>
@@ -279,7 +323,7 @@ export function Navbar() {
             <a
               href="#contact"
               onClick={(e) => handleNavClick(e, "#contact")}
-              className="block w-full px-5 py-3 text-center font-medium text-slate-300 border border-white/20 rounded-lg hover:bg-white/5 cursor-pointer"
+              className="block w-full px-5 py-3 text-center font-medium text-gray-700 dark:text-slate-300 border border-gray-300 dark:border-white/20 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer"
             >
               Join Us
             </a>
@@ -326,5 +370,49 @@ function ArrowRightIcon({ className }: { className?: string }) {
         strokeLinejoin="round"
       />
     </svg>
+  );
+}
+
+function ThemeIcon({ isDark }: { isDark: boolean }) {
+  return (
+    <div className="relative w-5 h-5">
+      {/* Sun */}
+      <svg
+        className={`absolute inset-0 w-5 h-5 text-amber-400 transition-all duration-500 ${
+          isDark ? "opacity-0 rotate-90 scale-50" : "opacity-100 rotate-0 scale-100"
+        }`}
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle cx="12" cy="12" r="4" fill="currentColor" />
+        <path
+          d="M12 2V4M12 20V22M4 12H2M6.31 6.31L4.9 4.9M17.69 6.31L19.1 4.9M6.31 17.69L4.9 19.1M17.69 17.69L19.1 19.1M22 12H20"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+      {/* Moon */}
+      <svg
+        className={`absolute inset-0 w-5 h-5 text-violet-300 transition-all duration-500 ${
+          isDark ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-50"
+        }`}
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
+          fill="currentColor"
+          stroke="currentColor"
+          strokeWidth="1"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <circle cx="17" cy="7" r="1" fill="white" className="animate-pulse" />
+        <circle cx="19" cy="11" r="0.5" fill="white" className="animate-pulse" style={{ animationDelay: '0.5s' }} />
+      </svg>
+    </div>
   );
 }
