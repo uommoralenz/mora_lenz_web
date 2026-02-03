@@ -100,12 +100,15 @@ export function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
             {navItems.map((item) => (
-              <div key={item.label} className="relative">
+              <div 
+                key={item.label} 
+                className="relative"
+                onMouseEnter={() => item.children && setActiveDropdown(item.label)}
+                onMouseLeave={() => item.children && setActiveDropdown(null)}
+              >
                 {item.children ? (
                   <button
                     onClick={() => handleDropdownToggle(item.label)}
-                    onMouseEnter={() => setActiveDropdown(item.label)}
-                    onMouseLeave={() => setActiveDropdown(null)}
                     className={`flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                       activeDropdown === item.label
                         ? "text-white bg-white/10"
@@ -132,32 +135,32 @@ export function Navbar() {
                 {/* Dropdown Menu */}
                 {item.children && (
                   <div
-                    onMouseEnter={() => setActiveDropdown(item.label)}
-                    onMouseLeave={() => setActiveDropdown(null)}
-                    className={`absolute top-full left-0 mt-2 w-64 bg-slate-800/95 backdrop-blur-md rounded-xl border border-white/10 shadow-xl shadow-black/20 overflow-hidden transition-all duration-200 ${
+                    className={`absolute top-full left-0 pt-2 w-64 transition-all duration-300 ${
                       activeDropdown === item.label
                         ? "opacity-100 translate-y-0 pointer-events-auto"
                         : "opacity-0 -translate-y-2 pointer-events-none"
                     }`}
                   >
-                    <div className="p-2">
-                      {item.children.map((child) => (
-                        <a
-                          key={child.label}
-                          href={child.href}
-                          onClick={(e) => handleNavClick(e, child.href)}
-                          className="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors duration-200 group cursor-pointer"
-                        >
-                          <span className="text-white font-medium text-sm group-hover:text-emerald-400 transition-colors">
-                            {child.label}
-                          </span>
-                          {child.description && (
-                            <p className="text-slate-400 text-xs mt-0.5">
-                              {child.description}
-                            </p>
-                          )}
-                        </a>
-                      ))}
+                    <div className="bg-slate-800/95 backdrop-blur-md rounded-xl border border-white/10 shadow-xl shadow-black/20 overflow-hidden">
+                      <div className="p-2">
+                        {item.children.map((child) => (
+                          <a
+                            key={child.label}
+                            href={child.href}
+                            onClick={(e) => handleNavClick(e, child.href)}
+                            className="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors duration-200 group cursor-pointer"
+                          >
+                            <span className="text-white font-medium text-sm group-hover:text-emerald-400 transition-colors">
+                              {child.label}
+                            </span>
+                            {child.description && (
+                              <p className="text-slate-400 text-xs mt-0.5">
+                                {child.description}
+                              </p>
+                            )}
+                          </a>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}

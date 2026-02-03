@@ -76,7 +76,7 @@ const panelsPillarsData = [
 
 const PanelsPillarsSection: React.FC = () => {
   return (
-    <section className="py-16 bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+    <section className="py-16 bg-gradient-to-b from-violet-950/50 via-indigo-950/40 to-violet-950/50 text-white">
       <div className="container mx-auto px-4 flex flex-col items-center">
         <h2 className="mt-14 mb-6 text-2xl md:text-3xl font-semibold tracking-wide text-gray-100 relative inline-block text-center">
           Our Panels & Pillars
@@ -86,12 +86,12 @@ const PanelsPillarsSection: React.FC = () => {
           {panelsPillarsData.map((item, index) => (
             <div
               key={index}
-              className="bg-gray-700 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+              className="bg-slate-900/60 backdrop-blur-sm p-6 rounded-lg border border-violet-500/20 hover:border-violet-400/40 shadow-md hover:shadow-lg transition-all"
             >
-              <div className="text-blue-400 mb-4">{item.icon}</div>
+              <div className="text-violet-400 mb-4">{item.icon}</div>
               <h3 className="text-xl font-semibold mb-2">{item.name}</h3>
               <p className="text-gray-300 mb-4">{item.description}</p>
-              <span className="inline-block bg-blue-500 text-white text-sm font-medium px-3 py-1 rounded-full">
+              <span className="inline-block bg-violet-600/80 text-white text-sm font-medium px-3 py-1 rounded-full">
                 {item.members} Members
               </span>
             </div>
