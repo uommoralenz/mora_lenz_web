@@ -2,8 +2,12 @@
 
 import { motion } from "framer-motion";
 import { Camera, Film, Image as ImageIcon } from "lucide-react";
+import { useState } from "react";
+import { LoginModal } from "./LoginModal";
 
 export function HeroSection() {
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 dark:from-purple-900 dark:via-blue-900 dark:to-black transition-colors duration-300">
       {/* Animated background */}
@@ -91,6 +95,27 @@ export function HeroSection() {
           <div className="w-1 h-2 bg-gray-900/50 dark:bg-white/50 rounded-full"></div>
         </div>
       </motion.div>
+
+      {/* Admin Login Button - Vertical Text on Right Edge - Fixed Position */}
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, delay: 0.5 }}
+        className="fixed right-0 top-1/2 -translate-y-1/2 z-50"
+      >
+        <button 
+          onClick={() => setIsLoginOpen(true)}
+          className="bg-red-400/70 hover:bg-red-600 text-white font-semibold py-4 px-2 rounded-l-md shadow-md hover:shadow-lg transition-all duration-300"
+          aria-label="Admin Login"
+        >
+          <span className="writing-mode-vertical-rl rotate-180 text-xs tracking-wide uppercase">
+            Login
+          </span>
+        </button>
+      </motion.div>
+
+      {/* Login Modal */}
+      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </section>
   );
 }
