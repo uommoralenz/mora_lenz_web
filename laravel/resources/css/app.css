@@ -1,0 +1,116 @@
+@import 'tailwindcss';
+
+@source '../views/**/*.blade.php';
+@source '../js/**/*.js';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source inline("from-purple-600 to-pink-600 from-blue-600 to-cyan-600 from-green-600 to-teal-600");
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+.nav-scrolled {
+    background-color: rgb(255 255 255 / 0.95);
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.1);
+    backdrop-filter: blur(12px);
+}
+
+.dark .nav-scrolled {
+    background-color: rgb(15 23 42 / 0.95);
+}
+
+[data-dropdown].is-open [data-dropdown-menu] {
+    pointer-events: auto;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+[data-dropdown].is-open [data-dropdown-button] svg,
+.is-open > [data-mobile-dropdown-button] svg {
+    transform: rotate(180deg);
+}
+
+[data-navbar].is-menu-open [data-mobile-menu] {
+    pointer-events: auto;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+[data-navbar].is-menu-open [data-menu-line='top'] {
+    transform: translateY(9px) rotate(45deg);
+}
+
+[data-navbar].is-menu-open [data-menu-line='middle'] {
+    opacity: 0;
+    transform: scaleX(0);
+}
+
+[data-navbar].is-menu-open [data-menu-line='bottom'] {
+    transform: translateY(-9px) rotate(-45deg);
+}
+
+.is-open > [data-mobile-dropdown-menu] {
+    max-height: 24rem;
+}
+
+.writing-mode-vertical-rl {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}
+
+.line-clamp-2,
+.line-clamp-3 {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+}
+
+.line-clamp-2 {
+    -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+    -webkit-line-clamp: 3;
+}
+
+.animate-float {
+    animation: float 5s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+    animation: float-reverse 4s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0);
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(5deg);
+    }
+}
+
+@keyframes float-reverse {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0);
+    }
+
+    50% {
+        transform: translateY(20px) rotate(-5deg);
+    }
+}

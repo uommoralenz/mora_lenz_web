@@ -1,5 +1,9 @@
 {
-  "dependencies": {
-    "framer-motion": "^12.29.2"
+  "scripts": {
+    "dev": "cd laravel && npm run build && php artisan serve --host=127.0.0.1 --port=8000 --no-reload",
+    "dev:assets": "npm run dev --prefix laravel",
+    "dev:admin": "npm run dev --prefix admin",
+    "build": "npm run build --prefix laravel && npm run build --prefix admin",
+    "test": "composer --working-dir=laravel test && npm run typecheck --prefix admin"
   }
 }
