@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->name('admin.')->group(function () {
 
     // --- Public (no token needed) ---
     Route::post('auth/login', [AuthController::class, 'login'])
