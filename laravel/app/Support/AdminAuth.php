@@ -7,6 +7,7 @@ use App\Models\AdminToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Minimal bearer-token authentication for the admin API.
@@ -75,6 +76,7 @@ class AdminAuth
         $plain = static::extractToken($request);
 
         if (! $plain) {
+            static::logRejection($request, 'missing_header', null);
             return null;
         }
 
@@ -83,6 +85,7 @@ class AdminAuth
             ->first();
 
         if (! $token || $token->hasExpired()) {
+            static::logRejection($request, $token ? 'expired_token' : 'unknown_token', $plain);
             $token?->delete();
 
             return null;
@@ -93,6 +96,7 @@ class AdminAuth
         // A deactivated or deleted admin loses access immediately, even if
         // their token has not expired yet.
         if (! $admin || ! $admin->is_active) {
+            static::logRejection($request, 'inactive_or_missing_admin', $plain);
             $token->delete();
 
             return null;
@@ -104,6 +108,17 @@ class AdminAuth
         }
 
         return $admin;
+    }
+
+    /** Safe diagnostic details only; never record the credential or full token. */
+    protected static function logRejection(Request $request, string $reason, ?string $token): void
+    {
+        Log::warning('admin-auth-v2 rejected', [
+            'reason' => $reason,
+            'token_tag' => $token ? substr(hash('sha256', $token), 0, 12) : null,
+            'authorization_present' => $request->hasHeader('Authorization'),
+            'fallback_present' => $request->hasHeader('X-Admin-Token'),
+        ]);
     }
 
     /** Revoke the token used by this request (sign out of this device only). */

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { createHash } from "node:crypto";
+
 import { redirect } from "next/navigation";
 
 import { getToken } from "./session";
@@ -97,6 +99,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   const headers: Record<string, string> = { Accept: "application/json" };
   let payload: BodyInit | undefined;
+  let tokenTag: string | null = null;
 
   if (body instanceof FormData) {
     // Let fetch set the multipart boundary itself — never set Content-Type here.
@@ -124,6 +127,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     // reaches PHP, so AdminAuth::resolve() falls back to it automatically.
     headers.Authorization = `Bearer ${token}`;
     headers["X-Admin-Token"] = token;
+    tokenTag = createHash("sha256").update(token).digest("hex").slice(0, 12);
   }
 
   let response: Response;
@@ -144,6 +148,16 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   }
 
   const text = await response.text();
+  if (path === "/auth/me") {
+    // Never log credentials, cookies, full tokens, or response bodies.
+    console.info("[admin-auth-v2]", JSON.stringify({
+      phase: options.token ? "new-token-check" : "cookie-token-check",
+      tokenTag,
+      status: response.status,
+      redirected: response.redirected,
+      commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 12) ?? "local",
+    }));
+  }
   let parsed: unknown = null;
 
   if (text) {
