@@ -23,17 +23,6 @@ class AdminAuth
     /** The admin resolved for the current request, if any. */
     protected static ?Admin $current = null;
 
-    /**
-     * Read the token from the standard Authorization header, with a fallback
-     * for shared-hosting nginx/PHP setups that discard that header before PHP
-     * receives the request. The fallback remains a request header and is sent
-     * only over HTTPS by the server-side admin panel.
-     */
-    protected static function tokenFromRequest(Request $request): ?string
-    {
-        return $request->bearerToken() ?: $request->header('X-Admin-Token');
-    }
-
     /** Issue a fresh token for an admin and persist its hash. */
     public static function issueToken(Admin $admin, ?string $userAgent = null): array
     {
@@ -54,10 +43,36 @@ class AdminAuth
         ];
     }
 
-    /** Resolve the admin behind a request's Authorization header, or null. */
+    /**
+     * Read the bearer token off the request.
+     *
+     * This server's nginx does not forward the Authorization header to
+     * PHP-FPM by default (a well-known nginx quirk — it needs an explicit
+     * `fastcgi_param HTTP_AUTHORIZATION $http_authorization;` line, which
+     * requires config access we don't have here). Every other header passes
+     * through fine, so the panel also sends the same token as X-Admin-Token
+     * and that is the fallback that actually works on this host. Without it,
+     * login would succeed (it doesn't need a token) but every very next
+     * request — /auth/me, /stats, … — would silently 401 and bounce back to
+     * the login page, because the token this server never saw.
+     */
+    protected static function extractToken(Request $request): ?string
+    {
+        $plain = $request->bearerToken();
+
+        if ($plain) {
+            return $plain;
+        }
+
+        $header = $request->header('X-Admin-Token');
+
+        return $header !== null && $header !== '' ? $header : null;
+    }
+
+    /** Resolve the admin behind a request's bearer token, or null. */
     public static function resolve(Request $request): ?Admin
     {
-        $plain = static::tokenFromRequest($request);
+        $plain = static::extractToken($request);
 
         if (! $plain) {
             return null;
@@ -94,7 +109,7 @@ class AdminAuth
     /** Revoke the token used by this request (sign out of this device only). */
     public static function revokeCurrent(Request $request): void
     {
-        $plain = static::tokenFromRequest($request);
+        $plain = static::extractToken($request);
 
         if ($plain) {
             AdminToken::where('token_hash', hash('sha256', $plain))->delete();

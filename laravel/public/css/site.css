@@ -173,6 +173,35 @@ button {
   color: #fff;
 }
 
+/* Fallback mark shown until a real img/logo.png is uploaded — a simple lens
+   icon plus wordmark, rather than bare text. */
+.logo-fallback {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-fallback__mark {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
+.logo-fallback__word {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  background: linear-gradient(135deg, #fff 0%, var(--accent-soft) 55%, var(--cyan) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.footer__brand .logo-fallback__word {
+  font-size: 1.5rem;
+}
+
 .navbar__nav {
   display: none;
 }
@@ -472,6 +501,30 @@ button {
   position: absolute;
   inset: 0;
   z-index: 0;
+  /* Shown on its own whenever public/img/landing-bg.jpeg hasn't been
+     uploaded yet, and underneath it (harmlessly) once it has. Layered
+     radial glows + a faint grid over the site's own palette, slowly
+     drifting, so the hero reads as designed rather than "missing image". */
+  background-color: var(--black);
+  background-image:
+    radial-gradient(ellipse 70% 55% at 18% 18%, rgba(59, 130, 246, 0.35), transparent 60%),
+    radial-gradient(ellipse 65% 55% at 85% 15%, rgba(6, 182, 212, 0.28), transparent 60%),
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(96, 165, 250, 0.22), transparent 65%),
+    linear-gradient(180deg, var(--black-100) 0%, var(--black-50) 55%, var(--black-200) 100%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 64px);
+  background-size: 140% 140%, 140% 140%, 160% 100%, 100% 100%, 64px 64px, 64px 64px;
+  background-position: 0% 0%, 100% 0%, 50% 100%, center, center, center;
+  animation: heroGlowDrift 24s ease-in-out infinite alternate;
+}
+
+@keyframes heroGlowDrift {
+  from {
+    background-position: 0% 0%, 100% 0%, 50% 100%, center, center, center;
+  }
+  to {
+    background-position: 8% 10%, 92% 12%, 52% 92%, center, center, center;
+  }
 }
 
 .hero__bg img {
@@ -542,6 +595,11 @@ button {
 /* Vertical word slider, ported from the original .wrapper animation. */
 .hero__slider {
   display: inline-flex;
+  /* Without this, the flex default (align-items: stretch) squashes the
+     9-word-tall track down to this box's own 1.15em, so the translateY(%)
+     steps below move by fractions of a pixel and the words never visibly
+     change — flex-start lets the track keep its natural (tall) height. */
+  align-items: flex-start;
   height: 1.15em;
   overflow: hidden;
   vertical-align: bottom;
@@ -555,6 +613,7 @@ button {
 }
 
 .hero__slider-track span {
+  flex-shrink: 0;
   height: 1.15em;
   line-height: 1.15em;
   white-space: nowrap;
@@ -2139,6 +2198,7 @@ button {
   }
 
   .hero__slider-track,
+  .hero__bg,
   .hero__bg img {
     animation: none !important;
   }

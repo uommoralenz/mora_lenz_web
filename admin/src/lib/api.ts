@@ -2,7 +2,7 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 
-import { getToken } from "./session";
+import { clearToken, getToken } from "./session";
 import type { ActionState, AdminUser } from "./types";
 
 const BASE = (process.env.LARAVEL_API_URL || "").replace(/\/+$/, "");
@@ -115,9 +115,12 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
       throw new ApiError(401, "Your session has expired. Please sign in again.");
     }
 
+    // Sent both ways on purpose: some hosts (this one included) run nginx in
+    // front of PHP-FPM without forwarding the Authorization header, which
+    // would otherwise make every request after login look unauthenticated.
+    // X-Admin-Token carries the same value through a header that always
+    // reaches PHP, so AdminAuth::resolve() falls back to it automatically.
     headers.Authorization = `Bearer ${token}`;
-    // Some shared-hosting PHP configurations omit Authorization before Laravel
-    // receives it. Laravel accepts this equivalent header as a fallback.
     headers["X-Admin-Token"] = token;
   }
 
@@ -157,10 +160,9 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   if (!response.ok) {
     // Laravel revoked or expired this token (or the admin was deactivated).
-    // A Server Component may redirect, but cannot modify cookies. The logout
-    // Server Action clears cookies; a successful login overwrites this stale
-    // token with the new one.
+    // Drop the stale cookie and bounce to the login page.
     if (response.status === 401 && !soft) {
+      await clearToken();
       redirect("/login");
     }
 
@@ -213,6 +215,7 @@ export async function currentAdmin(): Promise<AdminUser | null> {
     return admin;
   } catch (error) {
     if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+      await clearToken();
       return null;
     }
 

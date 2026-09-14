@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 80" role="img" aria-labelledby="title">
+  <title id="title">Mora Lenz</title>
+  <g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 27a8 8 0 0 1 8-8h14l5-8h18l5 8h10a8 8 0 0 1 8 8v32a8 8 0 0 1-8 8H18a8 8 0 0 1-8-8z"/>
+    <circle cx="44" cy="43" r="14"/>
+    <path d="m39 31 10 24M56 38 32 48M32 38l24 10" opacity=".72"/>
+  </g>
+  <text x="96" y="36" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="700" letter-spacing="1.2">MORA</text>
+  <text x="96" y="62" fill="#b9c8d8" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="600" letter-spacing="5.2">LENZ</text>
+</svg>

@@ -11,7 +11,7 @@
             @if (file_exists(public_path('img/logo.png')))
                 <img src="{{ asset('img/logo.png') }}" alt="Mora Lenz">
             @else
-                <span class="navbar__logo-text">Mora Lenz</span>
+                @include('partials.logo-fallback')
             @endif
         </a>
 
