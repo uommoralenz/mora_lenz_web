@@ -69,6 +69,8 @@ function isRedirectError(error: unknown): boolean {
 }
 
 interface RequestOptions {
+  /** Verify a newly issued token before saving the browser session. */
+  token?: string;
   method?: string;
   body?: FormData | Record<string, unknown>;
   /** Set false for endpoints that do not need a token (only login). */
@@ -105,7 +107,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   }
 
   if (auth) {
-    const token = await getToken();
+    const token = options.token ?? await getToken();
 
     if (!token) {
       // No cookie at all: go straight to the login page rather than rendering
@@ -177,6 +179,8 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 }
 
 export const api = {
+  verifySession: (token: string) =>
+    request<{ admin: AdminUser }>("/auth/me", { token, soft: true }),
   get: <T>(path: string, revalidate?: number) => request<T>(path, { revalidate }),
   post: <T>(path: string, body?: RequestOptions["body"]) =>
     request<T>(path, { method: "POST", body }),
@@ -229,7 +233,8 @@ export async function requireAdmin(): Promise<AdminUser> {
   const admin = await currentAdmin();
 
   if (!admin) {
-    redirect("/login");
+    const reason = await getToken() ? "session-rejected" : "session-missing";
+    redirect(`/login?reason=${reason}`);
   }
 
   return admin;

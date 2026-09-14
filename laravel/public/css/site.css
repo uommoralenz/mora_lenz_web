@@ -51,12 +51,36 @@ body {
   padding: 0;
   width: 100%;
   overflow-x: hidden;
-  background-color: var(--black);
+  background:
+    radial-gradient(ellipse 80% 42% at 50% -8%, rgba(30, 89, 130, 0.24), transparent 72%),
+    radial-gradient(ellipse 55% 30% at 100% 42%, rgba(22, 112, 125, 0.12), transparent 70%),
+    #030508;
   color: #ffffff;
   font-family: "Mona Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
     Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* A quiet visual thread behind every Laravel page, not just the homepage. */
+.site-main {
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.014) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+.site-main::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 52% 22% at 8% 22%, rgba(59, 130, 246, 0.11), transparent 72%),
+    radial-gradient(ellipse 46% 20% at 94% 68%, rgba(6, 182, 212, 0.08), transparent 72%);
 }
 
 img {
@@ -298,10 +322,11 @@ button {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 1.0s;
 }
 
 .navbar__dropdown[data-open="true"] .navbar__dropdown-menu {
+  background: rgba(0, 0, 0, 0.5);
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -320,6 +345,7 @@ button {
 .navbar__dropdown-menu a:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
+  visibility: hidden;
 }
 
 .navbar__actions {
@@ -610,7 +636,7 @@ button {
   display: flex;
   flex-direction: column;
   /* Change every 1.5 seconds without showing two clipped words mid-scroll. */
-  animation: wordSlider 12s infinite steps(1, end);
+  animation: wordSlider 20s infinite ease-in-out;
 }
 
 .hero__slider-track span {
@@ -620,34 +646,41 @@ button {
   white-space: nowrap;
 }
 
+
 @keyframes wordSlider {
-  0% {
+  100%,
+  10% {
     transform: translateY(0);
   }
-  12.5% {
+  12.5%,
+  22.5% {
     transform: translateY(-12.5%);
   }
-  25% {
+  25%,
+  35% {
     transform: translateY(-25%);
   }
-  37.5% {
+  37.5%,
+  47.5% {
     transform: translateY(-37.5%);
   }
-  50% {
+  50%,
+  60% {
     transform: translateY(-50%);
   }
-  62.5% {
+  62.5%,
+  72.5% {
     transform: translateY(-62.5%);
   }
-  75% {
+  75%,
+  85% {
     transform: translateY(-75%);
   }
-  87.5% {
-    transform: translateY(-87.5%);
-  }
+  87.5%,
   100% {
     transform: translateY(-87.5%);
   }
+
 }
 
 .hero__lede {
@@ -667,7 +700,7 @@ button {
   top: 28%;
   right: 4%;
   z-index: 1;
-  opacity: 0.18;
+  opacity: 0.9;
   pointer-events: none;
   user-select: none;
   animation: wordmarkIn 2s ease-out both;
@@ -692,7 +725,7 @@ button {
     transform: translateX(50px) scale(1.2);
   }
   to {
-    opacity: 0.18;
+    opacity: 0.50;
     transform: translateX(0) scale(1);
   }
 }

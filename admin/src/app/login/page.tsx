@@ -6,7 +6,15 @@ import LoginForm from "./login-form";
 
 export const dynamic = "force-dynamic";
 
-export default async function LoginPage() {
+export default async function LoginPage({ searchParams }: {
+  searchParams: Promise<{ reason?: string }>;
+}) {
+  const { reason } = await searchParams;
+  const notice = reason === "session-missing"
+    ? "No session cookie was received. If you just signed in, allow cookies for this site and check that you are using the same website address."
+    : reason === "session-rejected"
+      ? "Your session was rejected by the login server. Please sign in again. If this repeats immediately, the site administrator needs to check API authentication."
+      : null;
   // Already signed in? Skip the form.
   const admin = await currentAdmin().catch(() => null);
 
@@ -25,6 +33,7 @@ export default async function LoginPage() {
         </div>
 
         <div className="card p-6">
+          {notice && <p role="alert" className="mb-4 text-sm text-amber-300">{notice}</p>}
           <LoginForm />
         </div>
 
