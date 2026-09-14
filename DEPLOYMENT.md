@@ -2,10 +2,10 @@
 
 Two separate applications, two separate hosts:
 
-| App          | What it is                        | Where it goes                            | Who can reach it            |
-| ------------ | --------------------------------- | ---------------------------------------- | --------------------------- |
-| `laravel/` | Public website**+** the admin API | University server (`vh25.uom.lk`, CWP) | Everyone                    |
-| `admin/`   | Admin panel                       | Vercel                                   | Only people with an account |
+| App | What it is | Where it goes | Who can reach it |
+|---|---|---|---|
+| `laravel/` | Public website **+** the admin API | University server (`vh25.uom.lk`, CWP) | Everyone |
+| `admin/` | Admin panel | Vercel | Only people with an account |
 
 They share one MySQL database, but **only the Laravel app ever touches MySQL**. The Vercel panel talks to `https://your-site/api/admin/*` over HTTPS. MySQL stays closed to the internet.
 
@@ -54,16 +54,16 @@ cp .env.example .env
 
 Open `.env` and fill in at minimum:
 
-| Setting                  | Value                                                                   |
-| ------------------------ | ----------------------------------------------------------------------- |
-| `APP_URL`              | Your exact public address, no trailing slash                            |
-| `DB_DATABASE`          | `moralenz_web`                                                        |
-| `DB_USERNAME`          | `moralenz_web1`                                                       |
-| `DB_PASSWORD`          | That user's password                                                    |
-| `ADMIN_PANEL_ORIGINS`  | Your Vercel URL (you'll get this in step 3 — come back and fill it in) |
-| `SUPER_ADMIN_USERNAME` | Pick one                                                                |
-| `SUPER_ADMIN_PASSWORD` | A long one.**There is no password reset.**                        |
-| `SETUP_KEY`            | A long random string, temporarily                                       |
+| Setting | Value |
+|---|---|
+| `APP_URL` | Your exact public address, no trailing slash |
+| `DB_DATABASE` | `moralenz_web` |
+| `DB_USERNAME` | `moralenz_web1` |
+| `DB_PASSWORD` | That user's password |
+| `ADMIN_PANEL_ORIGINS` | Your Vercel URL (you'll get this in step 3 — come back and fill it in) |
+| `SUPER_ADMIN_USERNAME` | Pick one |
+| `SUPER_ADMIN_PASSWORD` | A long one. **There is no password reset.** |
+| `SETUP_KEY` | A long random string, temporarily |
 
 Leave `APP_KEY=` empty — the installer generates it.
 
@@ -93,16 +93,34 @@ Steps:
    $appBase = __DIR__.'/..';            // before
    $appBase = __DIR__.'/../moralenz_app';   // after
    ```
+
 5. Set permissions (File Manager → right click → Permissions, tick *Recurse into subdirectories*):
 
-   | Path                             | Permission |
-   | -------------------------------- | ---------- |
-   | `moralenz_app/storage`         | `775`    |
-   | `moralenz_app/bootstrap/cache` | `775`    |
-   | `public_html/uploads`          | `775`    |
-   | `moralenz_app/.env`            | `600`    |
+   | Path | Permission |
+   |---|---|
+   | `moralenz_app/storage` | `775` |
+   | `moralenz_app/bootstrap/cache` | `775` |
+   | `public_html/uploads` | `775` |
+   | `moralenz_app/.env` | `600` |
 
    If `775` gives "Permission denied" errors later, try `777` on `storage` only.
+
+6. In `moralenz_app/.env`, set:
+
+   ```
+   PUBLIC_PATH=/home/moralenz/public_html
+   ```
+
+   (the absolute path to `public_html`, not a relative one). **This step is easy to
+   miss and the site looks fine without it — until you try to use a real
+   `logo.png`/`landing-bg.jpeg` or upload an image from the admin panel.**
+   Laravel's `public_path()` helper defaults to `moralenz_app/public`, which
+   step 3 just deleted. Without `PUBLIC_PATH` set, the logo/background
+   `file_exists()` checks always fail (so the CSS fallback shows forever no
+   matter what you upload to `public_html/img/`), and worse, every image the
+   admin panel uploads gets written into that deleted folder instead of
+   `public_html/uploads` — it "succeeds" but nginx never serves it, so it
+   just silently vanishes.
 
 ### 2.4 Run the installer
 
@@ -132,12 +150,13 @@ Open `https://your-site`. You should get the dark homepage with sample events an
 2. In Vercel: **Add New → Project → Import** that repo. Framework preset is detected as Next.js; leave the build settings alone.
 3. Before the first deploy, add these **Environment Variables** (Production, and Preview if you use it):
 
-   | Name                | Value                           |
-   | ------------------- | ------------------------------- |
+   | Name | Value |
+   |---|---|
    | `LARAVEL_API_URL` | `https://your-site/api/admin` |
-   | `SESSION_COOKIE`  | `moralenz_admin_session`      |
+   | `SESSION_COOKIE` | `moralenz_admin_session` |
 
    None of these are `NEXT_PUBLIC_*`, on purpose — that is what keeps the API URL out of the browser.
+
 4. Deploy. Note the URL Vercel gives you, e.g. `https://moralenz-admin.vercel.app`.
 5. **Go back to the Laravel `.env`** and set:
 
@@ -146,6 +165,7 @@ Open `https://your-site`. You should get the dark homepage with sample events an
    ```
 
    Re-upload `.env`. (This is a CORS allow-list. The server-to-server calls work without it, but it closes the door on any other site trying to call your API from a browser.)
+
 6. Open the Vercel URL, sign in with the super admin username and password from `.env`.
 7. Go to **Your account → Change password** and set a new one. The `.env` password has been sitting in a file; retire it.
 
@@ -153,15 +173,15 @@ Open `https://your-site`. You should get the dark homepage with sample events an
 
 ## 4. Day-to-day use
 
-| I want to…                   | Where                                                         |
-| ----------------------------- | ------------------------------------------------------------- |
-| Add an event                  | Admin → Events → New event                                  |
-| Change the big homepage event | Tick**Featured** on an event (only one can be featured) |
-| Add photos to the homepage    | Admin → Featured gallery                                     |
-| Change prices                 | Admin → Services                                             |
-| Add a committee member        | Admin → Team                                                 |
-| Read contact form messages    | Admin → Messages                                             |
-| Add another admin             | Admin → Admin accounts (super admin only)                    |
+| I want to… | Where |
+|---|---|
+| Add an event | Admin → Events → New event |
+| Change the big homepage event | Tick **Featured** on an event (only one can be featured) |
+| Add photos to the homepage | Admin → Featured gallery |
+| Change prices | Admin → Services |
+| Add a committee member | Admin → Team |
+| Read contact form messages | Admin → Messages |
+| Add another admin | Admin → Admin accounts (super admin only) |
 
 Everything saves straight to the live site — there is no publish step.
 
@@ -183,13 +203,13 @@ Everything saves straight to the live site — there is no publish step.
 
 Edit the files and re-upload just those:
 
-| What                                | File                                                                |
-| ----------------------------------- | ------------------------------------------------------------------- |
-| Colours, spacing, all styling       | `public_html/css/site.css`                                        |
-| Countdown, menu, carousel behaviour | `public_html/js/site.js`                                          |
-| Homepage sections                   | `moralenz_app/resources/views/pages/home.blade.php`               |
-| Menu links                          | `moralenz_app/resources/views/partials/navbar.blade.php`          |
-| Footer                              | `moralenz_app/resources/views/partials/footer.blade.php`          |
+| What | File |
+|---|---|
+| Colours, spacing, all styling | `public_html/css/site.css` |
+| Countdown, menu, carousel behaviour | `public_html/js/site.js` |
+| Homepage sections | `moralenz_app/resources/views/pages/home.blade.php` |
+| Menu links | `moralenz_app/resources/views/partials/navbar.blade.php` |
+| Footer | `moralenz_app/resources/views/partials/footer.blade.php` |
 | Service page copy and feature lists | `moralenz_app/app/Http/Controllers/Public_/ServiceController.php` |
 
 After editing CSS or JS, bump `ASSET_VERSION` in `.env` (e.g. `ASSET_VERSION=2`) so browsers fetch the new file instead of a cached copy.
@@ -206,16 +226,16 @@ Put `logo.png`, `favicon.png` and `landing-bg.jpeg` in `public_html/img/`. The t
 
 ## 6. Troubleshooting
 
-| Symptom                                           | Cause                                          | Fix                                                                                                      |
-| ------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Blank white page                                  | `storage/` not writable, or a PHP error      | Set`APP_DEBUG=true` in `.env` briefly, reload, read the message, **then set it back to false** |
-| 500 on every page                                 | `APP_KEY` missing                            | Re-run the installer, or set`APP_KEY` from `php artisan key:generate --show`                         |
-| Panel says "Could not reach the Mora Lenz server" | `LARAVEL_API_URL` wrong, or the site is down | Open`LARAVEL_API_URL` in a browser — it should return JSON, not HTML                                  |
-| Panel bounces you to login immediately            | Token expired (12h by default)                 | Sign in again; raise`ADMIN_TOKEN_LIFETIME_HOURS` if you like                                           |
-| Login says "credentials do not match"             | Wrong username/password, or setup never ran    | Check the`admins` table exists in phpMyAdmin                                                           |
-| Images upload but show broken                     | `APP_URL` does not match the real address    | Fix`APP_URL`, then bump `ASSET_VERSION`                                                              |
-| Uploads fail over ~2 MB                           | PHP limits, not Laravel                        | CWP → PHP settings: raise`upload_max_filesize` and `post_max_size` to 10M                           |
-| Contact form always succeeds but no email         | `CONTACT_MAIL_ENABLED=false`                 | That is the default. Messages are still saved — read them in Admin → Messages                          |
+| Symptom | Cause | Fix |
+|---|---|---|
+| Blank white page | `storage/` not writable, or a PHP error | Set `APP_DEBUG=true` in `.env` briefly, reload, read the message, **then set it back to false** |
+| 500 on every page | `APP_KEY` missing | Re-run the installer, or set `APP_KEY` from `php artisan key:generate --show` |
+| Panel says "Could not reach the Mora Lenz server" | `LARAVEL_API_URL` wrong, or the site is down | Open `LARAVEL_API_URL` in a browser — it should return JSON, not HTML |
+| Panel bounces you to login immediately | Token expired (12h by default) | Sign in again; raise `ADMIN_TOKEN_LIFETIME_HOURS` if you like |
+| Login says "credentials do not match" | Wrong username/password, or setup never ran | Check the `admins` table exists in phpMyAdmin |
+| Images upload but show broken | `APP_URL` does not match the real address | Fix `APP_URL`, then bump `ASSET_VERSION` |
+| Uploads fail over ~2 MB | PHP limits, not Laravel | CWP → PHP settings: raise `upload_max_filesize` and `post_max_size` to 10M |
+| Contact form always succeeds but no email | `CONTACT_MAIL_ENABLED=false` | That is the default. Messages are still saved — read them in Admin → Messages |
 
 ---
 
