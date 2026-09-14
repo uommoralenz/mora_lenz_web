@@ -2,66 +2,83 @@
 
 namespace App\Models;
 
-use Database\Factories\EventFactory;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Event extends Model
 {
-    /** @use HasFactory<EventFactory> */
-    use HasFactory, HasUuids;
-
-    /**
-     * @var list<string>
-     */
     protected $fillable = [
         'title',
+        'slug',
         'description',
         'event_date',
+        'end_date',
         'location',
-        'image_urls',
-        'status',
+        'image_url',
+        'countdown_enabled',
+        'is_featured',
+        'is_active',
         'sort_order',
     ];
 
-    /**
-     * @var string
-     */
-    protected $keyType = 'string';
-
-    /**
-     * @var bool
-     */
-    public $incrementing = false;
-
-    /**
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'event_date' => 'datetime',
-            'image_urls' => 'array',
+            'end_date' => 'datetime',
+            'countdown_enabled' => 'boolean',
+            'is_featured' => 'boolean',
+            'is_active' => 'boolean',
         ];
     }
 
-    #[Scope]
-    protected function upcoming(Builder $query): void
+    /** Pretty URLs: /events/{slug} instead of /events/{id}. */
+    public function getRouteKeyName(): string
     {
-        $query->where('status', 'upcoming');
+        return 'slug';
     }
 
-    #[Scope]
-    protected function past(Builder $query): void
+    protected static function booted(): void
     {
-        $query->where('status', 'past');
+        static::creating(function (Event $event) {
+            if (blank($event->slug)) {
+                $event->slug = static::uniqueSlug($event->title);
+            }
+        });
     }
 
-    public function coverImage(): string
+    /** Build a slug that is guaranteed not to collide with an existing row. */
+    public static function uniqueSlug(string $title, ?int $ignoreId = null): string
     {
-        return $this->image_urls[0] ?? '/events/past/media-awards-2025.webp';
+        $base = Str::slug($title) ?: 'event';
+        $slug = $base;
+        $suffix = 2;
+
+        while (
+            static::query()
+                ->where('slug', $slug)
+                ->when($ignoreId, fn (Builder $q) => $q->where('id', '!=', $ignoreId))
+                ->exists()
+        ) {
+            $slug = $base.'-'.$suffix++;
+        }
+
+        return $slug;
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    /** The date the countdown counts towards: end_date when set, else the start. */
+    public function countdownTarget(): ?\Illuminate\Support\Carbon
+    {
+        if (! $this->countdown_enabled) {
+            return null;
+        }
+
+        return $this->end_date ?: $this->event_date;
     }
 }

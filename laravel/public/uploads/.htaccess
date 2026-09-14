@@ -1,0 +1,15 @@
+# Uploaded images only. Nothing in this directory may ever be executed,
+# even if a file with a script extension somehow lands here.
+php_flag engine off
+
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+
+<FilesMatch "\.(?i:php|phtml|php3|php4|php5|php7|php8|phar|pl|py|jsp|asp|htm|html|shtml|sh|cgi|htaccess)$">
+    Require all denied
+</FilesMatch>
+
+Options -ExecCGI -Indexes
+AddHandler default-handler .php .phtml .phar .cgi .pl .py
+RemoveHandler .php .phtml .phar

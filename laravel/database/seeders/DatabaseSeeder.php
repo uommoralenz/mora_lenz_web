@@ -2,23 +2,17 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
+        // SuperAdminSeeder is safe to re-run: it never overwrites an existing
+        // account, so `php artisan db:seed` will not reset a changed password.
         $this->call([
-            EventsSeeder::class,
-            MembersSeeder::class,
-            PanelsPillarsSeeder::class,
-            GalleryImagesSeeder::class,
+            SuperAdminSeeder::class,
+            SampleContentSeeder::class,
         ]);
     }
 }

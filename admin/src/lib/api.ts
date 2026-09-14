@@ -1,0 +1,251 @@
+import "server-only";
+
+import { redirect } from "next/navigation";
+
+import { clearToken, getToken } from "./session";
+import type { ActionState, AdminUser } from "./types";
+
+const BASE = (process.env.LARAVEL_API_URL || "").replace(/\/+$/, "");
+
+/** Thrown for any non-2xx response from Laravel. */
+export class ApiError extends Error {
+  status: number;
+  errors: Record<string, string>;
+
+  constructor(status: number, message: string, errors: Record<string, string> = {}) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.errors = errors;
+  }
+}
+
+/** Laravel returns { message, errors: { field: [msg, ...] } } for 422s. */
+function flattenErrors(body: unknown): Record<string, string> {
+  const out: Record<string, string> = {};
+  const errors = (body as { errors?: Record<string, string[]> })?.errors;
+
+  if (errors && typeof errors === "object") {
+    for (const [field, messages] of Object.entries(errors)) {
+      if (Array.isArray(messages) && messages.length > 0) {
+        out[field] = String(messages[0]);
+      }
+    }
+  }
+
+  return out;
+}
+
+/** True for the special error `redirect()` throws, which must never be caught. */
+function isRedirectError(error: unknown): boolean {
+  const digest = (error as { digest?: unknown })?.digest;
+  return typeof digest === "string" && digest.startsWith("NEXT_REDIRECT");
+}
+
+interface RequestOptions {
+  method?: string;
+  body?: FormData | Record<string, unknown>;
+  /** Set false for endpoints that do not need a token (only login). */
+  auth?: boolean;
+  /** Seconds to cache. Defaults to no caching — the panel must show live data. */
+  revalidate?: number;
+  /**
+   * By default an expired or revoked session sends the user to /login. Set this
+   * to true to get an ApiError instead — used by currentAdmin(), which needs to
+   * answer "are you signed in?" rather than act on the answer.
+   */
+  soft?: boolean;
+}
+
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  if (!BASE) {
+    throw new ApiError(
+      500,
+      "LARAVEL_API_URL is not set. Add it in the Vercel project's environment variables."
+    );
+  }
+
+  const { method = "GET", body, auth = true, revalidate, soft = false } = options;
+
+  const headers: Record<string, string> = { Accept: "application/json" };
+  let payload: BodyInit | undefined;
+
+  if (body instanceof FormData) {
+    // Let fetch set the multipart boundary itself — never set Content-Type here.
+    payload = body;
+  } else if (body) {
+    headers["Content-Type"] = "application/json";
+    payload = JSON.stringify(body);
+  }
+
+  if (auth) {
+    const token = await getToken();
+
+    if (!token) {
+      // No cookie at all: go straight to the login page rather than rendering
+      // a page that is about to fail anyway.
+      if (!soft) redirect("/login");
+
+      throw new ApiError(401, "Your session has expired. Please sign in again.");
+    }
+
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  let response: Response;
+
+  try {
+    response = await fetch(`${BASE}${path}`, {
+      method,
+      headers,
+      body: payload,
+      cache: revalidate === undefined ? "no-store" : undefined,
+      next: revalidate === undefined ? undefined : { revalidate },
+    });
+  } catch {
+    throw new ApiError(
+      503,
+      "Could not reach the Mora Lenz server. It may be offline — try again in a moment."
+    );
+  }
+
+  const text = await response.text();
+  let parsed: unknown = null;
+
+  if (text) {
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      // A non-JSON body means PHP produced an HTML error page.
+      if (!response.ok) {
+        throw new ApiError(
+          response.status,
+          `The server returned an unexpected response (HTTP ${response.status}).`
+        );
+      }
+    }
+  }
+
+  if (!response.ok) {
+    // Laravel revoked or expired this token (or the admin was deactivated).
+    // Drop the stale cookie and bounce to the login page.
+    if (response.status === 401 && !soft) {
+      await clearToken();
+      redirect("/login");
+    }
+
+    const message =
+      (parsed as { message?: string })?.message ||
+      `Request failed with status ${response.status}.`;
+
+    throw new ApiError(response.status, message, flattenErrors(parsed));
+  }
+
+  return parsed as T;
+}
+
+export const api = {
+  get: <T>(path: string, revalidate?: number) => request<T>(path, { revalidate }),
+  post: <T>(path: string, body?: RequestOptions["body"]) =>
+    request<T>(path, { method: "POST", body }),
+  put: <T>(path: string, body?: RequestOptions["body"]) =>
+    request<T>(path, { method: "PUT", body }),
+  del: <T>(path: string, body?: RequestOptions["body"]) =>
+    request<T>(path, { method: "DELETE", body }),
+  /** Login is the one call made without a token. */
+  login: (username: string, password: string) =>
+    request<{ token: string; expires_at: string; admin: AdminUser }>("/auth/login", {
+      method: "POST",
+      body: { username, password },
+      auth: false,
+    }),
+};
+
+/**
+ * Multipart updates: PHP does not populate $_FILES for PUT requests, so file
+ * uploads are sent as POST with Laravel's _method override.
+ */
+export function asUpdate(form: FormData): FormData {
+  form.set("_method", "PUT");
+  return form;
+}
+
+/** The signed-in admin, or null if the token is missing/expired/revoked. */
+export async function currentAdmin(): Promise<AdminUser | null> {
+  const token = await getToken();
+
+  if (!token) return null;
+
+  try {
+    // soft: this is the one call that must be able to answer "no" instead of
+    // redirecting, because /login itself uses it to decide what to render.
+    const { admin } = await request<{ admin: AdminUser }>("/auth/me", { soft: true });
+    return admin;
+  } catch (error) {
+    if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+      await clearToken();
+      return null;
+    }
+
+    // A server outage should not look like a logout, so re-throw and let the
+    // error boundary explain what happened.
+    throw error;
+  }
+}
+
+/** Use at the top of any protected page. Redirects to /login when signed out. */
+export async function requireAdmin(): Promise<AdminUser> {
+  const admin = await currentAdmin();
+
+  if (!admin) {
+    redirect("/login");
+  }
+
+  return admin;
+}
+
+export async function requireSuperAdmin(): Promise<AdminUser> {
+  const admin = await requireAdmin();
+
+  if (!admin.is_super_admin) {
+    redirect("/dashboard");
+  }
+
+  return admin;
+}
+
+/** Turns any thrown error into the { ok, message, errors } shape forms expect. */
+export function toActionState(error: unknown): ActionState {
+  // redirect() signals itself by throwing. Swallowing it here would turn an
+  // expired session into a meaningless "something went wrong" message.
+  if (isRedirectError(error)) {
+    throw error;
+  }
+
+  if (error instanceof ApiError) {
+    return {
+      ok: false,
+      message: error.message,
+      errors: Object.keys(error.errors).length > 0 ? error.errors : undefined,
+    };
+  }
+
+  return {
+    ok: false,
+    message: "Something went wrong. Please try again.",
+  };
+}
+
+/** Booleans must reach Laravel as "1"/"0", not "on"/absent. */
+export function setBool(form: FormData, field: string) {
+  form.set(field, form.get(field) ? "1" : "0");
+}
+
+/** Drops an empty file input so Laravel's `nullable|image` rule is satisfied. */
+export function pruneEmptyFile(form: FormData, field = "image") {
+  const value = form.get(field);
+
+  if (value instanceof File && value.size === 0) {
+    form.delete(field);
+  }
+}

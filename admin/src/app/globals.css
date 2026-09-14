@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-ink-950 text-slate-200 antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-sky-500 ring-offset-2 ring-offset-ink-950;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-ink-700 bg-ink-900;
+  }
+
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-slate-300;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-ink-600 bg-ink-800 px-3 py-2 text-sm text-slate-100
+           placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1
+           focus:ring-sky-500 disabled:opacity-50;
+  }
+
+  .textarea {
+    @apply input min-h-28 resize-y leading-relaxed;
+  }
+
+  .hint {
+    @apply mt-1 text-xs text-slate-500;
+  }
+
+  .error-text {
+    @apply mt-1 text-xs text-rose-400;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold
+           transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn bg-sky-600 text-white hover:bg-sky-500;
+  }
+
+  .btn-secondary {
+    @apply btn border border-ink-600 bg-ink-800 text-slate-200 hover:bg-ink-700;
+  }
+
+  .btn-danger {
+    @apply btn border border-rose-900/70 bg-rose-950/50 text-rose-300 hover:bg-rose-900/50;
+  }
+
+  .btn-ghost {
+    @apply btn px-2 py-1 text-slate-400 hover:bg-ink-800 hover:text-slate-200;
+  }
+
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium;
+  }
+}
