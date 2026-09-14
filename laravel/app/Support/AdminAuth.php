@@ -23,6 +23,17 @@ class AdminAuth
     /** The admin resolved for the current request, if any. */
     protected static ?Admin $current = null;
 
+    /**
+     * Read the token from the standard Authorization header, with a fallback
+     * for shared-hosting nginx/PHP setups that discard that header before PHP
+     * receives the request. The fallback remains a request header and is sent
+     * only over HTTPS by the server-side admin panel.
+     */
+    protected static function tokenFromRequest(Request $request): ?string
+    {
+        return $request->bearerToken() ?: $request->header('X-Admin-Token');
+    }
+
     /** Issue a fresh token for an admin and persist its hash. */
     public static function issueToken(Admin $admin, ?string $userAgent = null): array
     {
@@ -46,7 +57,7 @@ class AdminAuth
     /** Resolve the admin behind a request's Authorization header, or null. */
     public static function resolve(Request $request): ?Admin
     {
-        $plain = $request->bearerToken();
+        $plain = static::tokenFromRequest($request);
 
         if (! $plain) {
             return null;
@@ -83,7 +94,7 @@ class AdminAuth
     /** Revoke the token used by this request (sign out of this device only). */
     public static function revokeCurrent(Request $request): void
     {
-        $plain = $request->bearerToken();
+        $plain = static::tokenFromRequest($request);
 
         if ($plain) {
             AdminToken::where('token_hash', hash('sha256', $plain))->delete();
