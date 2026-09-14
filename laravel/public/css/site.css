@@ -533,7 +533,7 @@ button {
   object-fit: cover;
   object-position: center;
   transform-origin: center;
-  animation: heroBreathe 16s ease-in-out infinite alternate;
+  animation: heroBreathe 20s ease-in-out infinite alternate;
 }
 
 .hero__bg::after {
@@ -609,7 +609,8 @@ button {
 .hero__slider-track {
   display: flex;
   flex-direction: column;
-  animation: wordSlider 21s infinite cubic-bezier(0.9, 0.01, 0.3, 0.99);
+  /* Change every 1.5 seconds without showing two clipped words mid-scroll. */
+  animation: wordSlider 12s infinite steps(1, end);
 }
 
 .hero__slider-track span {

@@ -2,7 +2,7 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 
-import { clearToken, getToken } from "./session";
+import { getToken } from "./session";
 import type { ActionState, AdminUser } from "./types";
 
 const BASE = (process.env.LARAVEL_API_URL || "").replace(/\/+$/, "");
@@ -160,9 +160,9 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   if (!response.ok) {
     // Laravel revoked or expired this token (or the admin was deactivated).
-    // Drop the stale cookie and bounce to the login page.
+    // Server Components may redirect but cannot modify cookies. Logout clears
+    // the cookie, and a later successful login overwrites a stale token.
     if (response.status === 401 && !soft) {
-      await clearToken();
       redirect("/login");
     }
 
@@ -215,7 +215,6 @@ export async function currentAdmin(): Promise<AdminUser | null> {
     return admin;
   } catch (error) {
     if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
-      await clearToken();
       return null;
     }
 

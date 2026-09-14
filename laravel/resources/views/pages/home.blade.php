@@ -8,7 +8,9 @@
     {{-- ------------------------------------------------------------ hero --}}
     <section class="hero" id="hero">
         <div class="hero__bg">
-            @if (file_exists(public_path('img/landing-bg.jpeg')))
+            @if (file_exists(public_path('img/hero-campus-night.png')))
+                <img src="{{ asset('img/hero-campus-night.png') }}" alt="" fetchpriority="high">
+            @elseif (file_exists(public_path('img/landing-bg.jpeg')))
                 <img src="{{ asset('img/landing-bg.jpeg') }}" alt="" fetchpriority="high">
             @endif
         </div>
