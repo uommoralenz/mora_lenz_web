@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('admin_id')->constrained('admins')->cascadeOnDelete();
             // Only the SHA-256 hash is stored. The plain token is shown once, at login.
             $table->string('token_hash', 64)->unique();
-            $table->timestamp('expires_at');
+            $table->dateTime('expires_at');
             $table->timestamp('last_used_at')->nullable();
             $table->string('user_agent', 255)->nullable();
             $table->timestamps();

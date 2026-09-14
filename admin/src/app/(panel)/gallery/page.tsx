@@ -1,10 +1,10 @@
 import Disclosure from "@/components/disclosure";
-import { ConfirmSubmit } from "@/components/form";
 import { Badge, Card, EmptyState, PageHeader, SectionTitle, Thumb } from "@/components/ui";
 import { api } from "@/lib/api";
 import type { GalleryItem } from "@/lib/types";
 
-import { deleteGalleryAction, reorderGalleriesAction } from "./actions";
+import { reorderGalleriesAction } from "./actions";
+import DeleteGalleryForm from "./delete-gallery-form";
 import GalleryForm from "./gallery-form";
 
 export const dynamic = "force-dynamic";
@@ -91,14 +91,7 @@ export default async function GalleryPage() {
                         </button>
                       </form>
 
-                      <form action={deleteGalleryAction}>
-                        <input type="hidden" name="id" value={item.id} />
-                        <ConfirmSubmit
-                          confirm={`Delete "${item.title}" and its image? This cannot be undone.`}
-                        >
-                          Delete
-                        </ConfirmSubmit>
-                      </form>
+                      <DeleteGalleryForm id={item.id} title={item.title} />
                     </div>
                   </div>
 

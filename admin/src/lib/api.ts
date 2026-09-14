@@ -200,8 +200,20 @@ export const api = {
     request<T>(path, { method: "POST", body }),
   put: <T>(path: string, body?: RequestOptions["body"]) =>
     request<T>(path, { method: "PUT", body }),
-  del: <T>(path: string, body?: RequestOptions["body"]) =>
-    request<T>(path, { method: "DELETE", body }),
+  del: <T>(path: string, body?: RequestOptions["body"]) => {
+    // The compatibility host rejects DELETE at nginx. Laravel accepts a POST
+    // with _method=DELETE, just as it accepts our multipart PUT overrides.
+    if (!COMPAT) return request<T>(path, { method: "DELETE", body });
+
+    const form = new FormData();
+    if (body instanceof FormData) {
+      body.forEach((value, key) => form.append(key, value));
+    } else {
+      return request<T>(path, { method: "POST", body: { ...body, _method: "DELETE" } });
+    }
+    form.set("_method", "DELETE");
+    return request<T>(path, { method: "POST", body: form });
+  },
   /** Login is the one call made without a token. */
   login: (username: string, password: string) =>
     request<{ token: string; expires_at: string; admin: AdminUser }>("/auth/login", {

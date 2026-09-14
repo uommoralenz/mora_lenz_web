@@ -104,7 +104,14 @@ class AdminAuth
 
         // Only touch the timestamp once a minute to avoid a write per request.
         if (! $token->last_used_at || $token->last_used_at->lt(Carbon::now()->subMinute())) {
-            $token->forceFill(['last_used_at' => Carbon::now()])->saveQuietly();
+            // Older MySQL installations can implicitly give the first TIMESTAMP
+            // column ON UPDATE CURRENT_TIMESTAMP. Explicitly writing the stored
+            // expiry prevents a last-used update from expiring this session.
+            // Use a query update: save() would omit an unchanged expires_at.
+            AdminToken::whereKey($token->getKey())->update([
+                'last_used_at' => Carbon::now(),
+                'expires_at' => $token->getRawOriginal('expires_at'),
+            ]);
         }
 
         return $admin;
