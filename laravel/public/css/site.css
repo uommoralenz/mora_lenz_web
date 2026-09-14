@@ -1130,6 +1130,15 @@ button {
 
 /* ------------------------------------------------------------ card grids */
 
+.gallery-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 40px;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: 1fr;

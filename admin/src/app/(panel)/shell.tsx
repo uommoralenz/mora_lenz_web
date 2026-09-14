@@ -9,7 +9,7 @@ import type { AdminUser } from "@/lib/types";
 const NAV = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/events", label: "Events" },
-  { href: "/gallery", label: "Featured gallery" },
+  { href: "/gallery", label: "Gallery" },
   { href: "/services", label: "Services" },
   { href: "/team", label: "Team" },
   { href: "/messages", label: "Messages" },

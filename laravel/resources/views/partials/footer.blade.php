@@ -46,7 +46,7 @@
                 <h2>Quick Links</h2>
                 <ul>
                     <li><a href="{{ route('home') }}">Home</a></li>
-                    <li><a href="{{ $anchor('#gallery') }}">Gallery</a></li>
+                    <li><a href="{{ \App\Support\Links::gallery() }}">Gallery</a></li>
                     <li><a href="{{ \App\Support\Links::events() }}">Events</a></li>
                     <li><a href="{{ $anchor('#contact') }}">Contact</a></li>
                 </ul>

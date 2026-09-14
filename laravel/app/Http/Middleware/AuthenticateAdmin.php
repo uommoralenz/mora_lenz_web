@@ -24,6 +24,12 @@ class AuthenticateAdmin
         // Make the admin available to controllers as $request->admin().
         $request->setUserResolver(fn () => $admin);
 
-        return $next($request);
+        try {
+            $response = $next($request);
+            $response->headers->set('Cache-Control', 'no-store, private');
+            return $response;
+        } finally {
+            AdminAuth::setCurrent(null);
+        }
     }
 }

@@ -12,6 +12,7 @@ export async function saveGalleryAction(
   const id = String(formData.get("id") ?? "");
 
   setBool(formData, "is_active");
+  setBool(formData, "show_on_homepage");
   pruneEmptyFile(formData);
   formData.delete("id");
 

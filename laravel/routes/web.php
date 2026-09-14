@@ -25,6 +25,8 @@ Route::get('/events/{slug}', [EventController::class, 'show'])->name('events.sho
 
 Route::get('/team', [TeamController::class, 'index'])->name('team');
 
+Route::get('/gallery', [\App\Http\Controllers\Public_\GalleryController::class, 'index'])->name('gallery');
+
 Route::get('/services/{type}', [ServiceController::class, 'show'])
     ->whereIn('type', ['photography', 'videography'])
     ->name('services.show');

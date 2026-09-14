@@ -80,7 +80,7 @@ class EventController extends Controller
             'event_date' => [$event ? 'sometimes' : 'required', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:event_date'],
             'location' => ['nullable', 'string', 'max:200'],
-            'image_url' => ['nullable', 'string', 'max:500'],
+            'image_url' => ['nullable', 'url:http,https', 'max:500'],
             'image' => ['nullable', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
             'countdown_enabled' => ['boolean'],
             'is_featured' => ['boolean'],

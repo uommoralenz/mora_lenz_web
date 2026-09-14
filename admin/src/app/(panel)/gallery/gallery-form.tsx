@@ -96,7 +96,12 @@ export default function GalleryForm({
           value="1"
           defaultChecked={item ? item.is_active : true}
         />
-        Visible on the homepage
+        Published on the gallery page
+      </label>
+
+      <label className="flex items-center gap-2 text-sm text-slate-300">
+        <input type="checkbox" name="show_on_homepage" value="1" defaultChecked={item?.show_on_homepage ?? false} />
+        Show on homepage (first three published entries in gallery order)
       </label>
 
       <SubmitButton>{item ? "Save changes" : "Add to gallery"}</SubmitButton>

@@ -20,7 +20,7 @@ return [
         'name' => env('SUPER_ADMIN_NAME', 'Super Admin'),
         'username' => env('SUPER_ADMIN_USERNAME', 'superadmin'),
         'email' => env('SUPER_ADMIN_EMAIL', 'uommediaunit@gmail.com'),
-        'password' => env('SUPER_ADMIN_PASSWORD', 'ChangeMe!2026'),
+        'password' => env('SUPER_ADMIN_PASSWORD', ''),
     ],
 
     // How long an admin panel login stays valid before it must sign in again.

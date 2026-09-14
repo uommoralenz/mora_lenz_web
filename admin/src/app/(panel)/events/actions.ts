@@ -52,14 +52,20 @@ export async function saveEventAction(
   return { ok: true, message: "Event saved." };
 }
 
-export async function deleteEventAction(formData: FormData) {
+export async function deleteEventAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const id = String(formData.get("id") ?? "");
 
-  if (id) {
-    await api.del(`/events/${id}`);
-    revalidatePath("/events");
-    revalidatePath("/dashboard");
+  if (!/^\d+$/.test(id) || Number(id) < 1) {
+    return { ok: false, message: "Select a valid event to delete." };
   }
+  try {
+    await api.del(`/events/${id}`);
+  } catch (error) {
+    return toActionState(error);
+  }
+  revalidatePath("/events");
+  revalidatePath("/dashboard");
+  return { ok: true, message: "Event deleted." };
 }
 
 /** Move one event up or down by swapping sort_order with its neighbour. */

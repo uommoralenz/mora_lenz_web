@@ -33,6 +33,10 @@ class SuperAdminSeeder extends Seeder
             return;
         }
 
+        if (strlen((string) $config['password']) < 10) {
+            throw new \RuntimeException('Set SUPER_ADMIN_PASSWORD to at least 10 characters before creating the bootstrap admin.');
+        }
+
         Admin::create([
             'name' => $config['name'],
             'username' => $config['username'],

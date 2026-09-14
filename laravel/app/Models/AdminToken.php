@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AdminToken extends Model
 {
+    protected $hidden = ['token_hash'];
+
     protected $fillable = [
         'admin_id',
         'token_hash',

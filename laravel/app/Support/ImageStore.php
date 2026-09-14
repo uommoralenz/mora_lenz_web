@@ -24,7 +24,17 @@ class ImageStore
 
         File::ensureDirectoryExists($directory, 0755);
 
-        $extension = Str::lower($file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'jpg');
+        // Never trust a browser-supplied extension: a valid image can be named
+        // payload.php, and nginx may execute that extension inside uploads/.
+        $extension = match ($file->getMimeType()) {
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'image/webp' => 'webp',
+            default => throw \Illuminate\Validation\ValidationException::withMessages([
+                'image' => 'Only JPEG, PNG, GIF and WebP images are supported.',
+            ]),
+        };
 
         $name = Str::limit(Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)), 40, '');
         $name = $name !== '' ? $name : 'image';
@@ -100,6 +110,11 @@ class ImageStore
     protected static function relativePathFor(?string $url): ?string
     {
         if (blank($url)) {
+            return null;
+        }
+
+        $host = parse_url($url, PHP_URL_HOST);
+        if ($host !== null && $host !== false && strcasecmp($host, (string) parse_url(config('app.url'), PHP_URL_HOST)) !== 0) {
             return null;
         }
 

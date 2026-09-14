@@ -43,7 +43,7 @@
                 </p>
 
                 <div class="hero__actions">
-                    <a href="#gallery" class="cta">
+                    <a href="{{ \App\Support\Links::gallery() }}" class="cta">
                         <span class="cta__label">Explore Gallery</span>
                         @include('partials.icons', ['icon' => 'arrow-down'])
                     </a>
@@ -123,6 +123,7 @@
             <div class="container">
                 <div class="section__head">
                     <h2 class="section__title">Featured Galleries</h2>
+                    <a class="cta cta--ghost" href="{{ \App\Support\Links::gallery() }}">View all galleries</a>
                 </div>
 
                 <div class="showcase__list">

@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { ConfirmSubmit } from "@/components/form";
 import {
   Badge,
   EmptyState,
@@ -11,7 +10,8 @@ import {
 import { api } from "@/lib/api";
 import type { EventItem } from "@/lib/types";
 
-import { deleteEventAction, reorderEventsAction } from "./actions";
+import { reorderEventsAction } from "./actions";
+import DeleteEventForm from "./delete-event-form";
 
 export const dynamic = "force-dynamic";
 
@@ -102,14 +102,7 @@ export default async function EventsPage() {
                     Edit
                   </Link>
 
-                  <form action={deleteEventAction}>
-                    <input type="hidden" name="id" value={event.id} />
-                    <ConfirmSubmit
-                      confirm={`Delete "${event.title}"? This also removes its image and cannot be undone.`}
-                    >
-                      Delete
-                    </ConfirmSubmit>
-                  </form>
+                  <DeleteEventForm id={event.id} title={event.title} />
                 </div>
               </li>
             );

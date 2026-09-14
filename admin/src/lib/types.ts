@@ -28,6 +28,7 @@ export interface EventItem {
 }
 
 export interface GalleryItem {
+  show_on_homepage: boolean;
   id: number;
   title: string;
   description: string | null;

@@ -65,6 +65,11 @@ class Links
         return static::page('team', '/team');
     }
 
+    public static function gallery(): string
+    {
+        return static::page('gallery', '/gallery');
+    }
+
     public static function service(string $type): string
     {
         return static::compat()

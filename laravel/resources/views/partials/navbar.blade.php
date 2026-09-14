@@ -42,7 +42,7 @@
                        @if (request()->routeIs('events.*')) aria-current="page" @endif>Events</a>
                 </li>
                 <li class="navbar__item">
-                    <a class="navbar__link" href="{{ $anchor('#gallery') }}">Gallery</a>
+                    <a class="navbar__link" href="{{ \App\Support\Links::gallery() }}" @if(request()->routeIs('gallery')) aria-current="page" @endif>Gallery</a>
                 </li>
                 <li class="navbar__item">
                     <a class="navbar__link" href="{{ \App\Support\Links::team() }}"
@@ -80,7 +80,7 @@
             <a href="{{ \App\Support\Links::service('videography') }}">Videography Services</a>
         </div>
         <a href="{{ \App\Support\Links::events() }}">Events</a>
-        <a href="{{ $anchor('#gallery') }}">Gallery</a>
+        <a href="{{ \App\Support\Links::gallery() }}">Gallery</a>
         <a href="{{ \App\Support\Links::team() }}">Our Team</a>
         <a href="{{ $anchor('#contact') }}">Contact</a>
     </div>

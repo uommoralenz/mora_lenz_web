@@ -30,6 +30,7 @@ class GalleryController extends Controller
             'description' => ['nullable', 'string', 'max:5000'],
             'image' => ['required', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
             'is_active' => ['boolean'],
+            'show_on_homepage' => ['boolean'],
         ]);
 
         $gallery = FeaturedGallery::create([
@@ -37,6 +38,7 @@ class GalleryController extends Controller
             'description' => $data['description'] ?? null,
             'image_url' => ImageStore::put($request->file('image'), 'gallery'),
             'is_active' => (bool) ($data['is_active'] ?? true),
+            'show_on_homepage' => (bool) ($data['show_on_homepage'] ?? false),
             'sort_order' => $this->nextSortOrder(FeaturedGallery::class),
         ]);
 
@@ -50,6 +52,7 @@ class GalleryController extends Controller
             'description' => ['nullable', 'string', 'max:5000'],
             'image' => ['nullable', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
             'is_active' => ['boolean'],
+            'show_on_homepage' => ['boolean'],
         ]);
 
         if (array_key_exists('title', $data)) {
@@ -66,6 +69,10 @@ class GalleryController extends Controller
 
         if ($request->hasFile('image')) {
             $gallery->image_url = ImageStore::replace($request->file('image'), 'gallery', $gallery->image_url);
+        }
+
+        if (array_key_exists('show_on_homepage', $data)) {
+            $gallery->show_on_homepage = (bool) $data['show_on_homepage'];
         }
 
         $gallery->save();
@@ -95,6 +102,7 @@ class GalleryController extends Controller
             'image_url' => $gallery->image_url,
             'sort_order' => (int) $gallery->sort_order,
             'is_active' => (bool) $gallery->is_active,
+            'show_on_homepage' => (bool) $gallery->show_on_homepage,
             'created_at' => $gallery->created_at?->toIso8601String(),
         ];
     }

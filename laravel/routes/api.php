@@ -43,7 +43,8 @@ Route::prefix('admin')->group(function () {
 
         // Events
         Route::post('events/reorder', [EventController::class, 'reorder']);
-        Route::apiResource('events', EventController::class);
+        Route::apiResource('events', EventController::class)
+            ->scoped(['event' => 'id']);
 
         // Featured galleries (homepage showcase)
         Route::post('galleries/reorder', [GalleryController::class, 'reorder']);

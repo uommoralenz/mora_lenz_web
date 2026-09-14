@@ -67,7 +67,7 @@ class AuthController extends Controller
             'token' => $issued['token'],
             'expires_at' => $issued['expires_at'],
             'admin' => $this->present($admin),
-        ]);
+        ])->header('Cache-Control', 'no-store, private');
     }
 
     public function me(Request $request): JsonResponse

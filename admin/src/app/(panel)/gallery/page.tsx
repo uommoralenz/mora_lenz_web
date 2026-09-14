@@ -26,8 +26,8 @@ export default async function GalleryPage() {
   return (
     <>
       <PageHeader
-        title="Featured gallery"
-        description="The alternating image-and-text rows in the Featured Galleries section of the homepage."
+        title="Gallery"
+        description="Publish entries on the gallery page and choose up to three homepage highlights using the gallery order."
       />
 
       <Card className="mb-6">
