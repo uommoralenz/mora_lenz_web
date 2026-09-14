@@ -33,6 +33,16 @@ return [
      */
     'setup_key' => env('SETUP_KEY', ''),
 
+    /*
+     * Compatibility mode for servers whose nginx cannot rewrite unknown paths
+     * to index.php. When true, links are generated in forms that the routing
+     * shims in public_html/ can serve (see app/Support/Links.php).
+     *
+     * Set this to false — and delete the shim folders — once nginx has:
+     *     location / { try_files $uri $uri/ /index.php?$query_string; }
+     */
+    'compat_urls' => filter_var(env('COMPAT_URLS', false), FILTER_VALIDATE_BOOL),
+
     // Where uploaded images are written, relative to the public/ directory.
     'upload_dir' => 'uploads',
 

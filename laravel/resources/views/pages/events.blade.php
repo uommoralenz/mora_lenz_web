@@ -19,7 +19,7 @@
         <div class="container">
             <div class="card-grid">
                 @forelse ($events as $event)
-                    <a href="{{ route('events.show', $event->slug) }}" class="event-card" data-reveal>
+                    <a href="{{ \App\Support\Links::event($event) }}" class="event-card" data-reveal>
                         <div class="event-card__media">
                             @if ($event->image_url)
                                 <img src="{{ $event->image_url }}" alt="{{ $event->title }}" loading="lazy">

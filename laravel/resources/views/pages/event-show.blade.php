@@ -18,7 +18,7 @@
         </div>
 
         <div class="event-hero__inner">
-            <a href="{{ route('events.index') }}" class="back-link">
+            <a href="{{ \App\Support\Links::events() }}" class="back-link">
                 @include('partials.icons', ['icon' => 'arrow-left'])
                 Back to Events
             </a>

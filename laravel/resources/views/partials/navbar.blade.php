@@ -32,20 +32,20 @@
                         </svg>
                     </button>
                     <ul class="navbar__dropdown-menu">
-                        <li><a href="{{ route('services.show', 'photography') }}">Photography Services</a></li>
-                        <li><a href="{{ route('services.show', 'videography') }}">Videography Services</a></li>
+                        <li><a href="{{ \App\Support\Links::service('photography') }}">Photography Services</a></li>
+                        <li><a href="{{ \App\Support\Links::service('videography') }}">Videography Services</a></li>
                     </ul>
                 </li>
 
                 <li class="navbar__item">
-                    <a class="navbar__link" href="{{ route('events.index') }}"
+                    <a class="navbar__link" href="{{ \App\Support\Links::events() }}"
                        @if (request()->routeIs('events.*')) aria-current="page" @endif>Events</a>
                 </li>
                 <li class="navbar__item">
                     <a class="navbar__link" href="{{ $anchor('#gallery') }}">Gallery</a>
                 </li>
                 <li class="navbar__item">
-                    <a class="navbar__link" href="{{ route('team') }}"
+                    <a class="navbar__link" href="{{ \App\Support\Links::team() }}"
                        @if (request()->routeIs('team')) aria-current="page" @endif>Our Team</a>
                 </li>
                 <li class="navbar__item">
@@ -76,12 +76,12 @@
         <a href="{{ route('home') }}">Home</a>
         <span class="navbar__mobile-label">Services</span>
         <div class="navbar__mobile-sub">
-            <a href="{{ route('services.show', 'photography') }}">Photography Services</a>
-            <a href="{{ route('services.show', 'videography') }}">Videography Services</a>
+            <a href="{{ \App\Support\Links::service('photography') }}">Photography Services</a>
+            <a href="{{ \App\Support\Links::service('videography') }}">Videography Services</a>
         </div>
-        <a href="{{ route('events.index') }}">Events</a>
+        <a href="{{ \App\Support\Links::events() }}">Events</a>
         <a href="{{ $anchor('#gallery') }}">Gallery</a>
-        <a href="{{ route('team') }}">Our Team</a>
+        <a href="{{ \App\Support\Links::team() }}">Our Team</a>
         <a href="{{ $anchor('#contact') }}">Contact</a>
     </div>
 </header>

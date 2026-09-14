@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { FieldError, FormMessage, SubmitButton } from "@/components/form";
 import { EMPTY_ACTION_STATE } from "@/lib/types";
@@ -9,6 +9,13 @@ import { loginAction } from "./actions";
 
 export default function LoginForm() {
   const [state, formAction] = useActionState(loginAction, EMPTY_ACTION_STATE);
+
+  // React resets an uncontrolled form once a server action finishes, which
+  // would wipe the username after a failed attempt — leaving the field empty
+  // while it still looks filled in, so the next click does nothing. Keeping
+  // the username in state makes it survive. The password is left uncontrolled
+  // on purpose: clearing it after a failure is what you want.
+  const [username, setUsername] = useState("");
 
   return (
     <form action={formAction} className="space-y-4">
@@ -23,6 +30,8 @@ export default function LoginForm() {
           name="username"
           type="text"
           className="input"
+          value={username}
+          onChange={(event) => setUsername(event.target.value)}
           autoComplete="username"
           autoCapitalize="none"
           autoCorrect="off"

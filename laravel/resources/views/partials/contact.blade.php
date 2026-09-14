@@ -38,7 +38,7 @@
                     </div>
                 @endif
 
-                <form class="form" method="POST" action="{{ route('contact.store') }}" data-contact-form novalidate>
+                <form class="form" method="POST" action="{{ \App\Support\Links::contactPost() }}" data-contact-form novalidate>
                     @csrf
 
                     {{-- Honeypot: left empty by people, filled in by bots. --}}

@@ -94,7 +94,7 @@
                             </div>
 
                             <div>
-                                <a href="{{ route('events.show', $featuredEvent->slug) }}" class="cta">
+                                <a href="{{ \App\Support\Links::event($featuredEvent) }}" class="cta">
                                     <span class="cta__label">View Details</span>
                                     @include('partials.icons', ['icon' => 'arrow-right'])
                                 </a>

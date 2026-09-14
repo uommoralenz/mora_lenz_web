@@ -7,6 +7,32 @@ import type { ActionState, AdminUser } from "./types";
 
 const BASE = (process.env.LARAVEL_API_URL || "").replace(/\/+$/, "");
 
+/**
+ * The university server runs nginx with no rewrite rule, so only paths that
+ * physically exist reach PHP. When LARAVEL_API_COMPAT=1, every call is sent to
+ * the one real file at /api/admin/index.php with the intended route carried in
+ * a `__path` query parameter, which that shim converts back before Laravel
+ * routes it.
+ *
+ * Unset this env var (and delete the shim folder) once nginx has:
+ *     location / { try_files $uri $uri/ /index.php?$query_string; }
+ */
+const COMPAT = process.env.LARAVEL_API_COMPAT === "1";
+
+/** Turns an API path like "/messages?page=2" into the URL to actually fetch. */
+function buildUrl(path: string): string {
+  if (!COMPAT) return `${BASE}${path}`;
+
+  const [pathname, search = ""] = path.split("?");
+  const params = new URLSearchParams(search);
+
+  // __path goes first so it is easy to spot in server logs.
+  const query = new URLSearchParams({ __path: pathname });
+  params.forEach((value, key) => query.append(key, value));
+
+  return `${BASE}/?${query.toString()}`;
+}
+
 /** Thrown for any non-2xx response from Laravel. */
 export class ApiError extends Error {
   status: number;
@@ -95,7 +121,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   let response: Response;
 
   try {
-    response = await fetch(`${BASE}${path}`, {
+    response = await fetch(buildUrl(path), {
       method,
       headers,
       body: payload,

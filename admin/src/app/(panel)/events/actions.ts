@@ -41,6 +41,12 @@ export async function saveEventAction(
   revalidatePath("/events");
   revalidatePath("/dashboard");
 
+  // React resets the form once the action finishes, restoring each input to its
+  // defaultValue. Without revalidating THIS page too, those defaults would
+  // still hold the values from page load and the form would appear to undo the
+  // save that actually succeeded.
+  if (id) revalidatePath(`/events/${id}`);
+
   if (!id) redirect("/events");
 
   return { ok: true, message: "Event saved." };

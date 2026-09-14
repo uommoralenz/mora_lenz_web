@@ -47,7 +47,7 @@
                 <ul>
                     <li><a href="{{ route('home') }}">Home</a></li>
                     <li><a href="{{ $anchor('#gallery') }}">Gallery</a></li>
-                    <li><a href="{{ route('events.index') }}">Events</a></li>
+                    <li><a href="{{ \App\Support\Links::events() }}">Events</a></li>
                     <li><a href="{{ $anchor('#contact') }}">Contact</a></li>
                 </ul>
             </div>
@@ -55,9 +55,9 @@
             <div class="footer__col">
                 <h2>Club</h2>
                 <ul>
-                    <li><a href="{{ route('team') }}">Our Team</a></li>
-                    <li><a href="{{ route('services.show', 'photography') }}">Photography</a></li>
-                    <li><a href="{{ route('services.show', 'videography') }}">Videography</a></li>
+                    <li><a href="{{ \App\Support\Links::team() }}">Our Team</a></li>
+                    <li><a href="{{ \App\Support\Links::service('photography') }}">Photography</a></li>
+                    <li><a href="{{ \App\Support\Links::service('videography') }}">Videography</a></li>
                 </ul>
             </div>
 
