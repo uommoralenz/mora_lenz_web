@@ -28,11 +28,9 @@ class GalleryController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:200'],
             'description' => ['nullable', 'string', 'max:5000'],
-            'facebook_album_url' => ['required', 'url', 'max:2048'],
-            'images' => ['required', 'array', 'min:1', 'max:30'],
+            'facebook_album_url' => ['nullable', 'url', 'max:2048'],
+            'images' => ['required', 'array', 'min:1', 'max:20'],
             'images.*' => ['required', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
-            'image_descriptions' => ['nullable', 'array'],
-            'image_descriptions.*' => ['nullable', 'string', 'max:5000'],
             'is_active' => ['boolean'],
             'show_on_homepage' => ['boolean'],
         ]);
@@ -50,7 +48,7 @@ class GalleryController extends Controller
         foreach ($request->file('images') as $index => $image) {
             $gallery->images()->create([
                 'image_url' => $index === 0 ? $gallery->image_url : ImageStore::put($image, 'gallery'),
-                'description' => $data['image_descriptions'][$index] ?? null,
+                'description' => null,
                 'sort_order' => $index,
             ]);
         }
@@ -64,10 +62,8 @@ class GalleryController extends Controller
             'title' => ['sometimes', 'required', 'string', 'max:200'],
             'description' => ['nullable', 'string', 'max:5000'],
             'facebook_album_url' => ['nullable', 'url', 'max:2048'],
-            'images' => ['nullable', 'array', 'max:30'],
+            'images' => ['nullable', 'array', 'max:20'],
             'images.*' => ['required', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
-            'image_descriptions' => ['nullable', 'array'],
-            'image_descriptions.*' => ['nullable', 'string', 'max:5000'],
             'is_active' => ['boolean'],
             'show_on_homepage' => ['boolean'],
         ]);
@@ -93,7 +89,7 @@ class GalleryController extends Controller
                 $stored = ImageStore::put($image, 'gallery');
                 $gallery->images()->create([
                     'image_url' => $stored,
-                    'description' => $data['image_descriptions'][$index] ?? null,
+                    'description' => null,
                     'sort_order' => $gallery->images()->max('sort_order') + 1,
                 ]);
                 if ($gallery->image_url === null) $gallery->image_url = $stored;

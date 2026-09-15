@@ -16,7 +16,7 @@ export default function GalleryForm({
   onDone?: () => void;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
-  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [photoCount, setPhotoCount] = useState(0);
   const [state, formAction] = useActionState(
     async (prev: typeof EMPTY_ACTION_STATE, data: FormData) => {
       const result = await saveGalleryAction(prev, data);
@@ -24,7 +24,7 @@ export default function GalleryForm({
       // Clear the form after a successful create so the next one starts empty.
       if (result.ok && !item) {
         formRef.current?.reset();
-        setSelectedImages([]);
+        setPhotoCount(0);
         onDone?.();
       }
 
@@ -78,9 +78,8 @@ export default function GalleryForm({
           className="input"
           defaultValue={item?.facebook_album_url ?? ""}
           placeholder="https://www.facebook.com/media/set/..."
-          required={!item}
         />
-        <p className="hint">Clicking the album preview opens this Facebook album.</p>
+        <p className="hint">Optional. When provided, clicking the album preview opens this Facebook album.</p>
         <FieldError errors={state.errors} name="facebook_album_url" />
       </div>
 
@@ -104,23 +103,12 @@ export default function GalleryForm({
           multiple
           className="input file:mr-3 file:rounded file:border-0 file:bg-ink-700 file:px-3 file:py-1 file:text-slate-200"
           required={!item}
-          onChange={(event) => setSelectedImages(Array.from(event.currentTarget.files ?? []))}
+          onChange={(event) => setPhotoCount(event.currentTarget.files?.length ?? 0)}
         />
-        <p className="hint">Select up to 30 photos. Max 8 MB each.</p>
+        <p className="hint">Select 1–20 photos. The description above applies to the whole album. Max 8 MB each.</p>
+        {photoCount > 20 ? <p className="mt-1 text-xs text-rose-400">Please select no more than 20 photos.</p> : null}
         <FieldError errors={state.errors} name="images" />
       </div>
-
-      {selectedImages.length > 0 ? (
-        <div className="space-y-3 rounded border border-ink-700 p-3">
-          <p className="text-sm font-medium text-slate-200">Photo descriptions</p>
-          {selectedImages.map((file, index) => (
-            <div key={`${file.name}-${index}`}>
-              <label className="label" htmlFor={`photo-description-${index}`}>{file.name}</label>
-              <textarea id={`photo-description-${index}`} name="image_descriptions[]" className="textarea" placeholder="Description shown on this slide" />
-            </div>
-          ))}
-        </div>
-      ) : null}
 
       <label className="flex items-center gap-2 text-sm text-slate-300">
         <input

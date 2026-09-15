@@ -17,8 +17,7 @@
                             <div class="gallery-slideshow" data-gallery-slideshow>
                                 @forelse ($gallery->images as $image)
                                     <figure class="gallery-slideshow__slide{{ $loop->first ? ' is-active' : '' }}">
-                                        <img src="{{ $image->image_url }}" alt="{{ $image->description ?: $gallery->title }}" loading="lazy">
-                                        @if ($image->description)<figcaption>{{ $image->description }}</figcaption>@endif
+                                        <img src="{{ $image->image_url }}" alt="{{ $gallery->title }}" loading="lazy">
                                     </figure>
                                 @empty
                                     @if ($gallery->image_url)<img src="{{ $gallery->image_url }}" alt="{{ $gallery->title }}" loading="lazy">@endif
