@@ -12,7 +12,17 @@ export async function saveGalleryAction(
   const id = String(formData.get("id") ?? "");
 
   setBool(formData, "is_active");
-  setBool(formData, "show_on_homepage");
+
+  // New albums do not need to send a false homepage flag: Laravel defaults it
+  // to false. This also avoids hosts that mishandle an unchecked multipart
+  // checkbox value. Updates must still explicitly send false when unchecked.
+  if (id) {
+    setBool(formData, "show_on_homepage");
+  } else if (formData.get("show_on_homepage")) {
+    formData.set("show_on_homepage", "1");
+  } else {
+    formData.delete("show_on_homepage");
+  }
   pruneEmptyFile(formData);
   formData.delete("id");
 
