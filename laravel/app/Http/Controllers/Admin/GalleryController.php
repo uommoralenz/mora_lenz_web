@@ -16,7 +16,7 @@ class GalleryController extends Controller
     public function index(): JsonResponse
     {
         return response()->json([
-            'data' => FeaturedGallery::orderBy('sort_order')
+            'data' => FeaturedGallery::with('images')->orderBy('sort_order')
                 ->orderByDesc('created_at')
                 ->get()
                 ->map(fn ($g) => $this->present($g)),
@@ -28,7 +28,11 @@ class GalleryController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:200'],
             'description' => ['nullable', 'string', 'max:5000'],
-            'image' => ['required', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
+            'facebook_album_url' => ['required', 'url', 'max:2048'],
+            'images' => ['required', 'array', 'min:1', 'max:30'],
+            'images.*' => ['required', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
+            'image_descriptions' => ['nullable', 'array'],
+            'image_descriptions.*' => ['nullable', 'string', 'max:5000'],
             'is_active' => ['boolean'],
             'show_on_homepage' => ['boolean'],
         ]);
@@ -36,13 +40,22 @@ class GalleryController extends Controller
         $gallery = FeaturedGallery::create([
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
-            'image_url' => ImageStore::put($request->file('image'), 'gallery'),
+            'facebook_album_url' => $data['facebook_album_url'] ?? null,
+            'image_url' => ImageStore::put($request->file('images')[0], 'gallery'),
             'is_active' => (bool) ($data['is_active'] ?? true),
             'show_on_homepage' => (bool) ($data['show_on_homepage'] ?? false),
             'sort_order' => $this->nextSortOrder(FeaturedGallery::class),
         ]);
 
-        return response()->json(['data' => $this->present($gallery)], 201);
+        foreach ($request->file('images') as $index => $image) {
+            $gallery->images()->create([
+                'image_url' => $index === 0 ? $gallery->image_url : ImageStore::put($image, 'gallery'),
+                'description' => $data['image_descriptions'][$index] ?? null,
+                'sort_order' => $index,
+            ]);
+        }
+
+        return response()->json(['data' => $this->present($gallery->load('images'))], 201);
     }
 
     public function update(Request $request, FeaturedGallery $gallery): JsonResponse
@@ -50,7 +63,11 @@ class GalleryController extends Controller
         $data = $request->validate([
             'title' => ['sometimes', 'required', 'string', 'max:200'],
             'description' => ['nullable', 'string', 'max:5000'],
-            'image' => ['nullable', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
+            'facebook_album_url' => ['nullable', 'url', 'max:2048'],
+            'images' => ['nullable', 'array', 'max:30'],
+            'images.*' => ['required', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
+            'image_descriptions' => ['nullable', 'array'],
+            'image_descriptions.*' => ['nullable', 'string', 'max:5000'],
             'is_active' => ['boolean'],
             'show_on_homepage' => ['boolean'],
         ]);
@@ -63,12 +80,24 @@ class GalleryController extends Controller
             $gallery->description = $data['description'];
         }
 
+        if (array_key_exists('facebook_album_url', $data)) {
+            $gallery->facebook_album_url = $data['facebook_album_url'];
+        }
+
         if (array_key_exists('is_active', $data)) {
             $gallery->is_active = (bool) $data['is_active'];
         }
 
-        if ($request->hasFile('image')) {
-            $gallery->image_url = ImageStore::replace($request->file('image'), 'gallery', $gallery->image_url);
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $index => $image) {
+                $stored = ImageStore::put($image, 'gallery');
+                $gallery->images()->create([
+                    'image_url' => $stored,
+                    'description' => $data['image_descriptions'][$index] ?? null,
+                    'sort_order' => $gallery->images()->max('sort_order') + 1,
+                ]);
+                if ($gallery->image_url === null) $gallery->image_url = $stored;
+            }
         }
 
         if (array_key_exists('show_on_homepage', $data)) {
@@ -77,11 +106,12 @@ class GalleryController extends Controller
 
         $gallery->save();
 
-        return response()->json(['data' => $this->present($gallery)]);
+        return response()->json(['data' => $this->present($gallery->load('images'))]);
     }
 
     public function destroy(FeaturedGallery $gallery): JsonResponse
     {
+        foreach ($gallery->images as $image) ImageStore::delete($image->image_url);
         ImageStore::delete($gallery->image_url);
         $gallery->delete();
 
@@ -99,7 +129,14 @@ class GalleryController extends Controller
             'id' => $gallery->id,
             'title' => $gallery->title,
             'description' => $gallery->description,
+            'facebook_album_url' => $gallery->facebook_album_url,
             'image_url' => $gallery->image_url,
+            'images' => $gallery->images->map(fn ($image) => [
+                'id' => $image->id,
+                'image_url' => $image->image_url,
+                'description' => $image->description,
+                'sort_order' => (int) $image->sort_order,
+            ])->values(),
             'sort_order' => (int) $gallery->sort_order,
             'is_active' => (bool) $gallery->is_active,
             'show_on_homepage' => (bool) $gallery->show_on_homepage,

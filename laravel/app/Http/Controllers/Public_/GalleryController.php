@@ -11,7 +11,7 @@ class GalleryController extends Controller
     public function index(): View
     {
         return view('pages.gallery', [
-            'galleries' => FeaturedGallery::active()->orderBy('sort_order')
+            'galleries' => FeaturedGallery::with('images')->active()->orderBy('sort_order')
                 ->orderByDesc('created_at')->orderBy('id')->paginate(12),
         ]);
     }

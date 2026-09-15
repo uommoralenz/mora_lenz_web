@@ -150,6 +150,21 @@
     });
   }
 
+  /* Gallery album previews rotate their photos; clicking opens the Facebook album. */
+  function initGallerySlideshows() {
+    var slideshows = document.querySelectorAll("[data-gallery-slideshow]");
+    Array.prototype.forEach.call(slideshows, function (slideshow) {
+      var slides = slideshow.querySelectorAll(".gallery-slideshow__slide");
+      if (slides.length < 2) return;
+      var index = 0;
+      setInterval(function () {
+        slides[index].classList.remove("is-active");
+        index = (index + 1) % slides.length;
+        slides[index].classList.add("is-active");
+      }, 4000);
+    });
+  }
+
   /* --------------------------------------------------------- reveal-in */
 
   function initReveal() {
@@ -225,6 +240,7 @@
     initNavbar();
     initCountdowns();
     initCarousels();
+    initGallerySlideshows();
     initReveal();
     initContactForm();
   });

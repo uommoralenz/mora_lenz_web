@@ -27,7 +27,7 @@ export default async function GalleryPage() {
     <>
       <PageHeader
         title="Gallery"
-        description="Publish entries on the gallery page and choose up to three homepage highlights using the gallery order."
+        description="Create photo albums with captions and Facebook links, then choose up to three homepage highlights using the gallery order."
       />
 
       <Card className="mb-6">
@@ -64,6 +64,7 @@ export default async function GalleryPage() {
                           {item.description}
                         </p>
                       ) : null}
+                      <p className="mt-1 text-xs text-slate-500">{item.images.length} photo{item.images.length === 1 ? "" : "s"}{item.facebook_album_url ? " · Facebook linked" : ""}</p>
                     </div>
 
                     <div className="flex items-center gap-1">

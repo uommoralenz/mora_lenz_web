@@ -12,6 +12,7 @@ class FeaturedGallery extends Model
     protected $fillable = [
         'title',
         'description',
+        'facebook_album_url',
         'image_url',
         'sort_order',
         'is_active',
@@ -29,5 +30,10 @@ class FeaturedGallery extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(GalleryImage::class, 'gallery_id')->orderBy('sort_order')->orderBy('id');
     }
 }

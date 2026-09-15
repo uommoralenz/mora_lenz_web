@@ -13,7 +13,7 @@ class HomeController extends Controller
     {
         return view('pages.home', [
             'featuredEvent' => static::featuredEvent(),
-            'galleries' => FeaturedGallery::active()
+            'galleries' => FeaturedGallery::with('images')->active()
                 ->where('show_on_homepage', true)
                 ->orderBy('sort_order')
                 ->orderByDesc('created_at')
