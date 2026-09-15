@@ -91,7 +91,7 @@ export default function GalleryForm({
           <div className="mb-2 flex items-center gap-3">
             <Thumb src={item.image_url} alt={item.title} className="h-20 w-32" />
             <p className="text-xs text-slate-500">
-              {item.images.length} photo{item.images.length === 1 ? "" : "s"} currently in this album. New photos are added to it.
+              {item.image_count} photo{item.image_count === 1 ? "" : "s"} currently in this album. New photos are added to it.
             </p>
           </div>
         ) : null}

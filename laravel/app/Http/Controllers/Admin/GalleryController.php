@@ -16,7 +16,10 @@ class GalleryController extends Controller
     public function index(): JsonResponse
     {
         return response()->json([
-            'data' => FeaturedGallery::with('images')->orderBy('sort_order')
+            // The admin list only needs the cover and a photo count. Returning
+            // every URL in every album can exceed Vercel's function payload
+            // limit once the gallery grows.
+            'data' => FeaturedGallery::withCount('images')->orderBy('sort_order')
                 ->orderByDesc('created_at')
                 ->get()
                 ->map(fn ($g) => $this->present($g)),
@@ -53,7 +56,7 @@ class GalleryController extends Controller
             ]);
         }
 
-        return response()->json(['data' => $this->present($gallery->load('images'))], 201);
+        return response()->json(['data' => $this->present($gallery->loadCount('images'))], 201);
     }
 
     public function update(Request $request, FeaturedGallery $gallery): JsonResponse
@@ -102,7 +105,7 @@ class GalleryController extends Controller
 
         $gallery->save();
 
-        return response()->json(['data' => $this->present($gallery->load('images'))]);
+        return response()->json(['data' => $this->present($gallery->loadCount('images'))]);
     }
 
     public function destroy(FeaturedGallery $gallery): JsonResponse
@@ -127,12 +130,7 @@ class GalleryController extends Controller
             'description' => $gallery->description,
             'facebook_album_url' => $gallery->facebook_album_url,
             'image_url' => $gallery->image_url,
-            'images' => $gallery->images->map(fn ($image) => [
-                'id' => $image->id,
-                'image_url' => $image->image_url,
-                'description' => $image->description,
-                'sort_order' => (int) $image->sort_order,
-            ])->values(),
+            'image_count' => (int) ($gallery->images_count ?? $gallery->images()->count()),
             'sort_order' => (int) $gallery->sort_order,
             'is_active' => (bool) $gallery->is_active,
             'show_on_homepage' => (bool) $gallery->show_on_homepage,

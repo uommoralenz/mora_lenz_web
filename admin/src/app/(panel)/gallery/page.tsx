@@ -64,7 +64,7 @@ export default async function GalleryPage() {
                           {item.description}
                         </p>
                       ) : null}
-                      <p className="mt-1 text-xs text-slate-500">{item.images.length} photo{item.images.length === 1 ? "" : "s"}{item.facebook_album_url ? " · Facebook linked" : ""}</p>
+                      <p className="mt-1 text-xs text-slate-500">{item.image_count} photo{item.image_count === 1 ? "" : "s"}{item.facebook_album_url ? " · Facebook linked" : ""}</p>
                     </div>
 
                     <div className="flex items-center gap-1">

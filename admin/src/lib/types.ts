@@ -34,17 +34,10 @@ export interface GalleryItem {
   description: string | null;
   facebook_album_url: string | null;
   image_url: string | null;
-  images: GalleryImageItem[];
+  image_count: number;
   sort_order: number;
   is_active: boolean;
   created_at: string | null;
-}
-
-export interface GalleryImageItem {
-  id: number;
-  image_url: string;
-  description: string | null;
-  sort_order: number;
 }
 
 export interface ServicePackageItem {
