@@ -165,6 +165,156 @@
     });
   }
 
+  /* ----------------------------------------------------------- lightbox */
+
+  /* Photo viewer for the gallery page: arrows, keyboard, swipe, thumbnails. */
+  function initLightbox() {
+    var box = document.querySelector("[data-lightbox]");
+    var openers = document.querySelectorAll("[data-lightbox-open]");
+    if (!box || !openers.length) return;
+
+    var img = box.querySelector("[data-lightbox-img]");
+    var caption = box.querySelector("[data-lightbox-caption]");
+    var title = box.querySelector("[data-lightbox-title]");
+    var count = box.querySelector("[data-lightbox-count]");
+    var strip = box.querySelector("[data-lightbox-strip]");
+    var prev = box.querySelector("[data-lightbox-prev]");
+    var next = box.querySelector("[data-lightbox-next]");
+
+    var photos = [];
+    var index = 0;
+    var opener = null;
+
+    function show(i) {
+      if (!photos.length) return;
+      index = (i + photos.length) % photos.length;
+
+      var photo = photos[index];
+      img.classList.add("is-loading");
+      img.onload = function () {
+        img.classList.remove("is-loading");
+      };
+      img.src = photo.src;
+      img.alt = photo.caption || title.textContent;
+      caption.textContent = photo.caption || "";
+      count.textContent = index + 1 + " / " + photos.length;
+
+      var single = photos.length < 2;
+      prev.hidden = single;
+      next.hidden = single;
+      strip.hidden = single;
+
+      Array.prototype.forEach.call(strip.children, function (thumb, n) {
+        thumb.classList.toggle("is-active", n === index);
+        if (n === index) {
+          thumb.scrollIntoView({ block: "nearest", inline: "center" });
+        }
+      });
+
+      // Warm the neighbours so arrows feel instant.
+      [index + 1, index - 1].forEach(function (n) {
+        var p = photos[(n + photos.length) % photos.length];
+        if (p) new Image().src = p.src;
+      });
+    }
+
+    function open(button) {
+      try {
+        photos = JSON.parse(button.getAttribute("data-photos") || "[]");
+      } catch (e) {
+        photos = [];
+      }
+      if (!photos.length) return;
+
+      opener = button;
+      title.textContent = button.getAttribute("data-title") || "";
+
+      strip.innerHTML = "";
+      photos.forEach(function (photo, n) {
+        var thumb = document.createElement("button");
+        thumb.type = "button";
+        thumb.className = "lightbox__thumb";
+        thumb.setAttribute("aria-label", "Photo " + (n + 1));
+        var t = document.createElement("img");
+        t.src = photo.src;
+        t.alt = "";
+        t.loading = "lazy";
+        thumb.appendChild(t);
+        thumb.addEventListener("click", function () {
+          show(n);
+        });
+        strip.appendChild(thumb);
+      });
+
+      box.hidden = false;
+      document.body.classList.add("has-lightbox");
+      show(0);
+      box.querySelector("[data-lightbox-close]").focus();
+    }
+
+    function close() {
+      box.hidden = true;
+      document.body.classList.remove("has-lightbox");
+      img.removeAttribute("src");
+      if (opener) opener.focus();
+    }
+
+    Array.prototype.forEach.call(openers, function (button) {
+      button.addEventListener("click", function () {
+        open(button);
+      });
+    });
+
+    box.querySelector("[data-lightbox-close]").addEventListener("click", close);
+    prev.addEventListener("click", function () {
+      show(index - 1);
+    });
+    next.addEventListener("click", function () {
+      show(index + 1);
+    });
+
+    // Clicking the dark area around the photo closes the viewer.
+    box.addEventListener("click", function (e) {
+      if (e.target === box || e.target.classList.contains("lightbox__stage") ||
+          e.target.classList.contains("lightbox__figure")) {
+        close();
+      }
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (box.hidden) return;
+      if (e.key === "Escape") close();
+      else if (e.key === "ArrowLeft") show(index - 1);
+      else if (e.key === "ArrowRight") show(index + 1);
+      else if (e.key === "Tab") {
+        // Keep keyboard focus inside the viewer while it is open.
+        var items = box.querySelectorAll("button:not([hidden])");
+        if (!items.length) return;
+        var first = items[0];
+        var last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    });
+
+    // Swipe left / right on touch screens.
+    var startX = null;
+    box.addEventListener("touchstart", function (e) {
+      startX = e.touches[0].clientX;
+    }, { passive: true });
+    box.addEventListener("touchend", function (e) {
+      if (startX === null) return;
+      var dx = e.changedTouches[0].clientX - startX;
+      startX = null;
+      if (Math.abs(dx) > 50) show(index + (dx < 0 ? 1 : -1));
+    }, { passive: true });
+  }
+
   /* --------------------------------------------------------- reveal-in */
 
   function initReveal() {
@@ -241,6 +391,7 @@
     initCountdowns();
     initCarousels();
     initGallerySlideshows();
+    initLightbox();
     initReveal();
     initContactForm();
   });

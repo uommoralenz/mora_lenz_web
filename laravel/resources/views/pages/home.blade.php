@@ -1,14 +1,16 @@
 @extends('layouts.app')
 
 @section('title', 'Mora Lenz | Visual Storytelling')
-@section('description', 'Mora Lenz — the official Photography & Videography Club of the University of Moratuwa. Event coverage, portraits, films and a community of creators.')
+@section('description', 'Mora Lenz is the Mass Media Club of the University of Moratuwa. Event coverage, photography, films and a community of creators.')
 
 @section('content')
 
     {{-- ------------------------------------------------------------ hero --}}
     <section class="hero" id="hero">
         <div class="hero__bg">
-            @if (file_exists(public_path('img/hero-campus-night.png')))
+            @if (file_exists(public_path('img/hero-campus-night.jpg')))
+                <img src="{{ asset('img/hero-campus-night.jpg') }}" alt="" fetchpriority="high">
+            @elseif (file_exists(public_path('img/hero-campus-night.png')))
                 <img src="{{ asset('img/hero-campus-night.png') }}" alt="" fetchpriority="high">
             @elseif (file_exists(public_path('img/landing-bg.jpeg')))
                 <img src="{{ asset('img/landing-bg.jpeg') }}" alt="" fetchpriority="high">
@@ -21,6 +23,8 @@
 
         <div class="hero__inner">
             <div class="hero__content">
+                <span class="hero__eyebrow">Mass Media Club &middot; University of Moratuwa</span>
+
                 <h1 class="hero__title">
                     <span class="hero__line">
                         Turning
@@ -38,8 +42,8 @@
                 </h1>
 
                 <p class="hero__lede">
-                    Mora Lenz: The Official Photography &amp; Videography Club of the University of
-                    Moratuwa. Capturing the essence of university life and beyond.
+                    Mora Lenz is the Mass Media Club of the University of Moratuwa &mdash; our
+                    photographers and videographers capture the essence of university life and beyond.
                 </p>
 
                 <div class="hero__actions">
@@ -47,9 +51,15 @@
                         <span class="cta__label">Explore Gallery</span>
                         @include('partials.icons', ['icon' => 'arrow-down'])
                     </a>
+                    <a href="{{ \App\Support\Links::events() }}" class="cta cta--ghost">
+                        <span class="cta__label">Upcoming Events</span>
+                        @include('partials.icons', ['icon' => 'arrow-right'])
+                    </a>
                 </div>
             </div>
         </div>
+
+        <span class="hero__scroll" aria-hidden="true"></span>
     </section>
 
     {{-- -------------------------------------------------- featured event --}}
