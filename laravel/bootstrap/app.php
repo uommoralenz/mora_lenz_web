@@ -77,6 +77,11 @@ $app = Application::configure(basePath: dirname(__DIR__))
 
 if ($publicPath = env('PUBLIC_PATH')) {
     $app->usePublicPath($publicPath);
+} elseif (! is_dir(dirname(__DIR__).'/public') && is_dir(dirname(__DIR__, 2).'/public_html')) {
+    // Split CWP layout (…/laravel next to …/public_html) with PUBLIC_PATH not
+    // set: use the sibling public_html so logos, the hero photo and uploads
+    // are found without any .env change.
+    $app->usePublicPath(dirname(__DIR__, 2).'/public_html');
 }
 
 return $app;

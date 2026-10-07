@@ -8,15 +8,18 @@
     <div class="container">
         <div class="footer__grid">
             <div class="footer__brand">
-                @if (file_exists(public_path('img/logo.png')))
-                    <img src="{{ asset('img/logo.png') }}" alt="Mora Lenz">
+                @if (file_exists(public_path('img/logo-mass-media.png')))
+                    <img class="footer__logo" src="{{ asset('img/logo-mass-media.png') }}" alt="Mora Lenz — Mass Media Club, University of Moratuwa">
+                @elseif (file_exists(public_path('img/logo-mark.png')))
+                    <img src="{{ asset('img/logo-mark.png') }}" alt="Mora Lenz">
                 @else
                     @include('partials.logo-fallback')
                 @endif
 
                 <p>
-                    Capturing moments, creating stories, and bringing visions to life through the
-                    lens of creativity. Join our community of passionate media creators.
+                    Mora Lenz is the Mass Media Club of the University of Moratuwa. We capture
+                    moments, create stories and bring visions to life through the lens of
+                    creativity. Join our community of passionate media creators.
                 </p>
 
                 <div class="socials">
@@ -71,8 +74,7 @@
         </div>
 
         <div class="footer__bottom">
-            <p>&copy; {{ now()->year }} Mora Lenz Media Club. All rights reserved.</p>
-            <p>Mora Lenz Mass Media Club</p>
+            <p>&copy; {{ now()->year }} Mora Lenz &mdash; Mass Media Club. All rights reserved.</p>
             <p>University of Moratuwa, Katubedda, Sri Lanka</p>
         </div>
     </div>

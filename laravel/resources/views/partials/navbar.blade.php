@@ -8,7 +8,9 @@
 <header class="navbar" data-navbar>
     <div class="navbar__inner">
         <a href="{{ route('home') }}" class="navbar__logo" aria-label="Mora Lenz — home">
-            @if (file_exists(public_path('img/logo.png')))
+            @if (file_exists(public_path('img/logo-mark.png')))
+                <img src="{{ asset('img/logo-mark.png') }}" alt="Mora Lenz">
+            @elseif (file_exists(public_path('img/logo.png')))
                 <img src="{{ asset('img/logo.png') }}" alt="Mora Lenz">
             @else
                 @include('partials.logo-fallback')
