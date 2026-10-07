@@ -6,7 +6,19 @@
     @section('og_image', $event->image_url)
 @endif
 
+@if (! empty($preview))
+    @push('head')
+        <meta name="robots" content="noindex, nofollow">
+    @endpush
+@endif
+
 @section('content')
+
+    @if (! empty($preview))
+        <div class="preview-banner" role="status">
+            Preview &mdash; this is how the page will look. It is not published until you save.
+        </div>
+    @endif
 
     @php $countdownTarget = $event->countdownTarget(); @endphp
 
@@ -53,6 +65,10 @@
                         <p>{!! nl2br(e($paragraph)) !!}</p>
                     @endforeach
                 </div>
+            @endif
+
+            @if (! empty($event->content))
+                @include('partials.event-blocks', ['blocks' => $event->content])
             @endif
 
             @if ($countdownTarget && $countdownTarget->isFuture())

@@ -12,6 +12,7 @@ class Event extends Model
         'title',
         'slug',
         'description',
+        'content',
         'event_date',
         'end_date',
         'location',
@@ -25,6 +26,7 @@ class Event extends Model
     protected function casts(): array
     {
         return [
+            'content' => 'array',
             'event_date' => 'datetime',
             'end_date' => 'datetime',
             'countdown_enabled' => 'boolean',

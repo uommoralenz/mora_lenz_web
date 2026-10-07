@@ -4,10 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Admin\Concerns\ReordersRecords;
 use App\Models\Event;
+use App\Support\EventBlocks;
 use App\Support\ImageStore;
+use App\Support\Links;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class EventController extends Controller
@@ -55,6 +59,43 @@ class EventController extends Controller
         return response()->json(['data' => $this->present($event->fresh())]);
     }
 
+    /**
+     * Park the unsaved form in the cache and return a short-lived link to the
+     * real public page rendered from it. The token is the only credential, so
+     * it is long, random and expires on its own.
+     */
+    public function preview(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'title' => ['nullable', 'string', 'max:200'],
+            'description' => ['nullable', 'string', 'max:20000'],
+            'content' => ['nullable'],
+            'event_date' => ['nullable', 'date'],
+            'end_date' => ['nullable', 'date'],
+            'location' => ['nullable', 'string', 'max:200'],
+            'image_url' => ['nullable', 'url:http,https', 'max:500'],
+            'countdown_enabled' => ['nullable', 'boolean'],
+            'event_id' => ['nullable', 'integer'],
+        ]);
+
+        $existing = isset($data['event_id']) ? Event::find($data['event_id']) : null;
+
+        $token = Str::random(40);
+
+        Cache::put('event-preview:'.$token, [
+            'title' => $data['title'] ?? '',
+            'description' => $data['description'] ?? null,
+            'content' => EventBlocks::sanitize($data['content'] ?? []),
+            'event_date' => $data['event_date'] ?? null,
+            'end_date' => $data['end_date'] ?? null,
+            'location' => $data['location'] ?? null,
+            'image_url' => ($data['image_url'] ?? null) ?: $existing?->image_url,
+            'countdown_enabled' => (bool) ($data['countdown_enabled'] ?? false),
+        ], now()->addMinutes(30));
+
+        return response()->json(['url' => Links::eventPreview($token)]);
+    }
+
     public function destroy(Event $event): JsonResponse
     {
         ImageStore::delete($event->image_url);
@@ -77,6 +118,7 @@ class EventController extends Controller
                 Rule::unique('events', 'slug')->ignore($event?->id),
             ],
             'description' => ['nullable', 'string', 'max:20000'],
+            'content' => ['nullable'],
             'event_date' => [$event ? 'sometimes' : 'required', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:event_date'],
             'location' => ['nullable', 'string', 'max:200'],
@@ -100,6 +142,11 @@ class EventController extends Controller
             if (array_key_exists($flag, $data)) {
                 $event->{$flag} = (bool) $data[$flag];
             }
+        }
+
+        if (array_key_exists('content', $data)) {
+            $blocks = EventBlocks::sanitize($data['content']);
+            $event->content = $blocks === [] ? null : $blocks;
         }
 
         // A blank slug means "regenerate from the title".
@@ -137,6 +184,7 @@ class EventController extends Controller
             'title' => $event->title,
             'slug' => $event->slug,
             'description' => $event->description,
+            'content' => $event->content ?? [],
             'event_date' => $event->event_date?->toIso8601String(),
             'end_date' => $event->end_date?->toIso8601String(),
             'location' => $event->location,

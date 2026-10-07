@@ -2289,3 +2289,125 @@ button {
     color: #000;
   }
 }
+
+/* ------------------------------------------------- event page builder blocks */
+
+.preview-banner {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  padding: 10px 16px;
+  background: #f59e0b;
+  color: #000;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.event-blocks {
+  max-width: 48rem;
+  margin: 32px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.event-blocks .prose {
+  max-width: none;
+}
+
+.event-blocks .prose p:last-child {
+  margin-bottom: 0;
+}
+
+.event-blocks__text.is-center {
+  text-align: center;
+}
+
+.event-blocks__h2,
+.event-blocks__h3 {
+  margin: 12px 0 0;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.event-blocks__h2 { font-size: clamp(1.6rem, 4vw, 2.1rem); }
+.event-blocks__h3 { font-size: 1.3rem; }
+
+.event-blocks__figure {
+  margin: 0;
+}
+
+.event-blocks__figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.event-blocks__figure figcaption {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+.event-blocks__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+.event-blocks__btn {
+  text-transform: none;
+  font-weight: 700;
+}
+
+.event-blocks__btn:hover svg {
+  transform: none;
+}
+
+.event-blocks__video {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #000;
+}
+
+.event-blocks__video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.event-blocks__callout {
+  padding: 24px 28px;
+  border-radius: var(--radius-lg);
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+}
+
+.event-blocks__callout h3 {
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+}
+
+.event-blocks__callout p {
+  margin: 0;
+  color: #d1d5db;
+  line-height: 1.75;
+}
+
+.event-blocks__divider {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  margin: 8px 0;
+}

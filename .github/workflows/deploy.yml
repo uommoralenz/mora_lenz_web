@@ -48,35 +48,31 @@ jobs:
           sed -i "s#\$appBase = __DIR__.'/..';#\$appBase = __DIR__.'/../laravel';#" build/public_html/index.php
           grep -n "^\$appBase" build/public_html/index.php
 
-      - name: Upload app (laravel folder, outside web root)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ${{ secrets.FTP_PROTOCOL || 'ftps' }}
-          local-dir: build/laravel/
-          server-dir: ${{ secrets.FTP_APP_DIR }}
-          # Never touch server-side secrets, logs or runtime state
-          exclude: |
-            **/.git*
-            **/.git*/**
-            .env
-            storage/logs/**
-            storage/framework/sessions/**
-            storage/framework/cache/**
+      - name: Zip the release
+        run: |
+          mkdir -p pkg
+          (cd build && zip -qr ../pkg/release.zip laravel public_html)
+          ls -lh pkg/release.zip
 
-      - name: Upload public files (web root)
+      - name: Upload release.zip
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ${{ secrets.FTP_PROTOCOL || 'ftps' }}
-          local-dir: build/public_html/
-          server-dir: ${{ secrets.FTP_PUBLIC_DIR }}
-          # Keep admin-uploaded images
-          exclude: |
-            **/.git*
-            **/.git*/**
-            uploads/**
+          local-dir: pkg/
+          server-dir: ${{ secrets.FTP_DEPLOY_DIR || '/deploy/' }}
+          # The hook deletes the zip after unpacking, so force a re-send.
+          dangerous-clean-slate: true
+
+      # Unpacks the zip on the server, runs migrations, clears caches.
+      - name: Unpack and migrate on the server
+        env:
+          DEPLOY_URL: ${{ secrets.DEPLOY_URL }}
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: |
+          response=$(curl -sS --fail-with-body --max-time 300 -X POST \
+            -H "X-Deploy-Token: $DEPLOY_TOKEN" "$DEPLOY_URL")
+          echo "$response"
+          echo "$response" | grep -q "DEPLOY OK"

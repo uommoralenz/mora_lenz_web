@@ -34,6 +34,16 @@ class Links
         return url('/events/').'?e='.rawurlencode($event->slug);
     }
 
+    /** Draft preview of an event that may not be saved yet. */
+    public static function eventPreview(string $token): string
+    {
+        if (! static::compat()) {
+            return route('events.preview', $token);
+        }
+
+        return url('/events/').'?preview='.rawurlencode($token);
+    }
+
     /**
      * Where the contact form posts.
      *

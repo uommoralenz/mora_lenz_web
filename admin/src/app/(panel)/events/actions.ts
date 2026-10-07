@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { api, asUpdate, pruneEmptyFile, setBool, toActionState } from "@/lib/api";
+import { ApiError, api, asUpdate, pruneEmptyFile, setBool, toActionState } from "@/lib/api";
 import type { ActionState } from "@/lib/types";
 
 const BOOLS = ["countdown_enabled", "is_featured", "is_active"];
@@ -76,4 +76,58 @@ export async function reorderEventsAction(formData: FormData) {
 
   await api.post("/events/reorder", { items: JSON.parse(raw) });
   revalidatePath("/events");
+}
+
+/** Upload one image for a page block and hand back its public URL. */
+export async function uploadEventImageAction(
+  formData: FormData
+): Promise<{ url?: string; message?: string }> {
+  const file = formData.get("image");
+
+  if (!(file instanceof File) || file.size === 0) {
+    return { message: "Choose an image first." };
+  }
+
+  const form = new FormData();
+  form.set("type", "events");
+  form.set("image", file);
+
+  try {
+    const result = await api.post<{ url: string }>("/uploads", form);
+    return { url: result.url };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { message: error.errors.image || error.message };
+    }
+    throw error;
+  }
+}
+
+/** Send the unsaved form to Laravel and get back a link to the draft page. */
+export async function previewEventAction(
+  formData: FormData
+): Promise<{ url?: string; message?: string }> {
+  const text = (name: string) => String(formData.get(name) ?? "").trim();
+  const body: Record<string, unknown> = {
+    title: text("title"),
+    description: text("description"),
+    content: text("content"),
+    location: text("location"),
+    countdown_enabled: formData.get("countdown_enabled") ? true : false,
+  };
+
+  for (const field of ["event_date", "end_date", "event_id"]) {
+    if (text(field)) body[field] = text(field);
+  }
+
+  try {
+    const result = await api.post<{ url: string }>("/events/preview", body);
+    return { url: result.url };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      const first = Object.values(error.errors)[0];
+      return { message: first || error.message };
+    }
+    throw error;
+  }
 }

@@ -11,11 +11,21 @@ export interface AdminUser {
   created_at?: string | null;
 }
 
+export type EventBlock =
+  | { type: "heading"; text: string; level: 2 | 3 }
+  | { type: "text"; text: string; align: "left" | "center" }
+  | { type: "image"; url: string; caption: string }
+  | { type: "button"; label: string; url: string; style: "primary" | "outline" }
+  | { type: "video"; url: string }
+  | { type: "callout"; title: string; text: string }
+  | { type: "divider" };
+
 export interface EventItem {
   id: number;
   title: string;
   slug: string;
   description: string | null;
+  content: EventBlock[];
   event_date: string;
   end_date: string | null;
   location: string | null;

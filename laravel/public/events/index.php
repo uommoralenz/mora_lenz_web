@@ -31,4 +31,15 @@ if (isset($_GET['e']) && is_string($_GET['e'])) {
     unset($_GET['e']);
 }
 
+if (isset($_GET['preview']) && is_string($_GET['preview'])) {
+    $token = $_GET['preview'];
+
+    // Preview tokens are exactly 40 alphanumeric characters.
+    if (preg_match('/^[A-Za-z0-9]{40}$/', $token)) {
+        $path = '/events/preview/'.$token;
+    }
+
+    unset($_GET['preview']);
+}
+
 require __DIR__.'/../shim.php';

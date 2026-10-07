@@ -42,6 +42,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('uploads', [UploadController::class, 'destroy']);
 
         // Events
+        Route::post('events/preview', [EventController::class, 'preview']);
         Route::post('events/reorder', [EventController::class, 'reorder']);
         Route::apiResource('events', EventController::class)
             ->scoped(['event' => 'id']);
