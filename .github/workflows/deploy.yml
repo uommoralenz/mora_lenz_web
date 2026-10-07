@@ -16,9 +16,24 @@ concurrency:
 
 jobs:
   deploy:
-    name: Build and upload
+    name: Build, release and upload
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: moralenz_dump
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,7 +69,35 @@ jobs:
           (cd build && zip -qr ../pkg/release.zip laravel public_html)
           ls -lh pkg/release.zip
 
+      # dump.sql = empty schema + the `migrations` table rows, built by running
+      # every migration on a throwaway MySQL. Import it in phpMyAdmin on a fresh
+      # database; it contains no site content.
+      - name: Build dump.sql from migrations
+        working-directory: laravel
+        env:
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: moralenz_dump
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: |
+          php artisan migrate --force
+          mysqldump -h 127.0.0.1 -uroot -proot --no-data --no-tablespaces             --skip-add-drop-table moralenz_dump > ../pkg/dump.sql
+          mysqldump -h 127.0.0.1 -uroot -proot --no-create-info --no-tablespaces             moralenz_dump migrations >> ../pkg/dump.sql
+          ls -lh ../pkg/dump.sql
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="v${{ github.run_number }}"
+          gh release create "$tag" pkg/release.zip pkg/dump.sql             --target "${{ github.event.workflow_run.head_sha || github.sha }}"             --title "Release $tag" --generate-notes
+
       - name: Upload release.zip
+        id: ftp
+        continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -62,12 +105,15 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ${{ secrets.FTP_PROTOCOL || 'ftps' }}
           local-dir: pkg/
+          exclude: |
+            dump.sql
           server-dir: ${{ secrets.FTP_DEPLOY_DIR || '/deploy/' }}
           # The hook deletes the zip after unpacking, so force a re-send.
           dangerous-clean-slate: true
 
       # Unpacks the zip on the server, runs migrations, clears caches.
       - name: Unpack and migrate on the server
+        if: steps.ftp.outcome == 'success'
         env:
           DEPLOY_URL: ${{ secrets.DEPLOY_URL }}
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
