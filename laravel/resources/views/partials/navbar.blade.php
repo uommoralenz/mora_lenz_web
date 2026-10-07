@@ -9,13 +9,9 @@
     <div class="navbar__inner">
         <a href="{{ route('home') }}" class="navbar__logo" aria-label="Mora Lenz — home">
             @if (file_exists(public_path('img/logo-mark.png')))
-                {{-- Full "Mass Media Club" lockup on wide screens, the Mora Lenz mark alone below that. --}}
-                @if (file_exists(public_path('img/logo-mass-media.png')))
-                    <img class="navbar__logo-full" src="{{ asset('img/logo-mass-media.png') }}" alt="Mora Lenz — Mass Media Club, University of Moratuwa">
-                    <img class="navbar__logo-mark" src="{{ asset('img/logo-mark.png') }}" alt="" aria-hidden="true">
-                @else
-                    <img src="{{ asset('img/logo-mark.png') }}" alt="Mora Lenz">
-                @endif
+                <img src="{{ asset('img/logo-mark.png') }}" alt="Mora Lenz">
+            @elseif (file_exists(public_path('img/logo.png')))
+                <img src="{{ asset('img/logo.png') }}" alt="Mora Lenz">
             @else
                 @include('partials.logo-fallback')
             @endif
