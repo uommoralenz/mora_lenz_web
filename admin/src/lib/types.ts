@@ -45,6 +45,7 @@ export interface GalleryItem {
   facebook_album_url: string | null;
   image_url: string | null;
   image_count: number;
+  photos: { id: number; url: string }[];
   sort_order: number;
   is_active: boolean;
   created_at: string | null;

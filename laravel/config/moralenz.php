@@ -48,6 +48,9 @@ return [
 
     'upload' => [
         'max_kb' => (int) env('UPLOAD_MAX_KB', 8192),
+        // Gallery albums: at most this many photos, each at most this size.
+        'gallery_max_photos' => 5,
+        'gallery_max_kb' => 2048,
         'mimes' => ['jpg', 'jpeg', 'png', 'webp', 'gif'],
         // Sub-folders, one per kind of image. Keys are the "type" sent by the
         // admin panel; anything not listed here is rejected.

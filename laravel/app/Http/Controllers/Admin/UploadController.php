@@ -15,9 +15,16 @@ class UploadController extends Controller
 {
     public function store(Request $request): JsonResponse
     {
+        $types = array_keys(config('moralenz.upload.types'));
+
+        // Gallery photos have a tighter size cap than other images.
+        $maxKb = $request->input('type') === 'gallery'
+            ? config('moralenz.upload.gallery_max_kb')
+            : config('moralenz.upload.max_kb');
+
         $data = $request->validate([
-            'type' => ['required', 'string', 'in:'.implode(',', array_keys(config('moralenz.upload.types')))],
-            'image' => ['required', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
+            'type' => ['required', 'string', 'in:'.implode(',', $types)],
+            'image' => ['required', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.$maxKb],
         ]);
 
         return response()->json([

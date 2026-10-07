@@ -75,6 +75,22 @@ class ImageStore
         }
     }
 
+    /**
+     * True when $url is a file this site stored under uploads/<type>/ and that
+     * still exists. Lets the API accept "already uploaded" image URLs from the
+     * panel without ever trusting an arbitrary address.
+     */
+    public static function ownsUrl(?string $url, string $type): bool
+    {
+        $relative = static::relativePathFor($url);
+
+        if ($relative === null || ! str_starts_with($relative, static::folderFor($type).'/')) {
+            return false;
+        }
+
+        return is_file(public_path(config('moralenz.upload_dir', 'uploads').'/'.$relative));
+    }
+
     /** Replace one image with another, cleaning up the old file. */
     public static function replace(UploadedFile $file, string $type, ?string $previousUrl): string
     {

@@ -188,8 +188,14 @@ export const api = {
   get: <T>(path: string, revalidate?: number) => request<T>(path, { revalidate }),
   post: <T>(path: string, body?: RequestOptions["body"]) =>
     request<T>(path, { method: "POST", body }),
-  put: <T>(path: string, body?: RequestOptions["body"]) =>
-    request<T>(path, { method: "PUT", body }),
+  put: <T>(path: string, body?: RequestOptions["body"]) => {
+    // Same host limitation as DELETE below: send a POST that Laravel treats
+    // as a PUT through the _method override.
+    if (COMPAT && body && !(body instanceof FormData)) {
+      return request<T>(path, { method: "POST", body: { ...body, _method: "PUT" } });
+    }
+    return request<T>(path, { method: "PUT", body });
+  },
   del: <T>(path: string, body?: RequestOptions["body"]) => {
     // The compatibility host rejects DELETE at nginx. Laravel accepts a POST
     // with _method=DELETE, just as it accepts our multipart PUT overrides.

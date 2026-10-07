@@ -49,6 +49,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Featured galleries (homepage showcase)
         Route::post('galleries/reorder', [GalleryController::class, 'reorder']);
+        Route::delete('galleries/{gallery}/images/{image}', [GalleryController::class, 'destroyImage']);
         Route::apiResource('galleries', GalleryController::class)
             ->parameters(['galleries' => 'gallery'])
             ->except('show');
