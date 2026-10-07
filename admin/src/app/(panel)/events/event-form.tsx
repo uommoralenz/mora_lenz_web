@@ -1,18 +1,51 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef, useState } from "react";
 
 import { FieldError, FormMessage, SubmitButton } from "@/components/form";
 import { Thumb, toLocalInput } from "@/components/ui";
 import { EMPTY_ACTION_STATE, type EventItem } from "@/lib/types";
 
-import { saveEventAction } from "./actions";
+import BlockEditor from "./block-editor";
+import { previewEventAction, saveEventAction } from "./actions";
 
 export default function EventForm({ event }: { event?: EventItem }) {
   const [state, formAction] = useActionState(saveEventAction, EMPTY_ACTION_STATE);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [previewing, setPreviewing] = useState(false);
+  const [previewError, setPreviewError] = useState("");
+
+  async function openPreview() {
+    if (!formRef.current) return;
+
+    // Open the tab now, inside the click, or the browser blocks it as a popup.
+    const tab = window.open("", "_blank");
+    setPreviewing(true);
+    setPreviewError("");
+
+    const data = new FormData(formRef.current);
+    if (event) data.set("event_id", String(event.id));
+    data.delete("image");
+
+    try {
+      const result = await previewEventAction(data);
+
+      if (result.url && tab) {
+        tab.location.href = result.url;
+      } else {
+        tab?.close();
+        setPreviewError(result.message || "Could not create the preview.");
+      }
+    } catch {
+      tab?.close();
+      setPreviewError("Could not create the preview. Please try again.");
+    } finally {
+      setPreviewing(false);
+    }
+  }
 
   return (
-    <form action={formAction} className="space-y-5">
+    <form ref={formRef} action={formAction} className="space-y-5">
       {event ? <input type="hidden" name="id" value={event.id} /> : null}
 
       <FormMessage state={state} />
@@ -53,7 +86,7 @@ export default function EventForm({ event }: { event?: EventItem }) {
 
       <div>
         <label className="label" htmlFor="description">
-          Description
+          Intro text
         </label>
         <textarea
           id="description"
@@ -61,8 +94,20 @@ export default function EventForm({ event }: { event?: EventItem }) {
           className="textarea min-h-40"
           defaultValue={event?.description ?? ""}
         />
-        <p className="hint">Leave a blank line between paragraphs.</p>
+        <p className="hint">
+          Shown first on the page and in search results. Leave a blank line between paragraphs.
+        </p>
         <FieldError errors={state.errors} name="description" />
+      </div>
+
+      <div>
+        <span className="label">Page content</span>
+        <p className="hint mb-3 mt-0">
+          Build the rest of the page like a blog post. Buttons can link to WhatsApp,
+          Facebook, Google Forms, Drive or any website.
+        </p>
+        <BlockEditor initial={event?.content ?? []} />
+        <FieldError errors={state.errors} name="content" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -188,9 +233,21 @@ export default function EventForm({ event }: { event?: EventItem }) {
         </label>
       </fieldset>
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <SubmitButton>{event ? "Save changes" : "Create event"}</SubmitButton>
+        <button
+          type="button"
+          className="btn-secondary"
+          onClick={openPreview}
+          disabled={previewing}
+        >
+          {previewing ? "Preparing preview…" : "Preview page"}
+        </button>
+        <span className="text-xs text-slate-500">
+          Preview shows your unsaved changes (the cover image is the saved one).
+        </span>
       </div>
+      {previewError ? <p className="error-text">{previewError}</p> : null}
     </form>
   );
 }

@@ -21,6 +21,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
+Route::get('/events/preview/{token}', [EventController::class, 'preview'])
+    ->where('token', '[A-Za-z0-9]{40}')
+    ->name('events.preview');
 Route::get('/events/{slug}', [EventController::class, 'show'])->name('events.show');
 
 Route::get('/team', [TeamController::class, 'index'])->name('team');
