@@ -1,0 +1,82 @@
+name: Deploy Laravel (FTP)
+
+# Deploys the public site + API to the university server after CI passes on main.
+# The admin panel is NOT deployed here - Vercel deploys it from Git on its own.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and upload
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, pdo_mysql, fileinfo, gd
+          coverage: none
+
+      - name: Install production dependencies
+        working-directory: laravel
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
+
+      # Build the layout from DEPLOYMENT.md section 2.3:
+      #   build/laravel       = everything except public/
+      #   build/public_html   = contents of public/
+      - name: Assemble server layout
+        run: |
+          mkdir -p build/laravel build/public_html
+          rsync -a --exclude='/public' --exclude='.env' --exclude='/storage/logs/*' \
+            --exclude='/storage/framework/cache/data' --exclude='/storage/framework/sessions/*' \
+            --exclude='/storage/framework/views/*' --exclude='/scripts' \
+            laravel/ build/laravel/
+          rsync -a --exclude='/uploads/*' laravel/public/ build/public_html/
+          sed -i "s#\$appBase = __DIR__.'/..';#\$appBase = __DIR__.'/../laravel';#" build/public_html/index.php
+          grep -n "^\$appBase" build/public_html/index.php
+
+      - name: Upload app (laravel folder, outside web root)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ${{ secrets.FTP_PROTOCOL || 'ftps' }}
+          local-dir: build/laravel/
+          server-dir: ${{ secrets.FTP_APP_DIR }}
+          # Never touch server-side secrets, logs or runtime state
+          exclude: |
+            **/.git*
+            **/.git*/**
+            .env
+            storage/logs/**
+            storage/framework/sessions/**
+            storage/framework/cache/**
+
+      - name: Upload public files (web root)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ${{ secrets.FTP_PROTOCOL || 'ftps' }}
+          local-dir: build/public_html/
+          server-dir: ${{ secrets.FTP_PUBLIC_DIR }}
+          # Keep admin-uploaded images
+          exclude: |
+            **/.git*
+            **/.git*/**
+            uploads/**
