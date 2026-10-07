@@ -10,7 +10,7 @@
             <div class="section__head">
                 <h1 class="section__title">Our Team</h1>
                 <p class="section__lede">
-                    Meet the talented individuals who make Mora Lenz Media Club a thriving
+                    Meet the talented individuals who make the Mora Lenz Mass Media Club a thriving
                     community of creative professionals.
                 </p>
             </div>

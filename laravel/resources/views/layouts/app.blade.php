@@ -6,11 +6,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>@yield('title', 'Mora Lenz | Visual Storytelling')</title>
-    <meta name="description" content="@yield('description', 'The Photography & Visual Media Club of the University of Moratuwa.')">
+    <meta name="description" content="@yield('description', 'Mora Lenz is the Mass Media Club of the University of Moratuwa. Photography, videography and visual storytelling.')">
 
     <meta property="og:site_name" content="Mora Lenz">
     <meta property="og:title" content="@yield('title', 'Mora Lenz | Visual Storytelling')">
-    <meta property="og:description" content="@yield('description', 'The Photography & Visual Media Club of the University of Moratuwa.')">
+    <meta property="og:description" content="@yield('description', 'Mora Lenz is the Mass Media Club of the University of Moratuwa. Photography, videography and visual storytelling.')">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
     @hasSection('og_image')
@@ -22,7 +22,7 @@
     <link rel="icon" href="{{ asset('img/favicon.png') }}" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="{{ asset('css/site.css') }}?v={{ config('app.asset_version', '1') }}">
+    <link rel="stylesheet" href="{{ asset('css/site.css') }}?v={{ config('app.asset_version', '1') }}-{{ @filemtime(public_path('css/site.css')) ?: '' }}">
 </head>
 <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -35,7 +35,7 @@
 
     @include('partials.footer')
 
-    <script src="{{ asset('js/site.js') }}?v={{ config('app.asset_version', '1') }}" defer></script>
+    <script src="{{ asset('js/site.js') }}?v={{ config('app.asset_version', '1') }}-{{ @filemtime(public_path('js/site.js')) ?: '' }}" defer></script>
     @stack('scripts')
 </body>
 </html>
