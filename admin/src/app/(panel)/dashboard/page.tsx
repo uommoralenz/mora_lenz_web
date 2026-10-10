@@ -2,7 +2,9 @@ import Link from "next/link";
 
 import { Card, PageHeader } from "@/components/ui";
 import { api, requireAdmin } from "@/lib/api";
-import type { Stats } from "@/lib/types";
+import type { MigrationStatus, Stats } from "@/lib/types";
+
+import DatabaseUpdates from "./database-updates";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +44,19 @@ export default async function DashboardPage() {
     featured_event: string | null;
   }>("/stats");
 
+  // Only a super admin can see or apply these, and a server too old to know
+  // the endpoint must not take the dashboard down with it.
+  let migrations: MigrationStatus | null = null;
+
+  if (admin.is_super_admin) {
+    try {
+      const result = await api.get<{ data: MigrationStatus }>("/system/status");
+      migrations = result.data;
+    } catch {
+      migrations = null;
+    }
+  }
+
   return (
     <>
       <PageHeader
@@ -66,6 +81,8 @@ export default async function DashboardPage() {
           <Stat label="Admin accounts" value={data.admins} href="/admins" />
         ) : null}
       </div>
+
+      {migrations ? <DatabaseUpdates status={migrations} /> : null}
 
       <Card className="mt-6">
         <h2 className="text-sm font-semibold text-slate-200">Homepage hero event</h2>

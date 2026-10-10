@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\MessageController;
 use App\Http\Controllers\Admin\ServiceImageController;
 use App\Http\Controllers\Admin\ServicePackageController;
+use App\Http\Controllers\Admin\SystemController;
 use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\UploadController;
 use Illuminate\Support\Facades\Route;
@@ -93,6 +94,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::apiResource('admins', AdminUserController::class)
                 ->parameters(['admins' => 'admin'])
                 ->except('show');
+
+            // Applying database updates after an upload. See SystemController
+            // for why this is here rather than only at /setup/<key>.
+            Route::get('system/status', [SystemController::class, 'status']);
+            Route::post('system/migrate', [SystemController::class, 'migrate']);
         });
     });
 });

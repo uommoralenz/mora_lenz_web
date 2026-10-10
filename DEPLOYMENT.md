@@ -142,7 +142,18 @@ You should see a plain-text log ending in `SETUP COMPLETE.` That one request gen
 > If it gives 500: `storage/` is not writable — recheck permissions.
 > If you *do* have SSH, skip all of this and run `php artisan migrate --seed` instead.
 
-### 2.4b Re-run it after every update
+### 2.4b After every update: apply the database updates
+
+**The quickest way: sign in to the admin panel as a super admin and look at the
+Dashboard.** If the database is behind the code, a *Database updates* card
+appears there listing what is missing, with a **Run database updates** button.
+Press it. That is all.
+
+That button goes through the admin API, which is already deployed, so it works
+even when a newer release added a folder under `public/` that has not been
+copied into `public_html/` yet.
+
+The rest of this section is the fallback, for when you cannot sign in at all.
 
 **Any time you upload a new version of `laravel/`, visit that same URL again.**
 
@@ -205,6 +216,7 @@ Open `https://your-site`. You should get the dark homepage with sample events an
 | Add a committee member | Admin → Team |
 | Read contact form messages | Admin → Messages |
 | Add another admin | Admin → Admin accounts (super admin only) |
+| Fix "the server could not complete this request" when saving | Admin → Dashboard → **Run database updates** (super admin only) |
 
 Everything saves straight to the live site — there is no publish step.
 

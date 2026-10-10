@@ -372,7 +372,7 @@ class EventBlocks
     {
         $value = is_string($value) ? $value : '';
 
-        return mb_substr(trim(str_replace(" ", '', $value)), 0, $max);
+        return mb_substr(trim(str_replace("\0", '', $value)), 0, $max);
     }
 
     /** A fixed frame height in pixels, or 0 to measure the content instead. */

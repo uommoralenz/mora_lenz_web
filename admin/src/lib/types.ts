@@ -187,6 +187,16 @@ export interface Stats {
   messages_unread: number;
 }
 
+/**
+ * Whether the database has had every update that shipped with the code.
+ * Super admin only; see App\Http\Controllers\Admin\SystemController.
+ */
+export interface MigrationStatus {
+  ok: boolean;
+  pending: string[];
+  message: string;
+}
+
 /** Shape returned by every server action, consumed by useActionState. */
 export interface ActionState {
   ok: boolean;
