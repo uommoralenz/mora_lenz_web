@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 
-import { EVENT_PAGE_CODE_MAX, type EventPageOptions } from "@/lib/types";
+import {
+  EVENT_PAGE_CODE_MAX,
+  EVENT_PAGE_DEFAULTS,
+  type EventPageOptions,
+} from "@/lib/types";
 
 /** A template literal, so the example keeps its line breaks. */
 const PAGE_CODE_PLACEHOLDER = `<style>
@@ -26,10 +30,18 @@ export default function PageOptionsEditor({
   initial: EventPageOptions;
   name?: string;
 }) {
-  const [options, setOptions] = useState<EventPageOptions>(initial);
+  // The API may be a deploy behind this panel and not send every option yet,
+  // so each one is filled in here rather than trusted to be present.
+  const [options, setOptions] = useState<EventPageOptions>({
+    ...EVENT_PAGE_DEFAULTS,
+    ...initial,
+  });
 
   const set = (patch: Partial<EventPageOptions>) =>
     setOptions((current) => ({ ...current, ...patch }));
+
+  // The textarea is controlled, so this must never be undefined.
+  const customCode = options.custom_code ?? "";
 
   return (
     <div className="space-y-4 rounded-lg border border-ink-700 p-4">
@@ -102,7 +114,7 @@ export default function PageOptionsEditor({
             Page-wide HTML, CSS and JavaScript
           </label>
           <span className="text-xs text-slate-500">
-            {options.custom_code.length.toLocaleString()} /{" "}
+            {customCode.length.toLocaleString()} /{" "}
             {EVENT_PAGE_CODE_MAX.toLocaleString()}
           </span>
         </div>
@@ -113,7 +125,7 @@ export default function PageOptionsEditor({
           spellCheck={false}
           maxLength={EVENT_PAGE_CODE_MAX}
           placeholder={PAGE_CODE_PLACEHOLDER}
-          value={options.custom_code}
+          value={customCode}
           onChange={(e) => set({ custom_code: e.target.value })}
         />
         <p className="hint">

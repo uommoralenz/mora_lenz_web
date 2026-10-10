@@ -157,7 +157,7 @@ export default function BlockEditor({
         <div key={block.key} className="rounded-lg border border-ink-700 bg-ink-950/40 p-3">
           <div className="mb-3 flex items-center justify-between gap-2">
             <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-              {index + 1}. {BLOCK_NAMES[block.type]}
+              {index + 1}. {BLOCK_NAMES[block.type] ?? block.type}
             </span>
             <div className="flex gap-1">
               <button
@@ -530,6 +530,20 @@ function BlockFields({
 
     case "html":
       return <HtmlFields block={block} onChange={onChange} />;
+
+    default:
+      // A block type this build does not know — the panel and the API can be
+      // deployed at different times, and the stored content may be newer than
+      // this bundle. Returning nothing from a render throws and takes the whole
+      // event page with it, so say so instead. The hidden field still carries
+      // the block unchanged, so saving does not destroy it.
+      return (
+        <p className="error-text">
+          This block was made in a newer version of the panel, so it cannot be
+          edited here. Reload the page; if it stays, leave the block alone and it
+          will be saved exactly as it is.
+        </p>
+      );
   }
 }
 
