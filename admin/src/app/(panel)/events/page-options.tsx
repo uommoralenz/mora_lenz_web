@@ -8,6 +8,8 @@ import {
   type EventPageOptions,
 } from "@/lib/types";
 
+import { isFullDocument } from "./block-editor";
+
 /** A template literal, so the example keeps its line breaks. */
 const PAGE_CODE_PLACEHOLDER = `<style>
   .event-hero__title { letter-spacing: -0.02em; }
@@ -128,6 +130,18 @@ export default function PageOptionsEditor({
           value={customCode}
           onChange={(e) => set({ custom_code: e.target.value })}
         />
+
+        {isFullDocument(customCode) ? (
+          <p className="error-text">
+            That is a complete HTML page, and this field is not the place for one —
+            it goes inside this page&apos;s <code>&lt;head&gt;</code>, so a second
+            <code>&lt;html&gt;</code> here will not render. Clear this box, add a{" "}
+            <strong>Custom HTML</strong> block under <em>Page content</em>, paste the
+            page there and set it to <em>Isolated — sandboxed frame</em>. It will then
+            be shown exactly as you wrote it.
+          </p>
+        ) : null}
+
         <p className="hint">
           Added to the end of this page&apos;s <code>&lt;head&gt;</code>, after the site
           stylesheet — so rules here win over the site&apos;s own. Use it for styles and

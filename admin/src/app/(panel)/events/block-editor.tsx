@@ -639,8 +639,20 @@ const TIMELINE_SNIPPET = `<div class="ml-timeline">
   }
 </style>`;
 
+/**
+ * Is this a whole page rather than a piece of one? Mirrors
+ * App\Support\EventBlocks::isFullDocument, which decides the same thing when
+ * the page is rendered.
+ */
+export function isFullDocument(code: string): boolean {
+  // Only the opening matters: an <html> further in is content, not the document.
+  const start = code.slice(0, 2000).trimStart();
+
+  return /^<!DOCTYPE\s+html/i.test(start) || /^(<\?xml[^>]*>\s*)?<html[\s>]/i.test(start);
+}
+
 /** Warnings worth raising before a save, cheap enough to run on each keystroke. */
-function checkCode(code: string): string[] {
+function checkCode(code: string, mode: "inline" | "frame"): string[] {
   const notes: string[] = [];
 
   if (!code.trim()) return notes;
@@ -656,7 +668,15 @@ function checkCode(code: string): string[] {
     }
   }
 
-  if (/<\/?(html|head|body)[\s>]/i.test(code)) {
+  // A whole page is fine in a frame — that is what frames are for — but
+  // dropping one into the middle of this page is not.
+  if (isFullDocument(code)) {
+    if (mode !== "frame") {
+      notes.push(
+        'This is a complete page, not a piece of one. Set the second dropdown below to "Isolated — sandboxed frame" and it will be shown exactly as you wrote it.'
+      );
+    }
+  } else if (/<\/?(html|head|body)[\s>]/i.test(code)) {
     notes.push(
       "Drop the <html>, <head> and <body> tags — this block sits inside the page already."
     );
@@ -672,6 +692,9 @@ function checkCode(code: string): string[] {
  * should not be able to reach the panel.
  */
 function previewDocument(code: string): string {
+  // A whole page previews as itself, exactly as the live page renders it.
+  if (isFullDocument(code)) return code;
+
   return `<!DOCTYPE html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
@@ -691,7 +714,8 @@ function HtmlFields({
   onChange: (patch: Partial<EventBlock>) => void;
 }) {
   const [preview, setPreview] = useState(false);
-  const notes = checkCode(block.code);
+  const notes = checkCode(block.code, block.mode);
+  const wholePage = isFullDocument(block.code);
 
   return (
     <div className="space-y-2">
@@ -796,6 +820,9 @@ function HtmlFields({
             Isolated code cannot reach the rest of the page and its CSS stays inside —
             which also means the site styles do not reach it. The height is measured
             for you unless you fix one here.
+            {wholePage
+              ? " This is a complete page, so it is shown exactly as you wrote it."
+              : ""}
           </p>
           <input
             className="input"

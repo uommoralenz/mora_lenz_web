@@ -1,30 +1,6 @@
 <?php
 
 namespace App\Support;
-
-/**
- * The custom body of an event page: an ordered list of blocks the admin builds
- * in the panel (headings, text, images, galleries, quotes, lists, buttons,
- * videos…), plus the page-level options that decide how the page around those
- * blocks is laid out.
- *
- * Everything coming from the panel is rebuilt here from a whitelist, so the
- * database only ever holds known block types with known fields, and every URL
- * is checked for a safe scheme.
- *
- * Text is stored as plain text and marked up at render time by inline(): the
- * admin writes **bold**, *italic*, `code` and [label](url), and that becomes
- * HTML only after the text has been escaped. Nothing an admin types can turn
- * into a tag, so this class needs no HTML sanitiser anywhere.
- *
- * The one deliberate exception is the "html" block (and the page-level custom
- * code), which exists so an admin who writes markup can build things the fixed
- * blocks do not cover — a competition timeline, a sponsor wall, a schedule
- * table. That code is stored and printed verbatim, the way a Blogger HTML
- * gadget works: markup, <style> and <script> all in the one field. It is
- * therefore reachable only by a signed-in admin, and "frame" mode renders it
- * inside a sandboxed iframe for anyone who wants the isolation.
- */
 class EventBlocks
 {
     public const MAX_BLOCKS = 80;
@@ -284,12 +260,42 @@ class EventBlocks
             })();
             JS;
 
+        // A whole page pasted in as it stands — the usual case when a design
+        // was built elsewhere and brought over complete. Wrapping it would
+        // nest one document inside another, so it is used as it is and only
+        // the height reporter is added.
+        if (static::isFullDocument($code)) {
+            return static::withScript($code, $bootstrap);
+        }
+
         return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
             .'<meta name="viewport" content="width=device-width, initial-scale=1">'
             .'<style>'.$base.'</style></head><body>'
             .$code
             .'<script>'.$bootstrap.'</script>'
             .'</body></html>';
+    }
+
+    /** Is this a complete HTML document rather than a fragment? */
+    public static function isFullDocument(string $code): bool
+    {
+        // Only the opening of the string matters: a <html> further in is part
+        // of the content (an example, an escaped snippet), not the document.
+        $start = ltrim(mb_substr($code, 0, 2000));
+
+        return (bool) preg_match('/^<!DOCTYPE\s+html/i', $start)
+            || (bool) preg_match('/^(<\?xml[^>]*>\s*)?<html[\s>]/i', $start);
+    }
+
+    /** Put a script just before </body>, or at the end if there is no body. */
+    protected static function withScript(string $document, string $javascript): string
+    {
+        $script = '<script>'.$javascript.'</script>';
+        $at = strripos($document, '</body>');
+
+        return $at === false
+            ? $document.$script
+            : substr($document, 0, $at).$script.substr($document, $at);
     }
 
     /** Which brand a link points at, so buttons can show the right icon. */
