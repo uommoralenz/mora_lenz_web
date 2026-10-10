@@ -112,6 +112,7 @@ export async function previewEventAction(
     title: text("title"),
     description: text("description"),
     content: text("content"),
+    page_options: text("page_options"),
     location: text("location"),
     countdown_enabled: formData.get("countdown_enabled") ? true : false,
   };

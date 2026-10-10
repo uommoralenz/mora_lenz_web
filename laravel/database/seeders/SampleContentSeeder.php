@@ -161,12 +161,19 @@ class SampleContentSeeder extends Seeder
             'sort_order' => 1,
         ]);
 
-        foreach ([['President', 1], ['Secretary', 2], ['Treasurer', 3]] as [$role, $order]) {
+        // Ranks, so the Board renders as the hierarchy it is: the President
+        // above the Secretary and Treasurer rather than all three side by side.
+        foreach ([
+            ['President', TeamMember::TIER_LEAD, 1],
+            ['Secretary', TeamMember::TIER_SENIOR, 2],
+            ['Treasurer', TeamMember::TIER_SENIOR, 3],
+        ] as [$role, $tier, $order]) {
             TeamMember::create([
                 'group_id' => $exco->id,
                 'subgroup_id' => $board->id,
                 'name' => $role,
                 'profession' => $role,
+                'tier' => $tier,
                 'sort_order' => $order,
             ]);
         }
@@ -177,12 +184,16 @@ class SampleContentSeeder extends Seeder
             'sort_order' => 2,
         ]);
 
-        foreach ([['Lead Photographer', 1], ['Lead Videographer', 2]] as [$role, $order]) {
+        foreach ([
+            ['Lead Photographer', TeamMember::TIER_SENIOR, 1],
+            ['Lead Videographer', TeamMember::TIER_SENIOR, 2],
+        ] as [$role, $tier, $order]) {
             TeamMember::create([
                 'group_id' => $exco->id,
                 'subgroup_id' => $crew->id,
                 'name' => $role,
                 'profession' => $role,
+                'tier' => $tier,
                 'sort_order' => $order,
             ]);
         }

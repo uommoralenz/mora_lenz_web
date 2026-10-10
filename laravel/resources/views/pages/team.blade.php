@@ -32,13 +32,8 @@
                                 @endif
                             </div>
 
-                            @if ($group->directMembers->isNotEmpty())
-                                <div class="member-grid">
-                                    @foreach ($group->directMembers as $member)
-                                        @include('partials.member-card', ['member' => $member])
-                                    @endforeach
-                                </div>
-                            @endif
+                            {{-- Ranked rows rather than one flat grid — see partials.member-tiers. --}}
+                            @include('partials.member-tiers', ['members' => $group->directMembers])
 
                             @foreach ($group->subgroups as $subgroup)
                                 @continue($subgroup->members->isEmpty())
@@ -51,11 +46,7 @@
                                         @endif
                                     </div>
 
-                                    <div class="member-grid">
-                                        @foreach ($subgroup->members as $member)
-                                            @include('partials.member-card', ['member' => $member])
-                                        @endforeach
-                                    </div>
+                                    @include('partials.member-tiers', ['members' => $subgroup->members])
                                 </div>
                             @endforeach
                         </div>

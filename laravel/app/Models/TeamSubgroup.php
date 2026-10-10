@@ -31,7 +31,9 @@ class TeamSubgroup extends Model
 
     public function members(): HasMany
     {
-        return $this->hasMany(TeamMember::class, 'subgroup_id')->orderBy('sort_order');
+        return $this->hasMany(TeamMember::class, 'subgroup_id')
+            ->orderBy('tier')
+            ->orderBy('sort_order');
     }
 
     public function scopeActive(Builder $query): Builder

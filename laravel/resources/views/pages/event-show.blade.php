@@ -20,11 +20,20 @@
         </div>
     @endif
 
-    @php $countdownTarget = $event->countdownTarget(); @endphp
+    @php
+        $countdownTarget = $event->countdownTarget();
 
-    <section class="event-hero">
+        // The layout choices the admin made in the panel, always fully filled in.
+        $page = $event->pageOptions();
+
+        // "photo" is the full-bleed cover, "compact" a short banner, "plain"
+        // drops the image and lets the title carry the top of the page.
+        $showHeroImage = $page['hero'] !== 'plain' && $event->image_url;
+    @endphp
+
+    <section class="event-hero event-hero--{{ $page['hero'] }}">
         <div class="event-hero__bg">
-            @if ($event->image_url)
+            @if ($showHeroImage)
                 <img src="{{ $event->image_url }}" alt="" fetchpriority="high">
             @endif
         </div>
@@ -37,34 +46,32 @@
 
             <h1 class="event-hero__title">{{ $event->title }}</h1>
 
-            <div class="meta-list">
-                <span class="meta-pill">
-                    @include('partials.icons', ['icon' => 'calendar'])
-                    {{ $event->event_date->format('l, F j, Y') }}
-                </span>
-                <span class="meta-pill">
-                    @include('partials.icons', ['icon' => 'clock'])
-                    {{ $event->event_date->format('g:i A') }}
-                </span>
-                @if ($event->location)
+            @if ($page['show_meta'])
+                <div class="meta-list">
                     <span class="meta-pill">
-                        @include('partials.icons', ['icon' => 'map-pin'])
-                        {{ $event->location }}
+                        @include('partials.icons', ['icon' => 'calendar'])
+                        {{ $event->event_date->format('l, F j, Y') }}
                     </span>
-                @endif
-            </div>
+                    <span class="meta-pill">
+                        @include('partials.icons', ['icon' => 'clock'])
+                        {{ $event->event_date->format('g:i A') }}
+                    </span>
+                    @if ($event->location)
+                        <span class="meta-pill">
+                            @include('partials.icons', ['icon' => 'map-pin'])
+                            {{ $event->location }}
+                        </span>
+                    @endif
+                </div>
+            @endif
         </div>
     </section>
 
-    <section class="section" style="padding-top: 48px;">
+    <section class="section event-body event-body--{{ $page['width'] }}" style="padding-top: 48px;">
         <div class="container">
             @if ($event->description)
-                <div class="prose">
-                    {{-- Preserve the paragraph breaks the admin typed. --}}
-                    @foreach (preg_split('/\R{2,}/', trim($event->description)) as $paragraph)
-                        <p>{!! nl2br(e($paragraph)) !!}</p>
-                    @endforeach
-                </div>
+                {{-- The intro takes the same inline marks as the content blocks. --}}
+                <div class="prose">{!! \App\Support\EventBlocks::rich($event->description) !!}</div>
             @endif
 
             @if (! empty($event->content))

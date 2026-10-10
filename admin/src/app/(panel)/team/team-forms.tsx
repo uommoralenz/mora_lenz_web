@@ -6,6 +6,7 @@ import { FieldError, FormMessage, SubmitButton } from "@/components/form";
 import { Thumb } from "@/components/ui";
 import {
   EMPTY_ACTION_STATE,
+  TEAM_TIERS,
   type TeamGroupItem,
   type TeamMemberItem,
   type TeamSubgroupItem,
@@ -253,17 +254,42 @@ export function MemberForm({
         </div>
       </div>
 
-      <div>
-        <label className="label" htmlFor={`m-place-${uid}`}>
-          Placement
-        </label>
-        <PlacementSelect
-          id={`m-place-${uid}`}
-          placements={placements}
-          defaultValue={currentPlacement}
-        />
-        <FieldError errors={state.errors} name="group_id" />
-        <FieldError errors={state.errors} name="subgroup_id" />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="label" htmlFor={`m-place-${uid}`}>
+            Placement
+          </label>
+          <PlacementSelect
+            id={`m-place-${uid}`}
+            placements={placements}
+            defaultValue={currentPlacement}
+          />
+          <FieldError errors={state.errors} name="group_id" />
+          <FieldError errors={state.errors} name="subgroup_id" />
+        </div>
+
+        <div>
+          <label className="label" htmlFor={`m-tier-${uid}`}>
+            Rank
+          </label>
+          <select
+            id={`m-tier-${uid}`}
+            name="tier"
+            className="input"
+            defaultValue={String(member?.tier ?? 3)}
+          >
+            {TEAM_TIERS.map((tier) => (
+              <option key={tier.value} value={tier.value}>
+                {tier.label}
+              </option>
+            ))}
+          </select>
+          <p className="hint">
+            Where the member sits in the group&rsquo;s hierarchy on the Team page.
+            Leave everyone on &ldquo;Member&rdquo; for a plain grid.
+          </p>
+          <FieldError errors={state.errors} name="tier" />
+        </div>
       </div>
 
       <div>

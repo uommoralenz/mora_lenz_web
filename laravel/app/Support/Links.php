@@ -24,6 +24,19 @@ class Links
         return (bool) config('moralenz.compat_urls', false);
     }
 
+    /**
+     * A directory URL with its trailing slash intact.
+     *
+     * url() normalises what it is given with trim($path, '/'), so url('/contact/')
+     * comes back as ".../contact" — the slash every caller below relies on is
+     * dropped. Re-appending it here is the only dependable way to keep it, and
+     * doing it in one place stops the next caller from hitting the same trap.
+     */
+    protected static function dir(string $path): string
+    {
+        return rtrim(url($path), '/').'/';
+    }
+
     /** A single event's page. */
     public static function event(Event $event): string
     {
@@ -31,7 +44,7 @@ class Links
             return route('events.show', $event->slug);
         }
 
-        return url('/events/').'?e='.rawurlencode($event->slug);
+        return static::dir('/events').'?e='.rawurlencode($event->slug);
     }
 
     /** Draft preview of an event that may not be saved yet. */
@@ -41,19 +54,20 @@ class Links
             return route('events.preview', $token);
         }
 
-        return url('/events/').'?preview='.rawurlencode($token);
+        return static::dir('/events').'?preview='.rawurlencode($token);
     }
 
     /**
      * Where the contact form posts.
      *
      * The trailing slash matters: nginx answers /contact with a 301 to
-     * /contact/, and browsers downgrade a redirected POST to GET, which would
-     * silently throw the message away.
+     * /contact/, and browsers downgrade a redirected POST to GET. The request
+     * then arrives as a GET on a POST-only route, so the visitor gets a bare
+     * 405 and the message is thrown away. Keep this going to /contact/.
      */
     public static function contactPost(): string
     {
-        return static::compat() ? url('/contact/') : route('contact.store');
+        return static::compat() ? static::dir('/contact') : route('contact.store');
     }
 
     /**
@@ -62,7 +76,7 @@ class Links
      */
     public static function page(string $name, string $path): string
     {
-        return static::compat() ? url($path.'/') : route($name);
+        return static::compat() ? static::dir($path) : route($name);
     }
 
     public static function events(): string
@@ -83,7 +97,7 @@ class Links
     public static function service(string $type): string
     {
         return static::compat()
-            ? url('/services/'.$type.'/')
+            ? static::dir('/services/'.$type)
             : route('services.show', $type);
     }
 }

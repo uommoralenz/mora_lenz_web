@@ -1773,6 +1773,110 @@ body.has-lightbox { overflow: hidden; }
   gap: 24px;
 }
 
+/* ---- ranked rows ------------------------------------------------------- */
+
+/*
+   One row per tier, drawn as a hierarchy: the top role above the office-bearers
+   above the general members. The short connector between rows carries the eye
+   down the structure without drawing a full org chart, which does not survive
+   a phone-width screen.
+*/
+.member-tiers {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.member-tiers .member-grid {
+  width: 100%;
+}
+
+.member-tiers .member-grid + .member-grid {
+  position: relative;
+  padding-top: 28px;
+}
+
+.member-tiers .member-grid + .member-grid::before {
+  content: "";
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  width: 1px;
+  height: 28px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    to bottom,
+    rgba(96, 165, 250, 0.5),
+    rgba(96, 165, 250, 0)
+  );
+}
+
+/* Tier 1 — the top role, alone and widest. */
+.member-grid--is-lead .member-card {
+  max-width: 420px;
+}
+
+.member-grid--is-lead .member-card__avatar {
+  width: 164px;
+  height: 164px;
+}
+
+.member-grid--is-lead .member-card__name {
+  font-size: 1.45rem;
+}
+
+.member-grid--is-lead .member-card__role {
+  font-size: 0.95rem;
+}
+
+/* Tier 2 — office-bearers, between the lead and the rest. */
+.member-grid--is-senior .member-card {
+  max-width: 300px;
+}
+
+.member-grid--is-senior .member-card__avatar {
+  width: 140px;
+  height: 140px;
+}
+
+/* The rank's accent, strongest at the top of the structure. */
+.member-card--lead {
+  border-color: rgba(96, 165, 250, 0.45);
+  background: linear-gradient(
+    to bottom,
+    rgba(37, 99, 235, 0.16),
+    rgba(17, 24, 39, 0.55)
+  );
+}
+
+.member-card--lead .member-card__avatar {
+  border-color: rgba(96, 165, 250, 0.65);
+}
+
+.member-card--senior {
+  border-color: rgba(96, 165, 250, 0.26);
+}
+
+@media (max-width: 600px) {
+  /* Ranks stop meaning much once every card is full width, so drop the size
+     difference and keep only the order. */
+  .member-grid--is-lead .member-card,
+  .member-grid--is-senior .member-card {
+    max-width: 320px;
+  }
+
+  .member-grid--is-lead .member-card__avatar,
+  .member-grid--is-senior .member-card__avatar {
+    width: 128px;
+    height: 128px;
+  }
+
+  .member-grid--is-lead .member-card__name {
+    font-size: 1.2rem;
+  }
+}
+
 .member-card {
   position: relative;
   width: 100%;
@@ -2177,6 +2281,27 @@ body.has-lightbox { overflow: hidden; }
   color: #f87171;
 }
 
+.form__hint {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: var(--gray-500);
+}
+
+/* A field the server rejected, so the message underneath has something to point
+   at. site.js clears it again the moment the field is edited. */
+.form__field input.is-invalid,
+.form__field select.is-invalid,
+.form__field textarea.is-invalid {
+  border-color: rgba(239, 68, 68, 0.75);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.form__field input.is-invalid:focus,
+.form__field select.is-invalid:focus,
+.form__field textarea.is-invalid:focus {
+  border-color: #f87171;
+}
+
 .form__submit {
   width: 100%;
   padding: 16px;
@@ -2310,16 +2435,94 @@ body.has-lightbox { overflow: hidden; }
   background: #db2777;
 }
 
+/* Find Us: the map sits inside a card that names the place, so the block reads
+   as "University of Moratuwa" and not as an anonymous slab of street map. */
+.map-card {
+  margin: 0;
+  border: 1px solid var(--gray-700);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: rgba(31, 41, 55, 0.4);
+}
+
+.map-card__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--gray-700);
+}
+
+.map-card__icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #db2777;
+  display: grid;
+  place-items: center;
+}
+
+.map-card__icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.map-card__place {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.map-card__place strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.map-card__place span {
+  font-size: 0.8rem;
+  color: var(--gray-400);
+}
+
+.map-card__link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 16px;
+  border-top: 1px solid var(--gray-700);
+  color: var(--accent-soft);
+  font-size: 0.86rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.map-card__link svg {
+  width: 16px;
+  height: 16px;
+}
+
+.map-card__link:hover {
+  background: rgba(37, 99, 235, 0.14);
+  color: #93c5fd;
+}
+
 .map-embed {
   position: relative;
   width: 100%;
   height: 260px;
-  border-radius: var(--radius-sm);
   overflow: hidden;
+}
+
+/* Standalone use (outside .map-card) keeps its own frame. */
+.map-embed:only-child {
+  border-radius: var(--radius-sm);
   border: 1px solid var(--gray-700);
 }
 
 .map-embed iframe {
+  display: block;
   width: 100%;
   height: 100%;
   border: 0;
@@ -2560,7 +2763,10 @@ body.has-lightbox { overflow: hidden; }
 }
 
 .event-blocks {
-  max-width: 48rem;
+  /* The reading column. Widened per event by .event-body--wide, and read back
+     by the "wider than text" image so it can size itself against it. */
+  --col: 48rem;
+  max-width: var(--col);
   margin: 32px auto 0;
   display: flex;
   flex-direction: column;
@@ -2579,8 +2785,50 @@ body.has-lightbox { overflow: hidden; }
   text-align: center;
 }
 
+.event-blocks__text.is-right {
+  text-align: right;
+}
+
+/* An opening or standout paragraph, a size up from body copy. */
+.event-blocks__text.is-lead p {
+  font-size: 1.25rem;
+  line-height: 1.7;
+  color: #e5e7eb;
+}
+
+/* Inline marks the admin writes as **bold**, *italic*, `code` and [a](url). */
+.event-blocks a,
+.prose a {
+  color: var(--accent-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.event-blocks a:hover,
+.prose a:hover {
+  color: #93c5fd;
+}
+
+.event-blocks strong,
+.prose strong {
+  color: #fff;
+  font-weight: 700;
+}
+
+.event-blocks code,
+.prose code {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--hairline);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+}
+
 .event-blocks__h2,
-.event-blocks__h3 {
+.event-blocks__h3,
+.event-blocks__h4 {
   margin: 12px 0 0;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -2589,9 +2837,34 @@ body.has-lightbox { overflow: hidden; }
 
 .event-blocks__h2 { font-size: clamp(1.6rem, 4vw, 2.1rem); }
 .event-blocks__h3 { font-size: 1.3rem; }
+.event-blocks__h4 { font-size: 1.08rem; color: #e5e7eb; }
+
+.event-blocks__h2.is-center,
+.event-blocks__h3.is-center,
+.event-blocks__h4.is-center {
+  text-align: center;
+}
 
 .event-blocks__figure {
   margin: 0;
+}
+
+/* Image width, so a landscape shot can break out of the reading column and a
+   portrait one need not span it.
+
+   "wide" has to escape a parent that is only --col across, so it is given an
+   explicit width and re-centred on the column's midpoint with left/transform —
+   a max-width alone could never exceed the parent. */
+.event-blocks__figure.is-wide {
+  position: relative;
+  left: 50%;
+  width: min(calc(var(--col) + 10rem), 100vw - 32px);
+  transform: translateX(-50%);
+}
+
+.event-blocks__figure.is-narrow {
+  width: min(28rem, 100%);
+  margin-inline: auto;
 }
 
 .event-blocks__figure img {
@@ -2602,12 +2875,115 @@ body.has-lightbox { overflow: hidden; }
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.event-blocks__figure figcaption {
+.event-blocks__figure figcaption,
+.event-blocks__gallery figcaption {
   margin-top: 10px;
   text-align: center;
   font-size: 0.85rem;
   color: #9ca3af;
 }
+
+/* ---- gallery ---------------------------------------------------------- */
+
+.event-blocks__gallery {
+  margin: 0;
+}
+
+.event-blocks__gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.event-blocks__gallery[data-count="1"] .event-blocks__gallery-grid {
+  grid-template-columns: 1fr;
+}
+
+.event-blocks__gallery-grid img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (min-width: 700px) {
+  .event-blocks__gallery[data-count="3"] .event-blocks__gallery-grid,
+  .event-blocks__gallery[data-count="4"] .event-blocks__gallery-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ---- quote ------------------------------------------------------------ */
+
+.event-blocks__quote {
+  margin: 0;
+  padding: 4px 0 4px 24px;
+  border-left: 3px solid rgba(96, 165, 250, 0.6);
+}
+
+.event-blocks__quote p {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.7;
+  font-style: italic;
+  color: #e5e7eb;
+}
+
+.event-blocks__quote cite {
+  display: block;
+  margin-top: 12px;
+  font-size: 0.86rem;
+  font-style: normal;
+  color: #9ca3af;
+}
+
+.event-blocks__quote cite::before {
+  content: "— ";
+}
+
+/* ---- list ------------------------------------------------------------- */
+
+.event-blocks__list {
+  margin: 0;
+  padding-left: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #d1d5db;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.event-blocks__list.is-check {
+  list-style: none;
+  padding-left: 0;
+}
+
+.event-blocks__list.is-check li {
+  position: relative;
+  padding-left: 30px;
+}
+
+.event-blocks__list.is-check li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.55em;
+  width: 11px;
+  height: 6px;
+  border-left: 2px solid #4ade80;
+  border-bottom: 2px solid #4ade80;
+  transform: translateY(-50%) rotate(-45deg);
+}
+
+/* ---- spacer ----------------------------------------------------------- */
+
+.event-blocks__spacer.is-small { height: 8px; }
+.event-blocks__spacer.is-medium { height: 32px; }
+.event-blocks__spacer.is-large { height: 72px; }
 
 .event-blocks__buttons {
   display: flex;
@@ -2649,6 +3025,17 @@ body.has-lightbox { overflow: hidden; }
   border: 1px solid rgba(96, 165, 250, 0.3);
 }
 
+/* Tone, so a deadline reads differently from a note. */
+.event-blocks__callout.is-warn {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(251, 191, 36, 0.38);
+}
+
+.event-blocks__callout.is-success {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(74, 222, 128, 0.35);
+}
+
 .event-blocks__callout h3 {
   margin: 0 0 8px;
   font-size: 1.15rem;
@@ -2665,6 +3052,59 @@ body.has-lightbox { overflow: hidden; }
   border: 0;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   margin: 8px 0;
+}
+
+/* ---- page-level layout options ---------------------------------------- */
+
+/*
+   Set per event in the admin panel (App\Support\EventBlocks::pageOptions).
+   "wide" widens the whole reading column; the hero variants trade cover-photo
+   drama for a shorter top of page.
+*/
+.event-body--wide .event-blocks {
+  --col: 64rem;
+}
+
+.event-body--wide .prose,
+.event-body--wide .countdown-block {
+  max-width: 64rem;
+}
+
+/* A shorter banner: same cover photo, far less of the page spent on it.
+   The hero's padding lives on __inner, so that is what gets trimmed. */
+.event-hero--compact {
+  min-height: 0;
+}
+
+.event-hero--compact .event-hero__inner {
+  padding-block: calc(var(--nav-h) + 36px) 36px;
+}
+
+.event-hero--compact .event-hero__bg img {
+  object-position: center;
+}
+
+.event-hero--compact .event-hero__title {
+  font-size: clamp(1.9rem, 5vw, 2.8rem);
+}
+
+/* No photo at all — the title carries the top of the page. The gradient moves
+   onto the section itself, since __bg (which normally draws it) is gone. */
+.event-hero--plain {
+  min-height: 0;
+  background: linear-gradient(to bottom, var(--gray-900), #000);
+}
+
+.event-hero--plain .event-hero__bg {
+  display: none;
+}
+
+.event-hero--plain .event-hero__inner {
+  padding-block: calc(var(--nav-h) + 36px) 28px;
+}
+
+.event-hero--plain .event-hero__title {
+  font-size: clamp(1.9rem, 5vw, 2.8rem);
 }
 
 /* =========================================================================

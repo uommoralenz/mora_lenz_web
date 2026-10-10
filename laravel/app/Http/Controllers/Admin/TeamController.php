@@ -227,6 +227,7 @@ class TeamController extends Controller
             'subgroup_id' => ['nullable', 'integer', Rule::exists('team_subgroups', 'id')],
             'name' => [$member ? 'sometimes' : 'required', 'string', 'max:150'],
             'profession' => [$member ? 'sometimes' : 'required', 'string', 'max:150'],
+            'tier' => ['nullable', 'integer', Rule::in(TeamMember::TIERS)],
             'description' => ['nullable', 'string', 'max:1000'],
             'image' => ['nullable', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
             'remove_image' => ['boolean'],
@@ -240,6 +241,11 @@ class TeamController extends Controller
             if (array_key_exists($field, $data)) {
                 $member->{$field} = $data[$field];
             }
+        }
+
+        // Leaving the rank unset means "an ordinary member", the bottom tier.
+        if (array_key_exists('tier', $data)) {
+            $member->tier = (int) ($data['tier'] ?: TeamMember::TIER_MEMBER);
         }
 
         if (array_key_exists('group_id', $data)) {
@@ -307,6 +313,7 @@ class TeamController extends Controller
             'subgroup_id' => $member->subgroup_id,
             'name' => $member->name,
             'profession' => $member->profession,
+            'tier' => (int) ($member->tier ?: TeamMember::TIER_MEMBER),
             'description' => $member->description,
             'image_url' => $member->image_url,
             'sort_order' => (int) $member->sort_order,

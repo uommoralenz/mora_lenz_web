@@ -390,10 +390,23 @@
     if (!form) return;
 
     form.addEventListener("submit", function () {
+      // Only lock the button once the browser has accepted every field. Doing
+      // it unconditionally left the form stuck showing a disabled "Sending..."
+      // whenever native validation refused the submit.
+      if (form.checkValidity && !form.checkValidity()) return;
+
       var button = form.querySelector('button[type="submit"]');
       if (!button) return;
       button.disabled = true;
       button.textContent = "Sending...";
+    });
+
+    // Drop a server-side error outline as soon as that field is corrected.
+    Array.prototype.forEach.call(form.querySelectorAll(".is-invalid"), function (field) {
+      field.addEventListener("input", function () {
+        field.classList.remove("is-invalid");
+        field.removeAttribute("aria-invalid");
+      });
     });
 
     // If the server reported a result, scroll it into view.

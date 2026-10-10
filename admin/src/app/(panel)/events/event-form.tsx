@@ -4,9 +4,15 @@ import { useActionState, useRef, useState } from "react";
 
 import { FieldError, FormMessage, SubmitButton } from "@/components/form";
 import { Thumb, toLocalInput } from "@/components/ui";
-import { EMPTY_ACTION_STATE, type EventItem } from "@/lib/types";
+import {
+  EMPTY_ACTION_STATE,
+  EVENT_PAGE_DEFAULTS,
+  type EventItem,
+  type EventPageOptions,
+} from "@/lib/types";
 
 import BlockEditor from "./block-editor";
+import PageOptionsEditor from "./page-options";
 import { previewEventAction, saveEventAction } from "./actions";
 
 export default function EventForm({ event }: { event?: EventItem }) {
@@ -14,6 +20,11 @@ export default function EventForm({ event }: { event?: EventItem }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [previewing, setPreviewing] = useState(false);
   const [previewError, setPreviewError] = useState("");
+
+  const pageOptions: EventPageOptions = {
+    ...EVENT_PAGE_DEFAULTS,
+    ...(event?.page_options ?? {}),
+  };
 
   async function openPreview() {
     if (!formRef.current) return;
@@ -101,10 +112,21 @@ export default function EventForm({ event }: { event?: EventItem }) {
       </div>
 
       <div>
+        <span className="label">Page appearance</span>
+        <p className="hint mb-3 mt-0">
+          How the page around your content is laid out.
+        </p>
+        <PageOptionsEditor initial={pageOptions} />
+        <FieldError errors={state.errors} name="page_options" />
+      </div>
+
+      <div>
         <span className="label">Page content</span>
         <p className="hint mb-3 mt-0">
-          Build the rest of the page like a blog post. Buttons can link to WhatsApp,
-          Facebook, Google Forms, Drive or any website.
+          Build the rest of the page like a blog post: stack headings, text, lists,
+          quotes, images and buttons in any order, and reorder or duplicate them at
+          any time. Buttons can link to WhatsApp, Facebook, Google Forms, Drive or
+          any website.
         </p>
         <BlockEditor initial={event?.content ?? []} />
         <FieldError errors={state.errors} name="content" />

@@ -9,11 +9,25 @@ use Illuminate\Support\Str;
 
 class TeamMember extends Model
 {
+    /**
+     * Rank inside a group or subgroup: the top role, the office-bearers beneath
+     * it, then everyone else. Drives how large the member's card is drawn and
+     * which row of the hierarchy it lands in.
+     */
+    public const TIER_LEAD = 1;
+
+    public const TIER_SENIOR = 2;
+
+    public const TIER_MEMBER = 3;
+
+    public const TIERS = [self::TIER_LEAD, self::TIER_SENIOR, self::TIER_MEMBER];
+
     protected $fillable = [
         'group_id',
         'subgroup_id',
         'name',
         'profession',
+        'tier',
         'description',
         'image_url',
         'sort_order',
@@ -23,6 +37,7 @@ class TeamMember extends Model
     protected function casts(): array
     {
         return [
+            'tier' => 'integer',
             'is_active' => 'boolean',
         ];
     }

@@ -70,6 +70,7 @@ class EventController extends Controller
             'title' => ['nullable', 'string', 'max:200'],
             'description' => ['nullable', 'string', 'max:20000'],
             'content' => ['nullable'],
+            'page_options' => ['nullable'],
             'event_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date'],
             'location' => ['nullable', 'string', 'max:200'],
@@ -86,6 +87,7 @@ class EventController extends Controller
             'title' => $data['title'] ?? '',
             'description' => $data['description'] ?? null,
             'content' => EventBlocks::sanitize($data['content'] ?? []),
+            'page_options' => EventBlocks::pageOptions($data['page_options'] ?? []),
             'event_date' => $data['event_date'] ?? null,
             'end_date' => $data['end_date'] ?? null,
             'location' => $data['location'] ?? null,
@@ -119,6 +121,7 @@ class EventController extends Controller
             ],
             'description' => ['nullable', 'string', 'max:20000'],
             'content' => ['nullable'],
+            'page_options' => ['nullable'],
             'event_date' => [$event ? 'sometimes' : 'required', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:event_date'],
             'location' => ['nullable', 'string', 'max:200'],
@@ -147,6 +150,13 @@ class EventController extends Controller
         if (array_key_exists('content', $data)) {
             $blocks = EventBlocks::sanitize($data['content']);
             $event->content = $blocks === [] ? null : $blocks;
+        }
+
+        if (array_key_exists('page_options', $data)) {
+            $options = EventBlocks::pageOptions($data['page_options']);
+            // Storing null for an all-defaults page keeps the column meaningful:
+            // a row with options set is a page someone deliberately customised.
+            $event->page_options = $options === EventBlocks::PAGE_DEFAULTS ? null : $options;
         }
 
         // A blank slug means "regenerate from the title".
@@ -185,6 +195,7 @@ class EventController extends Controller
             'slug' => $event->slug,
             'description' => $event->description,
             'content' => $event->content ?? [],
+            'page_options' => $event->pageOptions(),
             'event_date' => $event->event_date?->toIso8601String(),
             'end_date' => $event->end_date?->toIso8601String(),
             'location' => $event->location,

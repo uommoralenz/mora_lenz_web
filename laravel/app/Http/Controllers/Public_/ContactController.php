@@ -29,6 +29,7 @@ class ContactController extends Controller
 
         if (RateLimiter::tooManyAttempts($key, 5)) {
             return back()
+                ->withFragment('contact')
                 ->withInput()
                 ->with('contact_error', 'Too many messages sent. Please try again later.');
         }
@@ -56,7 +57,11 @@ class ContactController extends Controller
 
         $this->notify($message);
 
-        return back()->with('contact_success', "Thanks {$message->name}! Your message has been received.");
+        // The fragment puts the visitor back on the contact section rather than
+        // at the top of the home page, with or without JavaScript.
+        return back()
+            ->withFragment('contact')
+            ->with('contact_success', "Thanks {$message->name}! Your message has been received.");
     }
 
     /**

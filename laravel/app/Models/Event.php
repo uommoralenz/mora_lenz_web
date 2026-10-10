@@ -13,6 +13,7 @@ class Event extends Model
         'slug',
         'description',
         'content',
+        'page_options',
         'event_date',
         'end_date',
         'location',
@@ -27,6 +28,7 @@ class Event extends Model
     {
         return [
             'content' => 'array',
+            'page_options' => 'array',
             'event_date' => 'datetime',
             'end_date' => 'datetime',
             'countdown_enabled' => 'boolean',
@@ -72,6 +74,15 @@ class Event extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * The page layout choices, with every default filled in, so the view never
+     * has to care whether an event was saved before an option existed.
+     */
+    public function pageOptions(): array
+    {
+        return \App\Support\EventBlocks::pageOptions($this->page_options);
     }
 
     /** The date the countdown counts towards: end_date when set, else the start. */

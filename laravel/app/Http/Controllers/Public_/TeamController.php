@@ -22,11 +22,15 @@ class TeamController extends Controller
      */
     public static function structure(): Collection
     {
+        // Members come back ranked first, then in their own order within that
+        // rank, so the view can group each collection straight into tier rows.
+        $ranked = fn ($q) => $q->where('is_active', true)->orderBy('tier')->orderBy('sort_order');
+
         return TeamGroup::active()
             ->with([
-                'directMembers' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
+                'directMembers' => $ranked,
                 'subgroups' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
-                'subgroups.members' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
+                'subgroups.members' => $ranked,
             ])
             ->orderBy('sort_order')
             ->get();

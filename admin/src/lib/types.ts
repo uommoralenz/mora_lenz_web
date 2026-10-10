@@ -12,13 +12,35 @@ export interface AdminUser {
 }
 
 export type EventBlock =
-  | { type: "heading"; text: string; level: 2 | 3 }
-  | { type: "text"; text: string; align: "left" | "center" }
-  | { type: "image"; url: string; caption: string }
+  | { type: "heading"; text: string; level: 2 | 3 | 4; align: "left" | "center" }
+  | {
+      type: "text";
+      text: string;
+      align: "left" | "center" | "right";
+      size: "normal" | "lead";
+    }
+  | { type: "quote"; text: string; cite: string }
+  | { type: "list"; style: "bullet" | "number" | "check"; items: string[] }
+  | { type: "image"; url: string; caption: string; width: "full" | "wide" | "narrow" }
+  | { type: "gallery"; urls: string[]; caption: string }
   | { type: "button"; label: string; url: string; style: "primary" | "outline" }
   | { type: "video"; url: string }
-  | { type: "callout"; title: string; text: string }
+  | { type: "callout"; title: string; text: string; tone: "info" | "warn" | "success" }
+  | { type: "spacer"; size: "small" | "medium" | "large" }
   | { type: "divider" };
+
+/** How the page around the content blocks is laid out. */
+export interface EventPageOptions {
+  width: "normal" | "wide";
+  hero: "photo" | "compact" | "plain";
+  show_meta: boolean;
+}
+
+export const EVENT_PAGE_DEFAULTS: EventPageOptions = {
+  width: "normal",
+  hero: "photo",
+  show_meta: true,
+};
 
 export interface EventItem {
   id: number;
@@ -26,6 +48,7 @@ export interface EventItem {
   slug: string;
   description: string | null;
   content: EventBlock[];
+  page_options: EventPageOptions;
   event_date: string;
   end_date: string | null;
   location: string | null;
@@ -72,12 +95,22 @@ export interface ServiceImageItem {
   is_active: boolean;
 }
 
+/** Rank inside a group: 1 the top role, 2 the office-bearers, 3 everyone else. */
+export type TeamTier = 1 | 2 | 3;
+
+export const TEAM_TIERS: { value: TeamTier; label: string; hint: string }[] = [
+  { value: 1, label: "Top role", hint: "Shown alone at the top, in the largest card." },
+  { value: 2, label: "Office-bearer", hint: "Shown in a row under the top role." },
+  { value: 3, label: "Member", hint: "Shown in the main grid with everyone else." },
+];
+
 export interface TeamMemberItem {
   id: number;
   group_id: number;
   subgroup_id: number | null;
   name: string;
   profession: string;
+  tier: TeamTier;
   description: string | null;
   image_url: string | null;
   sort_order: number;

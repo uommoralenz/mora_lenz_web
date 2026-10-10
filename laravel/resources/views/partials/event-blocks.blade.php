@@ -1,9 +1,16 @@
 {{--
     Renders an event's custom blocks (see App\Support\EventBlocks).
-    Everything is escaped with e(); URLs were scheme-checked when saved.
+
+    Plain values are escaped by {{ }}. Text that may carry inline marks goes
+    through EventBlocks::inline()/rich(), which escape first and only then add
+    tags, so their output is safe to print raw. URLs were scheme-checked when
+    they were saved.
+
     Consecutive buttons are grouped into one wrapping row.
 --}}
 @php
+    use App\Support\EventBlocks;
+
     $blocks = array_values((array) ($blocks ?? []));
 
     $iconPaths = [
@@ -11,6 +18,7 @@
         'facebook' => '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>',
         'instagram' => '<rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>',
         'youtube' => '<path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><polygon points="10 15 15 12 10 9"/>',
+        'tiktok' => '<path d="M15 3v10.5a3.5 3.5 0 1 1-3.5-3.5h.5"/><path d="M15 3a5 5 0 0 0 5 5"/>',
         'form' => '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/>',
         'drive' => '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
         'mail' => '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
@@ -28,24 +36,62 @@
 
         @switch($block['type'] ?? '')
             @case('heading')
-                @if (($block['level'] ?? 2) === 3)
-                    <h3 class="event-blocks__h3">{{ $block['text'] }}</h3>
-                @else
-                    <h2 class="event-blocks__h2">{{ $block['text'] }}</h2>
-                @endif
+                @php
+                    $level = in_array((int) ($block['level'] ?? 2), [2, 3, 4], true) ? (int) $block['level'] : 2;
+                    $headingClass = 'event-blocks__h'.$level
+                        .(($block['align'] ?? 'left') === 'center' ? ' is-center' : '');
+                @endphp
+                <h{{ $level }} class="{{ $headingClass }}">{{ $block['text'] }}</h{{ $level }}>
                 @break
 
             @case('text')
-                <div class="prose event-blocks__text {{ ($block['align'] ?? 'left') === 'center' ? 'is-center' : '' }}">
-                    @foreach (preg_split('/\R{2,}/', trim($block['text'])) as $paragraph)
-                        <p>{!! nl2br(e($paragraph)) !!}</p>
+                @php
+                    $align = $block['align'] ?? 'left';
+                    $textClass = 'prose event-blocks__text'
+                        .($align !== 'left' ? ' is-'.$align : '')
+                        .(($block['size'] ?? 'normal') === 'lead' ? ' is-lead' : '');
+                @endphp
+                <div class="{{ $textClass }}">{!! EventBlocks::rich($block['text']) !!}</div>
+                @break
+
+            @case('quote')
+                <blockquote class="event-blocks__quote">
+                    <p>{!! nl2br(EventBlocks::inline($block['text'])) !!}</p>
+                    @if (! empty($block['cite']))
+                        <cite>{{ $block['cite'] }}</cite>
+                    @endif
+                </blockquote>
+                @break
+
+            @case('list')
+                @php
+                    $style = $block['style'] ?? 'bullet';
+                    $tag = $style === 'number' ? 'ol' : 'ul';
+                @endphp
+                <{{ $tag }} class="event-blocks__list is-{{ $style }}">
+                    @foreach ($block['items'] as $item)
+                        <li>{!! EventBlocks::inline($item) !!}</li>
                     @endforeach
-                </div>
+                </{{ $tag }}>
                 @break
 
             @case('image')
-                <figure class="event-blocks__figure">
+                <figure class="event-blocks__figure is-{{ $block['width'] ?? 'full' }}">
                     <img src="{{ $block['url'] }}" alt="{{ $block['caption'] ?? '' }}" loading="lazy">
+                    @if (! empty($block['caption']))
+                        <figcaption>{{ $block['caption'] }}</figcaption>
+                    @endif
+                </figure>
+                @break
+
+            @case('gallery')
+                @php $urls = array_values((array) ($block['urls'] ?? [])); @endphp
+                <figure class="event-blocks__gallery" data-count="{{ min(count($urls), 4) }}">
+                    <div class="event-blocks__gallery-grid">
+                        @foreach ($urls as $url)
+                            <img src="{{ $url }}" alt="{{ $block['caption'] ?? '' }}" loading="lazy">
+                        @endforeach
+                    </div>
                     @if (! empty($block['caption']))
                         <figcaption>{{ $block['caption'] }}</figcaption>
                     @endif
@@ -57,7 +103,7 @@
                     @while ($i < $count && ($blocks[$i]['type'] ?? '') === 'button')
                         @php
                             $button = $blocks[$i];
-                            $platform = \App\Support\EventBlocks::platform($button['url']);
+                            $platform = EventBlocks::platform($button['url']);
                             $external = str_starts_with($button['url'], 'http');
                         @endphp
                         <a class="cta {{ ($button['style'] ?? 'primary') === 'outline' ? 'cta--ghost' : '' }} event-blocks__btn"
@@ -74,7 +120,7 @@
                 @break
 
             @case('video')
-                @php $embed = \App\Support\EventBlocks::youtubeEmbed($block['url']); @endphp
+                @php $embed = EventBlocks::youtubeEmbed($block['url']); @endphp
                 @if ($embed)
                     <div class="event-blocks__video">
                         <iframe src="{{ $embed }}" title="Video" loading="lazy" allowfullscreen
@@ -93,14 +139,18 @@
                 @break
 
             @case('callout')
-                <aside class="event-blocks__callout">
+                <aside class="event-blocks__callout is-{{ $block['tone'] ?? 'info' }}">
                     @if (! empty($block['title']))
                         <h3>{{ $block['title'] }}</h3>
                     @endif
                     @if (! empty($block['text']))
-                        <p>{!! nl2br(e($block['text'])) !!}</p>
+                        <p>{!! nl2br(EventBlocks::inline($block['text'])) !!}</p>
                     @endif
                 </aside>
+                @break
+
+            @case('spacer')
+                <div class="event-blocks__spacer is-{{ $block['size'] ?? 'medium' }}" aria-hidden="true"></div>
                 @break
 
             @case('divider')

@@ -3,6 +3,15 @@
 
     $social = config('moralenz.social');
     $email = config('moralenz.contact_email');
+
+    $mapPlace = config('moralenz.map_place');
+    $mapAddress = config('moralenz.map_address');
+    $mapUrl = config('moralenz.map_url');
+    $mapEmbed = config('moralenz.map_embed_url');
+
+    // Marks a field that came back from the server with an error, so it can be
+    // outlined and announced instead of only carrying a message underneath.
+    $invalid = fn (string $field) => $errors->has($field) ? 'is-invalid' : '';
 @endphp
 
 <section id="contact" class="section contact">
@@ -38,7 +47,10 @@
                     </div>
                 @endif
 
-                <form class="form" method="POST" action="{{ \App\Support\Links::contactPost() }}" data-contact-form novalidate>
+                {{-- Browser validation is left on: it catches a missing field or a
+                     too-short message in place, rather than after a round trip that
+                     reloads the whole page and scrolls away from the form. --}}
+                <form class="form" method="POST" action="{{ \App\Support\Links::contactPost() }}" data-contact-form>
                     @csrf
 
                     {{-- Honeypot: left empty by people, filled in by bots. --}}
@@ -51,35 +63,55 @@
                         <div class="form__field">
                             <label for="contact-name">Name *</label>
                             <input type="text" id="contact-name" name="name" placeholder="Your name"
-                                   value="{{ old('name') }}" maxlength="120" required>
-                            @error('name') <p class="form__error">{{ $message }}</p> @enderror
+                                   class="{{ $invalid('name') }}"
+                                   value="{{ old('name') }}" maxlength="120" required
+                                   @error('name') aria-invalid="true" aria-describedby="contact-name-error" @enderror>
+                            @error('name')
+                                <p class="form__error" id="contact-name-error">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div class="form__field">
                             <label for="contact-email">Email *</label>
                             <input type="email" id="contact-email" name="email" placeholder="your.email@example.com"
-                                   value="{{ old('email') }}" maxlength="180" required>
-                            @error('email') <p class="form__error">{{ $message }}</p> @enderror
+                                   class="{{ $invalid('email') }}"
+                                   value="{{ old('email') }}" maxlength="180" required
+                                   @error('email') aria-invalid="true" aria-describedby="contact-email-error" @enderror>
+                            @error('email')
+                                <p class="form__error" id="contact-email-error">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
                     <div class="form__field">
                         <label for="contact-subject">Subject *</label>
-                        <select id="contact-subject" name="subject" required>
+                        <select id="contact-subject" name="subject" required
+                                class="{{ $invalid('subject') }}"
+                                @error('subject') aria-invalid="true" aria-describedby="contact-subject-error" @enderror>
                             <option value="" disabled @selected(! old('subject'))>Select a subject</option>
                             @foreach (ContactController::SUBJECTS as $value => $label)
                                 <option value="{{ $value }}" @selected(old('subject') === $value)>{{ $label }}</option>
                             @endforeach
                         </select>
-                        @error('subject') <p class="form__error">{{ $message }}</p> @enderror
+                        @error('subject')
+                            <p class="form__error" id="contact-subject-error">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div class="form__field">
                         <label for="contact-message">Message *</label>
+                        {{-- minlength mirrors the server's min:10 rule, so the browser
+                             catches it before a round trip instead of after one. --}}
                         <textarea id="contact-message" name="message" rows="6"
+                                  class="{{ $invalid('message') }}"
                                   placeholder="Tell us about your inquiry..."
-                                  maxlength="5000" required>{{ old('message') }}</textarea>
-                        @error('message') <p class="form__error">{{ $message }}</p> @enderror
+                                  minlength="10" maxlength="5000" required
+                                  @error('message') aria-invalid="true" aria-describedby="contact-message-error" @enderror>{{ old('message') }}</textarea>
+                        @error('message')
+                            <p class="form__error" id="contact-message-error">{{ $message }}</p>
+                        @else
+                            <p class="form__hint">At least 10 characters.</p>
+                        @enderror
                     </div>
 
                     <button type="submit" class="form__submit">Send Message</button>
@@ -108,10 +140,10 @@
                         </div>
                         <div>
                             <h3>Location</h3>
-                            <a href="{{ config('moralenz.map_url') }}" target="_blank" rel="noopener noreferrer">
-                                University of Moratuwa
+                            <a href="{{ $mapUrl }}" target="_blank" rel="noopener noreferrer">
+                                {{ $mapPlace }}
                             </a>
-                            <p>Katubedda, Moratuwa, Sri Lanka</p>
+                            <p>{{ $mapAddress }}</p>
                         </div>
                     </div>
                 </div>
@@ -143,13 +175,34 @@
 
                 <div>
                     <h3 class="contact__subtitle">Find Us</h3>
-                    <div class="map-embed">
-                        <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3961.2851474219845!2d79.89739731477453!3d6.8509937950764985!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae25a5c0fc3a0b9%3A0x1d3c3f0dc88f0f0f!2sUniversity%20of%20Moratuwa!5e0!3m2!1sen!2slk!4v1644567890123!5m2!1sen!2slk"
-                            loading="lazy"
-                            referrerpolicy="no-referrer-when-downgrade"
-                            title="University of Moratuwa location"></iframe>
-                    </div>
+
+                    {{-- The map is labelled, not just a patch of streets: the figure
+                         names the place above it and links out for directions, so the
+                         block still says where the club is if the iframe is blocked. --}}
+                    <figure class="map-card">
+                        <figcaption class="map-card__head">
+                            <span class="map-card__icon" aria-hidden="true">
+                                @include('partials.icons', ['icon' => 'map-pin'])
+                            </span>
+                            <span class="map-card__place">
+                                <strong>{{ $mapPlace }}</strong>
+                                <span>{{ $mapAddress }}</span>
+                            </span>
+                        </figcaption>
+
+                        <div class="map-embed">
+                            <iframe
+                                src="{{ $mapEmbed }}"
+                                loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade"
+                                title="Map showing {{ $mapPlace }}"></iframe>
+                        </div>
+
+                        <a class="map-card__link" href="{{ $mapUrl }}" target="_blank" rel="noopener noreferrer">
+                            Open in Google Maps
+                            @include('partials.icons', ['icon' => 'arrow-right'])
+                        </a>
+                    </figure>
                 </div>
             </div>
         </div>

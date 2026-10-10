@@ -30,7 +30,9 @@ class TeamGroup extends Model
     /** Every member in the group, whether or not they sit in a subgroup. */
     public function members(): HasMany
     {
-        return $this->hasMany(TeamMember::class, 'group_id')->orderBy('sort_order');
+        return $this->hasMany(TeamMember::class, 'group_id')
+            ->orderBy('tier')
+            ->orderBy('sort_order');
     }
 
     /** Members attached straight to the group, with no subgroup. */

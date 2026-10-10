@@ -47,6 +47,9 @@ class EventController extends Controller
             'title' => $draft['title'] !== '' ? $draft['title'] : 'Untitled event',
             'description' => $draft['description'],
             'content' => $draft['content'],
+            // A draft cached before the layout options existed has none;
+            // pageOptions() fills in the defaults for it.
+            'page_options' => $draft['page_options'] ?? null,
             'location' => $draft['location'],
             'image_url' => $draft['image_url'],
             'countdown_enabled' => $draft['countdown_enabled'],
