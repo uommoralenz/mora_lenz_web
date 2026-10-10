@@ -1,11 +1,10 @@
 import Link from "next/link";
 
-import { ConfirmSubmit } from "@/components/form";
 import { Badge, EmptyState, PageHeader, formatDateTime } from "@/components/ui";
 import { api } from "@/lib/api";
 import type { MessageItem, MessagesMeta } from "@/lib/types";
 
-import { deleteMessageAction, toggleReadAction } from "./actions";
+import MessageActions from "./message-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -78,26 +77,7 @@ export default async function MessagesPage({
                   </p>
                 </div>
 
-                <div className="flex items-center gap-1">
-                  <form action={toggleReadAction}>
-                    <input type="hidden" name="id" value={message.id} />
-                    <input
-                      type="hidden"
-                      name="is_read"
-                      value={message.is_read ? "0" : "1"}
-                    />
-                    <button type="submit" className="btn-secondary">
-                      {message.is_read ? "Mark unread" : "Mark read"}
-                    </button>
-                  </form>
-
-                  <form action={deleteMessageAction}>
-                    <input type="hidden" name="id" value={message.id} />
-                    <ConfirmSubmit confirm={`Delete the message from ${message.name}?`}>
-                      Delete
-                    </ConfirmSubmit>
-                  </form>
-                </div>
+                <MessageActions message={message} />
               </div>
 
               <p className="mt-3 whitespace-pre-wrap border-t border-ink-700 pt-3 text-sm leading-relaxed text-slate-300">

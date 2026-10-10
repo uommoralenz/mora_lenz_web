@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 
 import { uploadEventImageAction } from "./actions";
-import type { EventBlock } from "@/lib/types";
+import { EVENT_HTML_MAX, type EventBlock } from "@/lib/types";
 
 type BlockType = EventBlock["type"];
 
@@ -13,6 +13,7 @@ const ADD_GROUPS: { heading: string; types: BlockType[] }[] = [
   { heading: "Show", types: ["image", "gallery", "video"] },
   { heading: "Act", types: ["button"] },
   { heading: "Space", types: ["divider", "spacer"] },
+  { heading: "Code", types: ["html"] },
 ];
 
 const ALL_TYPES: BlockType[] = ADD_GROUPS.flatMap((group) => group.types);
@@ -29,6 +30,7 @@ const BLOCK_NAMES: Record<BlockType, string> = {
   callout: "Highlight box",
   spacer: "Blank space",
   divider: "Divider line",
+  html: "Custom HTML",
 };
 
 const MAX_LIST_ITEMS = 30;
@@ -63,6 +65,8 @@ function blank(type: BlockType): EventBlock {
       return { type, size: "medium" };
     case "divider":
       return { type };
+    case "html":
+      return { type, code: "", width: "normal", mode: "inline", height: 0 };
   }
 }
 
@@ -207,7 +211,9 @@ export default function BlockEditor({
 
       <p className="hint">
         In any text you can write <code>**bold**</code>, <code>*italic*</code> and{" "}
-        <code>[link text](https://example.com)</code>.
+        <code>[link text](https://example.com)</code>. For anything these blocks
+        cannot build — a competition timeline, a schedule table, a sponsor wall —
+        add a <strong>Custom HTML</strong> block and write it yourself.
       </p>
     </div>
   );
@@ -521,7 +527,293 @@ function BlockFields({
 
     case "divider":
       return <p className="text-xs text-slate-500">A thin line separating two sections.</p>;
+
+    case "html":
+      return <HtmlFields block={block} onChange={onChange} />;
   }
+}
+
+/*
+   A competition timeline, ready to edit — the thing the fixed blocks cannot
+   build, and the reason this block exists. Everything it needs (markup, CSS,
+   behaviour) is in the one field, so pasting it anywhere else still works.
+*/
+const TIMELINE_SNIPPET = `<div class="ml-timeline">
+  <div class="ml-timeline__item is-done">
+    <div class="ml-timeline__dot"></div>
+    <div class="ml-timeline__card">
+      <span class="ml-timeline__when">10 Oct 2026</span>
+      <h3>Registrations open</h3>
+      <p>Sign up through the form on this page.</p>
+    </div>
+  </div>
+  <div class="ml-timeline__item is-now">
+    <div class="ml-timeline__dot"></div>
+    <div class="ml-timeline__card">
+      <span class="ml-timeline__when">24 Oct 2026</span>
+      <h3>Submissions close</h3>
+      <p>Midnight. No late entries.</p>
+    </div>
+  </div>
+  <div class="ml-timeline__item">
+    <div class="ml-timeline__dot"></div>
+    <div class="ml-timeline__card">
+      <span class="ml-timeline__when">02 Nov 2026</span>
+      <h3>Winners announced</h3>
+      <p>Results posted here and on our socials.</p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .ml-timeline {
+    position: relative;
+    display: grid;
+    gap: 22px;
+    padding: 8px 0 8px 34px;
+  }
+  .ml-timeline::before {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 14px;
+    bottom: 14px;
+    width: 2px;
+    background: linear-gradient(to bottom, #60a5fa, rgba(96, 165, 250, 0.15));
+  }
+  .ml-timeline__item { position: relative; }
+  .ml-timeline__dot {
+    position: absolute;
+    left: -34px;
+    top: 18px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    background: #0b0f16;
+  }
+  .ml-timeline__item.is-done .ml-timeline__dot {
+    border-color: #22c55e;
+    background: #22c55e;
+  }
+  .ml-timeline__item.is-now .ml-timeline__dot {
+    border-color: #60a5fa;
+    background: #60a5fa;
+    box-shadow: 0 0 0 6px rgba(96, 165, 250, 0.18);
+  }
+  .ml-timeline__card {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 16px 18px;
+  }
+  .ml-timeline__item.is-now .ml-timeline__card {
+    border-color: rgba(96, 165, 250, 0.4);
+  }
+  .ml-timeline__when {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #93c5fd;
+  }
+  .ml-timeline__card h3 { margin: 6px 0 4px; font-size: 1.1rem; }
+  .ml-timeline__card p { margin: 0; color: #cbd5e1; }
+  @media (max-width: 480px) {
+    .ml-timeline { padding-left: 28px; }
+    .ml-timeline__dot { left: -28px; }
+  }
+</style>`;
+
+/** Warnings worth raising before a save, cheap enough to run on each keystroke. */
+function checkCode(code: string): string[] {
+  const notes: string[] = [];
+
+  if (!code.trim()) return notes;
+
+  // An unclosed <style> or <script> visibly eats the rest of the page, so it
+  // is worth naming here rather than leaving to be discovered after publish.
+  for (const tag of ["style", "script"] as const) {
+    const open = (code.match(new RegExp(`<${tag}[\\s>]`, "gi")) ?? []).length;
+    const close = (code.match(new RegExp(`</${tag}\\s*>`, "gi")) ?? []).length;
+
+    if (open !== close) {
+      notes.push(`Unclosed <${tag}> tag — ${open} opened, ${close} closed.`);
+    }
+  }
+
+  if (/<\/?(html|head|body)[\s>]/i.test(code)) {
+    notes.push(
+      "Drop the <html>, <head> and <body> tags — this block sits inside the page already."
+    );
+  }
+
+  return notes;
+}
+
+/**
+ * The preview document: the block's code on a dark surface like the live page,
+ * so it can be checked here instead of saving and reloading the public page.
+ * Always sandboxed, even for inline blocks, because a half-written script
+ * should not be able to reach the panel.
+ */
+function previewDocument(code: string): string {
+  return `<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; padding: 16px; background: #0b0f16; }
+  body { font-family: system-ui, sans-serif; color: #e5e7eb; line-height: 1.7; }
+  img, video, svg, canvas { max-width: 100%; }
+  a { color: #93c5fd; }
+</style></head><body>${code}</body></html>`;
+}
+
+function HtmlFields({
+  block,
+  onChange,
+}: {
+  block: Extract<EventBlock, { type: "html" }>;
+  onChange: (patch: Partial<EventBlock>) => void;
+}) {
+  const [preview, setPreview] = useState(false);
+  const notes = checkCode(block.code);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-xs text-slate-500">
+          HTML, <code>&lt;style&gt;</code> and <code>&lt;script&gt;</code> together in
+          this one field.
+        </span>
+        <div className="flex gap-1">
+          <button
+            type="button"
+            className="btn-ghost px-2 py-1 text-xs"
+            onClick={() => setPreview((on) => !on)}
+            disabled={!block.code.trim()}
+          >
+            {preview ? "Hide preview" : "Preview"}
+          </button>
+          <button
+            type="button"
+            className="btn-ghost px-2 py-1 text-xs"
+            onClick={() => {
+              if (
+                block.code.trim() &&
+                !window.confirm("Replace what is in this block with the timeline example?")
+              ) {
+                return;
+              }
+
+              onChange({ code: TIMELINE_SNIPPET });
+            }}
+          >
+            Insert timeline example
+          </button>
+        </div>
+      </div>
+
+      <textarea
+        className="textarea min-h-64 font-mono text-xs leading-relaxed"
+        spellCheck={false}
+        placeholder={'<div class="my-timeline">…</div>\n\n<style>\n  .my-timeline { … }\n</style>\n\n<script>\n  // optional\n</script>'}
+        maxLength={EVENT_HTML_MAX}
+        value={block.code}
+        onChange={(e) => onChange({ code: e.target.value })}
+        onKeyDown={(e) => {
+          // Tab indents instead of leaving the field — this one is a code editor.
+          if (e.key !== "Tab" || e.shiftKey) return;
+
+          e.preventDefault();
+
+          const area = e.currentTarget;
+          const { selectionStart: start, selectionEnd: end, value } = area;
+
+          onChange({ code: `${value.slice(0, start)}  ${value.slice(end)}` });
+          requestAnimationFrame(() => {
+            area.selectionStart = area.selectionEnd = start + 2;
+          });
+        }}
+      />
+
+      {preview && block.code.trim() ? (
+        <iframe
+          title="Block preview"
+          className="h-72 w-full rounded-lg border border-ink-700 bg-ink-950"
+          sandbox="allow-scripts"
+          srcDoc={previewDocument(block.code)}
+        />
+      ) : null}
+
+      <div className="grid gap-2 sm:grid-cols-2">
+        <select
+          className="input"
+          value={block.width}
+          onChange={(e) => {
+            const value = e.target.value;
+            onChange({
+              width: value === "wide" ? "wide" : value === "full" ? "full" : "normal",
+            });
+          }}
+          aria-label="Block width"
+        >
+          <option value="normal">Column width</option>
+          <option value="wide">Wider than text</option>
+          <option value="full">Full page width</option>
+        </select>
+
+        <select
+          className="input"
+          value={block.mode}
+          onChange={(e) =>
+            onChange({ mode: e.target.value === "frame" ? "frame" : "inline" })
+          }
+          aria-label="How the code is rendered"
+        >
+          <option value="inline">Inline — part of the page</option>
+          <option value="frame">Isolated — sandboxed frame</option>
+        </select>
+      </div>
+
+      {block.mode === "frame" ? (
+        <div className="grid gap-2 sm:grid-cols-[1fr_10rem]">
+          <p className="hint">
+            Isolated code cannot reach the rest of the page and its CSS stays inside —
+            which also means the site styles do not reach it. The height is measured
+            for you unless you fix one here.
+          </p>
+          <input
+            className="input"
+            type="number"
+            min={0}
+            max={6000}
+            step={10}
+            placeholder="Auto height"
+            value={block.height || ""}
+            onChange={(e) => onChange({ height: Math.max(0, Number(e.target.value) || 0) })}
+            aria-label="Fixed height in pixels"
+          />
+        </div>
+      ) : (
+        <p className="hint">
+          Inline code becomes part of the page, so its CSS can reach the other blocks —
+          prefix your class names (<code>.ml-timeline</code>) to keep it to itself.
+        </p>
+      )}
+
+      {notes.map((note) => (
+        <p key={note} className="error-text">
+          {note}
+        </p>
+      ))}
+
+      <p className="hint">
+        {block.code.length.toLocaleString()} / {EVENT_HTML_MAX.toLocaleString()} characters.
+        Scripts run on the published page, so only paste code you trust.
+      </p>
+    </div>
+  );
 }
 
 function ListFields({

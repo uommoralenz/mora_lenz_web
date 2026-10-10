@@ -176,6 +176,7 @@ Open `https://your-site`. You should get the dark homepage with sample events an
 | I want to… | Where |
 |---|---|
 | Add an event | Admin → Events → New event |
+| Build a timeline, schedule table or anything custom on an event page | Admin → Events → the event → **Custom HTML** block (see below) |
 | Change the big homepage event | Tick **Featured** on an event (only one can be featured) |
 | Add photos to the homepage | Admin → Featured gallery |
 | Change prices | Admin → Services |
@@ -184,6 +185,36 @@ Open `https://your-site`. You should get the dark homepage with sample events an
 | Add another admin | Admin → Admin accounts (super admin only) |
 
 Everything saves straight to the live site — there is no publish step.
+
+### Custom HTML on an event page
+
+Event pages are built from blocks (heading, text, image, button…). When those
+cannot do what an event needs — a competition timeline, a schedule table, a
+sponsor wall — use the **Custom HTML** block, which works like a Blogger HTML
+gadget: markup, `<style>` and `<script>` all go in the same field, and the page
+prints them as written.
+
+- **Preview** renders the block right there in the panel, so it can be checked
+  without saving. **Insert timeline example** drops in a working timeline to
+  edit rather than starting from an empty box.
+- **Width** — column width, wider than the text, or the full page.
+- **Inline** makes the code part of the page, so site fonts and colours apply
+  and your CSS can reach other blocks. Prefix your class names
+  (`.ml-timeline`, not `.card`) so it does not. **Isolated** puts the code in a
+  sandboxed frame instead: nothing leaks either way and the height is measured
+  automatically. Use it for third-party embeds and anything pasted from a site.
+- **Page settings → Page-wide HTML, CSS and JavaScript** is for code several
+  blocks share — a web font, a set of styles, one script. It is added at the
+  end of that page's `<head>`, after the site stylesheet, so its rules win.
+  It applies to that one event page, nothing else.
+
+Two things to know before handing this to someone:
+
+- The code runs exactly as written. A broken tag can break the layout of that
+  page — use **Preview**, and the *Preview page* button on the event form, to
+  see it before it is public.
+- Only paste scripts you trust. An inline script runs on the public page with
+  the same access as the site's own JavaScript.
 
 ### Admin accounts
 

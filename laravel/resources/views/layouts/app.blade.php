@@ -23,6 +23,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="{{ asset('css/site.css') }}?v={{ config('app.asset_version', '1') }}-{{ @filemtime(public_path('css/site.css')) ?: '' }}">
+
+    {{-- After the stylesheet, so a page's own custom CSS wins over the site's. --}}
+    @stack('head_end')
 </head>
 <body>
     <a class="skip-link" href="#main">Skip to content</a>

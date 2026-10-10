@@ -16,6 +16,14 @@ namespace App\Support;
  * admin writes **bold**, *italic*, `code` and [label](url), and that becomes
  * HTML only after the text has been escaped. Nothing an admin types can turn
  * into a tag, so this class needs no HTML sanitiser anywhere.
+ *
+ * The one deliberate exception is the "html" block (and the page-level custom
+ * code), which exists so an admin who writes markup can build things the fixed
+ * blocks do not cover — a competition timeline, a sponsor wall, a schedule
+ * table. That code is stored and printed verbatim, the way a Blogger HTML
+ * gadget works: markup, <style> and <script> all in the one field. It is
+ * therefore reachable only by a signed-in admin, and "frame" mode renders it
+ * inside a sandboxed iframe for anyone who wants the isolation.
  */
 class EventBlocks
 {
@@ -25,11 +33,21 @@ class EventBlocks
 
     public const MAX_GALLERY_IMAGES = 12;
 
+    /** How much markup one html block may hold. */
+    public const MAX_HTML = 60000;
+
+    /** How much page-wide custom code (CSS/JS/markup) one event may hold. */
+    public const MAX_PAGE_CODE = 20000;
+
+    /** The tallest a sandboxed html frame may be asked to be, in pixels. */
+    public const MAX_FRAME_HEIGHT = 6000;
+
     /** Defaults for the page-level layout options. */
     public const PAGE_DEFAULTS = [
         'width' => 'normal',
         'hero' => 'photo',
         'show_meta' => true,
+        'custom_code' => '',
     ];
 
     /** Turn untrusted input (array or JSON string) into a clean block list. */
@@ -100,6 +118,14 @@ class EventBlocks
                     'text' => static::text($block['text'] ?? '', 3000),
                     'tone' => static::pick($block['tone'] ?? 'info', ['info', 'warn', 'success'], 'info'),
                 ],
+                // Raw markup, kept exactly as typed. See the class doc block.
+                'html' => [
+                    'type' => 'html',
+                    'code' => static::code($block['code'] ?? '', self::MAX_HTML),
+                    'width' => static::pick($block['width'] ?? 'normal', ['normal', 'wide', 'full'], 'normal'),
+                    'mode' => static::pick($block['mode'] ?? 'inline', ['inline', 'frame'], 'inline'),
+                    'height' => static::frameHeight($block['height'] ?? 0),
+                ],
                 'spacer' => [
                     'type' => 'spacer',
                     'size' => static::pick($block['size'] ?? 'medium', ['small', 'medium', 'large'], 'medium'),
@@ -132,12 +158,16 @@ class EventBlocks
         $input = is_array($input) ? $input : [];
 
         return [
-            'width' => static::pick($input['width'] ?? '', ['normal', 'wide'], self::PAGE_DEFAULTS['width']),
+            'width' => static::pick($input['width'] ?? '', ['normal', 'wide', 'full'], self::PAGE_DEFAULTS['width']),
             'hero' => static::pick($input['hero'] ?? '', ['photo', 'compact', 'plain'], self::PAGE_DEFAULTS['hero']),
             'show_meta' => filter_var(
                 $input['show_meta'] ?? self::PAGE_DEFAULTS['show_meta'],
                 FILTER_VALIDATE_BOOL
             ),
+            // Page-wide markup: <style> rules that theme every block, a web
+            // font, a <script> the html blocks below rely on. Printed at the
+            // end of <head>, so it can override the site stylesheet.
+            'custom_code' => static::code($input['custom_code'] ?? '', self::MAX_PAGE_CODE),
         ];
     }
 
@@ -201,6 +231,67 @@ class EventBlocks
         return $html;
     }
 
+    /**
+     * Wraps an html block's code in a standalone document for "frame" mode.
+     *
+     * The iframe is sandboxed without allow-same-origin, so the code inside
+     * can run but cannot read this site's cookies, DOM or storage, and its CSS
+     * cannot leak out into the rest of the page. The trade-off is that the
+     * frame has no height of its own, so the bootstrap script at the end
+     * measures the content and posts it to the parent, which resizes the
+     * element (see the listener in partials/event-blocks.blade.php).
+     */
+    public static function frameDocument(string $code): string
+    {
+        // Matches the site's dark surface so an embed looks at home without
+        // the admin having to restate any of it.
+        $base = <<<'CSS'
+            :root { color-scheme: dark; }
+            html, body { margin: 0; padding: 0; background: transparent; }
+            body {
+                font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: #e5e7eb;
+                line-height: 1.7;
+                overflow-x: hidden;
+            }
+            img, video, canvas, svg, iframe { max-width: 100%; }
+            a { color: #93c5fd; }
+            CSS;
+
+        $bootstrap = <<<'JS'
+            (function () {
+                var last = 0;
+                function report() {
+                    var doc = document.documentElement;
+                    var height = Math.max(
+                        document.body ? document.body.scrollHeight : 0,
+                        document.body ? document.body.offsetHeight : 0,
+                        doc.scrollHeight,
+                        doc.offsetHeight
+                    );
+                    if (height && Math.abs(height - last) > 1) {
+                        last = height;
+                        parent.postMessage({ moraLenzFrame: true, height: height }, '*');
+                    }
+                }
+                window.addEventListener('load', report);
+                window.addEventListener('resize', report);
+                if (window.ResizeObserver && document.body) {
+                    new ResizeObserver(report).observe(document.body);
+                }
+                // Fallbacks for content that settles after load (fonts, images).
+                [0, 120, 500, 1500].forEach(function (delay) { setTimeout(report, delay); });
+            })();
+            JS;
+
+        return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
+            .'<meta name="viewport" content="width=device-width, initial-scale=1">'
+            .'<style>'.$base.'</style></head><body>'
+            .$code
+            .'<script>'.$bootstrap.'</script>'
+            .'</body></html>';
+    }
+
     /** Which brand a link points at, so buttons can show the right icon. */
     public static function platform(string $url): string
     {
@@ -261,6 +352,33 @@ class EventBlocks
         $value = preg_replace('/[^\P{C}\n\t]+/u', '', $value) ?? '';
 
         return mb_substr(trim($value), 0, $max);
+    }
+
+    /**
+     * Admin-authored markup, kept byte for byte.
+     *
+     * Nothing is escaped or stripped here beyond NUL, which cannot legally
+     * appear in markup — the point of these fields is that what the admin
+     * typed is what the page gets. The length cap is what stops a paste
+     * accident from filling the column.
+     */
+    protected static function code(mixed $value, int $max): string
+    {
+        $value = is_string($value) ? $value : '';
+
+        return mb_substr(trim(str_replace(" ", '', $value)), 0, $max);
+    }
+
+    /** A fixed frame height in pixels, or 0 to measure the content instead. */
+    protected static function frameHeight(mixed $value): int
+    {
+        $height = (int) $value;
+
+        if ($height <= 0) {
+            return 0;
+        }
+
+        return min(self::MAX_FRAME_HEIGHT, max(80, $height));
     }
 
     protected static function url(mixed $value, array $schemes): string
@@ -345,6 +463,7 @@ class EventBlocks
             'gallery' => $item['urls'] === [],
             'list' => $item['items'] === [],
             'button' => $item['label'] === '' || $item['url'] === '',
+            'html' => $item['code'] === '',
             'callout' => $item['title'] === '' && $item['text'] === '',
             default => false,
         };

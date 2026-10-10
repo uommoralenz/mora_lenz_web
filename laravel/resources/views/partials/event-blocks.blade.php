@@ -7,6 +7,11 @@
     they were saved.
 
     Consecutive buttons are grouped into one wrapping row.
+
+    The one block printed unescaped on purpose is "html": admin-authored markup
+    (with its own <style>/<script>), the Blogger-gadget escape hatch for pages
+    the fixed blocks cannot build. "frame" mode puts it in a sandboxed iframe
+    instead, which is why this file ends with a height listener.
 --}}
 @php
     use App\Support\EventBlocks;
@@ -28,6 +33,11 @@
 
     $i = 0;
     $count = count($blocks);
+
+    // The listener at the bottom is only worth printing if something needs it.
+    $hasFrames = collect($blocks)
+        ->contains(fn ($b) => ($b['type'] ?? '') === 'html' && ($b['mode'] ?? 'inline') === 'frame'
+            && (int) ($b['height'] ?? 0) === 0);
 @endphp
 
 <div class="event-blocks">
@@ -149,6 +159,31 @@
                 </aside>
                 @break
 
+            @case('html')
+                @php
+                    $width = $block['width'] ?? 'normal';
+                    $frameHeight = (int) ($block['height'] ?? 0);
+                @endphp
+                @if (($block['mode'] ?? 'inline') === 'frame')
+                    {{-- No allow-same-origin: the code runs, but it cannot reach
+                         this page's DOM, cookies or storage, and its CSS stays in. --}}
+                    <div class="event-blocks__html is-{{ $width }} is-frame">
+                        <iframe class="event-blocks__html-frame"
+                                title="Embedded content"
+                                loading="lazy"
+                                sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms"
+                                referrerpolicy="strict-origin-when-cross-origin"
+                                @if ($frameHeight > 0)
+                                    style="height: {{ $frameHeight }}px"
+                                    data-fixed-height="1"
+                                @endif
+                                srcdoc="{{ EventBlocks::frameDocument($block['code']) }}"></iframe>
+                    </div>
+                @else
+                    <div class="event-blocks__html is-{{ $width }}">{!! $block['code'] !!}</div>
+                @endif
+                @break
+
             @case('spacer')
                 <div class="event-blocks__spacer is-{{ $block['size'] ?? 'medium' }}" aria-hidden="true"></div>
                 @break
@@ -161,3 +196,35 @@
         @php $i++; @endphp
     @endwhile
 </div>
+
+@if ($hasFrames)
+    @push('scripts')
+        <script>
+            /*
+                Auto-height for sandboxed html blocks. A sandboxed frame has no
+                same-origin access, so it reports its own content height by
+                postMessage and we match the sender against each frame's
+                contentWindow — the origin of such a frame is "null", so it is
+                the window identity, not the origin, that identifies it.
+            */
+            (function () {
+                var MAX = {{ \App\Support\EventBlocks::MAX_FRAME_HEIGHT }};
+
+                window.addEventListener('message', function (event) {
+                    var data = event.data;
+
+                    if (!data || data.moraLenzFrame !== true) return;
+
+                    var height = Math.min(MAX, Math.max(80, parseInt(data.height, 10) || 0));
+                    var frames = document.querySelectorAll('.event-blocks__html-frame');
+
+                    for (var i = 0; i < frames.length; i++) {
+                        if (frames[i].contentWindow === event.source && !frames[i].dataset.fixedHeight) {
+                            frames[i].style.height = height + 'px';
+                        }
+                    }
+                });
+            })();
+        </script>
+    @endpush
+@endif

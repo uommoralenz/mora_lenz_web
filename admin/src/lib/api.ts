@@ -34,6 +34,32 @@ function buildUrl(path: string): string {
   return `${BASE}/?${query.toString()}`;
 }
 
+/**
+ * The verbs the compatibility host refuses. nginx only resolves a directory to
+ * its index file for GET/HEAD/POST, so a real PUT, PATCH or DELETE to
+ * /api/admin/ never reaches PHP at all — it comes back as a 405 (or an HTML
+ * error page), which is what used to break "Mark read" and the other
+ * JSON-bodied updates.
+ */
+const OVERRIDDEN_METHODS = ["PUT", "PATCH", "DELETE"];
+
+/**
+ * Carries the intended verb in the query string instead of the request line.
+ *
+ * Laravel honours `_method` from the POST body *or* the query string
+ * (Symfony\Component\HttpFoundation\Request::getMethod), and the query string
+ * is the only one of the two that also works when the body is JSON — $_POST is
+ * empty then, so a `_method` key inside a JSON body is simply never seen.
+ */
+function withMethodOverride(path: string, method: string): string {
+  const [pathname, search = ""] = path.split("?");
+  const params = new URLSearchParams(search);
+
+  params.set("_method", method);
+
+  return `${pathname}?${params.toString()}`;
+}
+
 /** Thrown for any non-2xx response from Laravel. */
 export class ApiError extends Error {
   status: number;
@@ -96,6 +122,12 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   const { method = "GET", body, auth = true, revalidate, soft = false } = options;
 
+  // On the compatibility host every write goes out as a POST, with the verb it
+  // really means spelled out in `_method` for Laravel to read back.
+  const spoof = COMPAT && OVERRIDDEN_METHODS.includes(method);
+  const wireMethod = spoof ? "POST" : method;
+  const wirePath = spoof ? withMethodOverride(path, method) : path;
+
   const headers: Record<string, string> = { Accept: "application/json" };
   let payload: BodyInit | undefined;
 
@@ -130,8 +162,8 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   let response: Response;
 
   try {
-    response = await fetch(buildUrl(path), {
-      method,
+    response = await fetch(buildUrl(wirePath), {
+      method: wireMethod,
       headers,
       body: payload,
       cache: auth || revalidate === undefined ? "no-store" : undefined,
@@ -190,20 +222,10 @@ export const api = {
     request<T>(path, { method: "POST", body }),
   put: <T>(path: string, body?: RequestOptions["body"]) =>
     request<T>(path, { method: "PUT", body }),
-  del: <T>(path: string, body?: RequestOptions["body"]) => {
-    // The compatibility host rejects DELETE at nginx. Laravel accepts a POST
-    // with _method=DELETE, just as it accepts our multipart PUT overrides.
-    if (!COMPAT) return request<T>(path, { method: "DELETE", body });
-
-    const form = new FormData();
-    if (body instanceof FormData) {
-      body.forEach((value, key) => form.append(key, value));
-    } else {
-      return request<T>(path, { method: "POST", body: { ...body, _method: "DELETE" } });
-    }
-    form.set("_method", "DELETE");
-    return request<T>(path, { method: "POST", body: form });
-  },
+  // PUT and DELETE both go through the same override in request(), so nothing
+  // here has to know whether the compatibility host is in use.
+  del: <T>(path: string, body?: RequestOptions["body"]) =>
+    request<T>(path, { method: "DELETE", body }),
   /** Login is the one call made without a token. */
   login: (username: string, password: string) =>
     request<{ token: string; expires_at: string; admin: AdminUser }>("/auth/login", {

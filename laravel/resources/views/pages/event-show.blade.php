@@ -12,6 +12,20 @@
     @endpush
 @endif
 
+@php
+    // The page-wide markup the admin wrote in the panel: <style> rules that
+    // theme the blocks below, a web font, a <script> an html block needs. It
+    // goes last in <head> on purpose, so it can override the site stylesheet.
+    // Printed verbatim — see the note in App\Support\EventBlocks.
+    $customCode = $event->pageOptions()['custom_code'] ?? '';
+@endphp
+
+@if ($customCode !== '')
+    @push('head_end')
+        {!! $customCode !!}
+    @endpush
+@endif
+
 @section('content')
 
     @if (! empty($preview))

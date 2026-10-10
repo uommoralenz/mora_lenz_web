@@ -2,25 +2,61 @@
 
 import { revalidatePath } from "next/cache";
 
-import { api } from "@/lib/api";
+import { api, toActionState } from "@/lib/api";
+import type { ActionState } from "@/lib/types";
 
-export async function toggleReadAction(formData: FormData) {
+/** Both actions take an id straight from the list, so check it is one. */
+function messageId(formData: FormData): string | null {
   const id = String(formData.get("id") ?? "");
-  const isRead = String(formData.get("is_read") ?? "") === "1";
 
-  if (id) {
-    await api.put(`/messages/${id}`, { is_read: isRead });
-    revalidatePath("/messages");
-    revalidatePath("/dashboard");
-  }
+  return /^\d+$/.test(id) && Number(id) > 0 ? id : null;
 }
 
-export async function deleteMessageAction(formData: FormData) {
-  const id = String(formData.get("id") ?? "");
+function refresh() {
+  revalidatePath("/messages");
+  revalidatePath("/dashboard");
+}
 
-  if (id) {
-    await api.del(`/messages/${id}`);
-    revalidatePath("/messages");
-    revalidatePath("/dashboard");
+export async function toggleReadAction(
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const id = messageId(formData);
+
+  if (!id) {
+    return { ok: false, message: "That message is no longer in the list. Reload the page." };
   }
+
+  const isRead = String(formData.get("is_read") ?? "") === "1";
+
+  try {
+    await api.put(`/messages/${id}`, { is_read: isRead });
+  } catch (error) {
+    return toActionState(error);
+  }
+
+  refresh();
+
+  return { ok: true, message: isRead ? "Marked as read." : "Marked as unread." };
+}
+
+export async function deleteMessageAction(
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const id = messageId(formData);
+
+  if (!id) {
+    return { ok: false, message: "That message is no longer in the list. Reload the page." };
+  }
+
+  try {
+    await api.del(`/messages/${id}`);
+  } catch (error) {
+    return toActionState(error);
+  }
+
+  refresh();
+
+  return { ok: true, message: "Message deleted." };
 }

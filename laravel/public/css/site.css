@@ -3054,6 +3054,65 @@ body.has-lightbox { overflow: hidden; }
   margin: 8px 0;
 }
 
+/* ---- custom html blocks ------------------------------------------------- */
+
+/*
+   An admin-authored html block (App\Support\EventBlocks, type "html"). The
+   styling here is deliberately thin — the whole point of the block is that the
+   admin's own CSS decides how it looks. All this does is give the block a
+   width and stop a wide child (a long timeline, a table) from pushing the page
+   sideways.
+*/
+.event-blocks__html {
+  width: 100%;
+  min-width: 0;
+}
+
+.event-blocks__html > * {
+  max-width: 100%;
+}
+
+.event-blocks__html img,
+.event-blocks__html video,
+.event-blocks__html svg,
+.event-blocks__html canvas,
+.event-blocks__html table {
+  max-width: 100%;
+}
+
+/*
+   "Wider than text" and "full width" break out of the reading column. The
+   blocks are a column flex container, so an item that is wider than the
+   column and centred on the cross axis overflows evenly to both sides — which
+   is exactly the breakout, with no dependence on the column's actual width
+   (it varies per event) and no transform to trip up position: fixed inside.
+   flex: none is what stops the item being shrunk back to the column instead.
+*/
+.event-blocks__html.is-wide,
+.event-blocks__html.is-full {
+  flex: none;
+  align-self: center;
+}
+
+.event-blocks__html.is-wide {
+  width: min(64rem, calc(100vw - 40px));
+}
+
+.event-blocks__html.is-full {
+  width: min(var(--maxw), calc(100vw - 40px));
+}
+
+/* Sandboxed mode: the frame has no height of its own until the content inside
+   measures itself and posts it back (see partials/event-blocks.blade.php). */
+.event-blocks__html-frame {
+  display: block;
+  width: 100%;
+  height: 420px;
+  border: 0;
+  background: transparent;
+  color-scheme: dark;
+}
+
 /* ---- page-level layout options ---------------------------------------- */
 
 /*
@@ -3068,6 +3127,17 @@ body.has-lightbox { overflow: hidden; }
 .event-body--wide .prose,
 .event-body--wide .countdown-block {
   max-width: 64rem;
+}
+
+/* "full" hands the whole container to the content — for pages built mostly
+   from custom html blocks, where the reading column only gets in the way. */
+.event-body--full .event-blocks {
+  --col: none;
+}
+
+.event-body--full .prose,
+.event-body--full .countdown-block {
+  max-width: none;
 }
 
 /* A shorter banner: same cover photo, far less of the page spent on it.

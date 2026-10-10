@@ -26,20 +26,38 @@ export type EventBlock =
   | { type: "button"; label: string; url: string; style: "primary" | "outline" }
   | { type: "video"; url: string }
   | { type: "callout"; title: string; text: string; tone: "info" | "warn" | "success" }
+  /**
+   * Admin-authored markup, printed as given: HTML, <style> and <script> in the
+   * one field. "inline" drops it into the page, "frame" isolates it in a
+   * sandboxed iframe (height 0 measures the content, anything else fixes it).
+   */
+  | {
+      type: "html";
+      code: string;
+      width: "normal" | "wide" | "full";
+      mode: "inline" | "frame";
+      height: number;
+    }
   | { type: "spacer"; size: "small" | "medium" | "large" }
   | { type: "divider" };
 
+export const EVENT_HTML_MAX = 60000;
+export const EVENT_PAGE_CODE_MAX = 20000;
+
 /** How the page around the content blocks is laid out. */
 export interface EventPageOptions {
-  width: "normal" | "wide";
+  width: "normal" | "wide" | "full";
   hero: "photo" | "compact" | "plain";
   show_meta: boolean;
+  /** Page-wide markup printed at the end of <head>: CSS, fonts, scripts. */
+  custom_code: string;
 }
 
 export const EVENT_PAGE_DEFAULTS: EventPageOptions = {
   width: "normal",
   hero: "photo",
   show_meta: true,
+  custom_code: "",
 };
 
 export interface EventItem {

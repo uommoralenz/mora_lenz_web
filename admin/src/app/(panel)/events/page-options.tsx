@@ -2,7 +2,16 @@
 
 import { useState } from "react";
 
-import type { EventPageOptions } from "@/lib/types";
+import { EVENT_PAGE_CODE_MAX, type EventPageOptions } from "@/lib/types";
+
+/** A template literal, so the example keeps its line breaks. */
+const PAGE_CODE_PLACEHOLDER = `<style>
+  .event-hero__title { letter-spacing: -0.02em; }
+</style>
+
+<script>
+  // Runs on this event page only
+</script>`;
 
 /**
  * The page-level layout choices for one event, posted as a single JSON field
@@ -60,10 +69,14 @@ export default function PageOptionsEditor({
             id="page-width"
             className="input"
             value={options.width}
-            onChange={(e) => set({ width: e.target.value === "wide" ? "wide" : "normal" })}
+            onChange={(e) => {
+              const value = e.target.value;
+              set({ width: value === "wide" ? "wide" : value === "full" ? "full" : "normal" });
+            }}
           >
             <option value="normal">Normal — easiest to read</option>
             <option value="wide">Wide — more room for photos</option>
+            <option value="full">Full width — for custom HTML layouts</option>
           </select>
         </div>
       </div>
@@ -82,6 +95,35 @@ export default function PageOptionsEditor({
           </span>
         </span>
       </label>
+
+      <div>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <label className="label mb-0" htmlFor="page-custom-code">
+            Page-wide HTML, CSS and JavaScript
+          </label>
+          <span className="text-xs text-slate-500">
+            {options.custom_code.length.toLocaleString()} /{" "}
+            {EVENT_PAGE_CODE_MAX.toLocaleString()}
+          </span>
+        </div>
+
+        <textarea
+          id="page-custom-code"
+          className="textarea mt-1 min-h-32 font-mono text-xs leading-relaxed"
+          spellCheck={false}
+          maxLength={EVENT_PAGE_CODE_MAX}
+          placeholder={PAGE_CODE_PLACEHOLDER}
+          value={options.custom_code}
+          onChange={(e) => set({ custom_code: e.target.value })}
+        />
+        <p className="hint">
+          Added to the end of this page&apos;s <code>&lt;head&gt;</code>, after the site
+          stylesheet — so rules here win over the site&apos;s own. Use it for styles and
+          fonts that several blocks share; for one-off markup add a{" "}
+          <strong>Custom HTML</strong> block to the content below instead. Applies to
+          this event page only.
+        </p>
+      </div>
     </div>
   );
 }
