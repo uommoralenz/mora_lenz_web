@@ -9,22 +9,38 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('featured_galleries', function (Blueprint $table) {
-            $table->string('facebook_album_url', 2048)->nullable()->after('description');
-        });
+        // This migration may be retried after a partially completed deployment.
+        // MySQL commits schema changes immediately, so the column/table can exist
+        // even when Laravel never got to record the migration as completed.
+        if (! Schema::hasColumn('featured_galleries', 'facebook_album_url')) {
+            Schema::table('featured_galleries', function (Blueprint $table) {
+                $table->string('facebook_album_url', 2048)->nullable()->after('description');
+            });
+        }
 
-        Schema::create('gallery_images', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('gallery_id')->constrained('featured_galleries')->cascadeOnDelete();
-            $table->string('image_url');
-            $table->text('description')->nullable();
-            $table->unsignedInteger('sort_order')->default(0);
-            $table->timestamps();
-            $table->index(['gallery_id', 'sort_order']);
-        });
+        if (! Schema::hasTable('gallery_images')) {
+            Schema::create('gallery_images', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('gallery_id')->constrained('featured_galleries')->cascadeOnDelete();
+                $table->string('image_url');
+                $table->text('description')->nullable();
+                $table->unsignedInteger('sort_order')->default(0);
+                $table->timestamps();
+                $table->index(['gallery_id', 'sort_order']);
+            });
+        }
 
         // Preserve all existing entries as one-photo albums.
         DB::table('featured_galleries')->whereNotNull('image_url')->orderBy('id')->each(function ($gallery) {
+            $alreadyCopied = DB::table('gallery_images')
+                ->where('gallery_id', $gallery->id)
+                ->where('image_url', $gallery->image_url)
+                ->exists();
+
+            if ($alreadyCopied) {
+                return;
+            }
+
             DB::table('gallery_images')->insert([
                 'gallery_id' => $gallery->id,
                 'image_url' => $gallery->image_url,
@@ -39,8 +55,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('gallery_images');
-        Schema::table('featured_galleries', function (Blueprint $table) {
-            $table->dropColumn('facebook_album_url');
-        });
+        if (Schema::hasColumn('featured_galleries', 'facebook_album_url')) {
+            Schema::table('featured_galleries', function (Blueprint $table) {
+                $table->dropColumn('facebook_album_url');
+            });
+        }
     }
 };
