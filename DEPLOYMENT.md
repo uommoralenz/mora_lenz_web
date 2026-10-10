@@ -127,8 +127,12 @@ Steps:
 Visit, once:
 
 ```
-https://your-site/setup/THE-SETUP_KEY-YOU-CHOSE
+https://your-site/setup/?key=THE-SETUP_KEY-YOU-CHOSE
 ```
+
+(On a server with nginx rewrites working, `https://your-site/setup/THE-SETUP_KEY`
+does the same thing. The `?key=` form is the one that works on this host, where
+nothing resolves unless the folder physically exists — see §5.)
 
 You should see a plain-text log ending in `SETUP COMPLETE.` That one request generated `APP_KEY`, created every table, and created your super admin.
 
@@ -137,6 +141,24 @@ You should see a plain-text log ending in `SETUP COMPLETE.` That one request gen
 > If `/setup/...` gives 404: `SETUP_KEY` is empty or does not match.
 > If it gives 500: `storage/` is not writable — recheck permissions.
 > If you *do* have SSH, skip all of this and run `php artisan migrate --seed` instead.
+
+### 2.4b Re-run it after every update
+
+**Any time you upload a new version of `laravel/`, visit that same URL again.**
+
+Updates sometimes add a database column, and the new code expects it. The
+database does not grow a column on its own — the installer is what applies the
+migrations. Skip it and the site keeps *reading* fine, because the missing
+column just reads as empty, but every **save** from the admin panel fails with
+a 500: the UPDATE statement names a column the database does not have.
+
+Re-running is safe on a live site: migrations that already ran are skipped, the
+seeders leave any table that already has rows alone, your super admin password
+is untouched, and the cached config, routes and compiled views are cleared
+(which matters here, because `laravel/storage/framework/views/` is committed to
+the repo and a stale compiled view can ship with an upload).
+
+Put `SETUP_KEY` back in `.env` to do this, and blank it out again afterwards.
 
 ### 2.5 Check it
 

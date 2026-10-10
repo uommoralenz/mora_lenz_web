@@ -6,6 +6,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -42,6 +44,49 @@ $app = Application::configure(basePath: dirname(__DIR__))
         // Always answer the admin API in JSON, never with an HTML error page.
         $exceptions->shouldRenderJsonWhen(function (Request $request) {
             return $request->is('api/*') || $request->expectsJson();
+        });
+
+        /*
+         * Tell a signed-in admin what actually broke.
+         *
+         * With APP_DEBUG off — which is correct for this server — Laravel
+         * answers every unhandled exception with a bare "Server Error", and
+         * the panel can only show "the server could not complete this
+         * request". The real reason sits in storage/logs/laravel.log, which
+         * nobody running the club's website is going to read.
+         *
+         * So for the admin API only, and only once the request has passed
+         * token authentication, the reason is included in the response. It is
+         * the same person who would be reading the log, and nothing here is
+         * reachable without a valid admin token.
+         *
+         * Exceptions that already carry a meaningful status and message
+         * (validation, 401, 404, 413…) are left alone — this is only for the
+         * ones that would otherwise be a blank 500.
+         */
+        $exceptions->render(function (Throwable $e, Request $request) {
+            if (! $request->is('api/admin') && ! $request->is('api/admin/*')) {
+                return null;
+            }
+
+            if ($e instanceof HttpExceptionInterface || $e instanceof ValidationException) {
+                return null;
+            }
+
+            // setUserResolver() is set by AuthenticateAdmin and survives onto
+            // the request, so this is still answerable while rendering.
+            if (! $request->user()) {
+                return null;
+            }
+
+            return response()->json([
+                'message' => class_basename($e).': '.$e->getMessage(),
+                'detail' => [
+                    'exception' => $e::class,
+                    'file' => str_replace(base_path().DIRECTORY_SEPARATOR, '', $e->getFile()),
+                    'line' => $e->getLine(),
+                ],
+            ], 500);
         });
     })->create();
 

@@ -195,7 +195,19 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   if (!response.ok) {
     if (response.status >= 500) {
-      throw new ApiError(response.status, "The server could not complete this request. Please try again or contact the administrator.");
+      // Laravel's own wording for an unhandled exception with APP_DEBUG off.
+      // Anything else is a message the API wrote deliberately — including the
+      // real exception it now hands a signed-in admin (see bootstrap/app.php),
+      // which is far more use than the generic line below.
+      const detail = (parsed as { message?: string })?.message?.trim();
+      const generic = !detail || /^(server error|internal server error)\.?$/i.test(detail);
+
+      throw new ApiError(
+        response.status,
+        generic
+          ? "The server could not complete this request. Please try again or contact the administrator."
+          : detail
+      );
     }
     // Laravel revoked or expired this token (or the admin was deactivated).
     // Server Components may redirect but cannot modify cookies. Logout clears
