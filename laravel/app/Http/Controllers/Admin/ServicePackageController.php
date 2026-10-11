@@ -73,7 +73,15 @@ class ServicePackageController extends Controller
             // Accepted either as a newline separated string or as a JSON array.
             'description' => ['nullable'],
             'price' => [$package ? 'sometimes' : 'required', 'numeric', 'min:0', 'max:99999999'],
-            'offered_price' => ['nullable', 'numeric', 'min:0', 'max:99999999', 'lt:price'],
+            'has_special_discount' => ['sometimes', 'boolean'],
+            'offered_price' => [
+                Rule::excludeIf(fn () => ! $request->boolean('has_special_discount')),
+                Rule::requiredIf(fn () => $request->boolean('has_special_discount')),
+                'numeric',
+                'min:0',
+                'max:99999999',
+                'lt:price',
+            ],
             'image' => [$package ? 'nullable' : 'required', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
             'is_active' => ['boolean'],
         ], [
@@ -89,7 +97,9 @@ class ServicePackageController extends Controller
             }
         }
 
-        if (array_key_exists('offered_price', $data)) {
+        if (array_key_exists('has_special_discount', $data) && ! $data['has_special_discount']) {
+            $package->offered_price = null;
+        } elseif (array_key_exists('offered_price', $data)) {
             $package->offered_price = $data['offered_price'] === '' ? null : $data['offered_price'];
         }
 

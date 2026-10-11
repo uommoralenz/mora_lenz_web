@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useRef, useState } from "react";
 
 import { FieldError, FormMessage, SubmitButton } from "@/components/form";
 import { Thumb } from "@/components/ui";
@@ -21,6 +21,9 @@ export default function PackageForm({
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const uid = pkg?.id ?? `new-${serviceType}`;
+  const [hasSpecialDiscount, setHasSpecialDiscount] = useState(
+    pkg?.offered_price !== null && pkg?.offered_price !== undefined
+  );
 
   const [state, formAction] = useActionState(
     async (prev: typeof EMPTY_ACTION_STATE, data: FormData) => {
@@ -28,6 +31,7 @@ export default function PackageForm({
 
       if (result.ok && !pkg) {
         formRef.current?.reset();
+        setHasSpecialDiscount(false);
       }
 
       return result;
@@ -76,8 +80,18 @@ export default function PackageForm({
         </div>
 
         <div>
+          <label className="mb-2 flex items-center gap-2 text-sm text-slate-300">
+            <input
+              type="checkbox"
+              name="has_special_discount"
+              value="1"
+              checked={hasSpecialDiscount}
+              onChange={(event) => setHasSpecialDiscount(event.target.checked)}
+            />
+            Special discount
+          </label>
           <label className="label" htmlFor={`offered_price-${uid}`}>
-            Offer price <span className="font-normal text-slate-500">(optional)</span>
+            Special price (LKR)
           </label>
           <input
             id={`offered_price-${uid}`}
@@ -85,12 +99,17 @@ export default function PackageForm({
             type="number"
             min="0"
             step="0.01"
-            className="input"
+            className="input disabled:cursor-not-allowed disabled:opacity-50"
             defaultValue={pkg?.offered_price ?? ""}
+            disabled={!hasSpecialDiscount}
+            required={hasSpecialDiscount}
           />
           <p className="hint">
-            Must be lower than the price. Shows a &ldquo;Special Offer&rdquo; badge.
+            {hasSpecialDiscount
+              ? "Must be lower than the normal price."
+              : "Enable the special discount to enter a special price."}
           </p>
+          <FieldError errors={state.errors} name="has_special_discount" />
           <FieldError errors={state.errors} name="offered_price" />
         </div>
       </div>

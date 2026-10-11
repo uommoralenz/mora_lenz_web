@@ -33,7 +33,7 @@ export default function ImageForm({ serviceType }: { serviceType: ServiceType })
         </label>
         <input
           id={`images-${serviceType}`}
-          name="images"
+          name="images[]"
           type="file"
           accept="image/*"
           multiple

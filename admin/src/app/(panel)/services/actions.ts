@@ -14,11 +14,13 @@ export async function savePackageAction(
   const id = String(formData.get("id") ?? "");
 
   setBool(formData, "is_active");
+  setBool(formData, "has_special_discount");
   pruneEmptyFile(formData);
   formData.delete("id");
 
-  // Blank offer price means "no offer", not zero.
-  if (!String(formData.get("offered_price") ?? "").trim()) {
+  // An unchecked discount always means there is no special price. When it is
+  // checked, leave a blank value for Laravel to reject as required.
+  if (formData.get("has_special_discount") !== "1") {
     formData.delete("offered_price");
   }
 
@@ -63,7 +65,9 @@ export async function addServiceImagesAction(
   _prev: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  const files = formData.getAll("images").filter((f) => f instanceof File && f.size > 0);
+  // The [] suffix makes PHP build the uploaded files as the array Laravel's
+  // `images` / `images.*` validation rules expect.
+  const files = formData.getAll("images[]").filter((f) => f instanceof File && f.size > 0);
 
   if (files.length === 0) {
     return { ok: false, message: "Choose at least one image." };
