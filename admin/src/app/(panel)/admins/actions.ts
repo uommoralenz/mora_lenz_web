@@ -15,11 +15,6 @@ export async function saveAdminAction(
   setBool(formData, "is_active");
   formData.delete("id");
 
-  // On edit, an empty password field means "keep the current password".
-  if (id && !String(formData.get("password") ?? "").trim()) {
-    formData.delete("password");
-  }
-
   // Checkboxes: always send the ticked sections as a list (empty means "no
   // sections"), so unticking everything is actually saved.
   const permissions = formData.getAll("permissions").map(String);
@@ -27,11 +22,13 @@ export async function saveAdminAction(
 
   const body = { ...Object.fromEntries(formData.entries()), permissions };
 
+  let created: { mail_sent: boolean; temporary_password: string | null } | null = null;
+
   try {
     if (id) {
       await api.put(`/admins/${id}`, body);
     } else {
-      await api.post("/admins", body);
+      created = await api.post("/admins", body);
     }
   } catch (error) {
     return toActionState(error);
@@ -40,11 +37,15 @@ export async function saveAdminAction(
   revalidatePath("/admins");
   revalidatePath("/dashboard");
 
+  if (!created) {
+    return { ok: true, message: "Admin updated." };
+  }
+
   return {
     ok: true,
-    message: id
-      ? "Admin updated. If you changed the password, their other sessions were signed out."
-      : "Admin created. Give them the username and password directly — there is no email invite.",
+    message: created.mail_sent
+      ? "Admin created. A temporary password was emailed to them; they must change it at their first sign-in."
+      : `Admin created, but the email could not be sent. Give them this temporary password yourself (shown once): ${created.temporary_password}`,
   };
 }
 
@@ -55,5 +56,31 @@ export async function deleteAdminAction(formData: FormData) {
     await api.del(`/admins/${id}`);
     revalidatePath("/admins");
     revalidatePath("/dashboard");
+  }
+}
+
+export async function resetAdminPasswordAction(
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const id = String(formData.get("id") ?? "");
+
+  if (!id) return { ok: false, message: "Missing admin." };
+
+  try {
+    const result = await api.post<{ mail_sent: boolean; temporary_password: string | null }>(
+      `/admins/${id}/reset-password`
+    );
+
+    revalidatePath("/admins");
+
+    return {
+      ok: true,
+      message: result.mail_sent
+        ? "A new temporary password was emailed. They must change it at their next sign-in."
+        : `The email could not be sent. Give them this temporary password yourself (shown once): ${result.temporary_password}`,
+    };
+  } catch (error) {
+    return toActionState(error);
   }
 }

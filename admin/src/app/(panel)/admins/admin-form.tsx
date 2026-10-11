@@ -73,7 +73,7 @@ export default function AdminForm({
 
       <div>
         <label className="label" htmlFor={`a-email-${uid}`}>
-          Email <span className="font-normal text-slate-500">(optional)</span>
+          Email
         </label>
         <input
           id={`a-email-${uid}`}
@@ -82,34 +82,14 @@ export default function AdminForm({
           className="input"
           defaultValue={admin?.email ?? ""}
           maxLength={180}
-        />
-        <p className="hint">For your records only — it is never used to sign in.</p>
-        <FieldError errors={state.errors} name="email" />
-      </div>
-
-      <div>
-        <label className="label" htmlFor={`a-password-${uid}`}>
-          Password{" "}
-          {admin ? (
-            <span className="font-normal text-slate-500">(leave blank to keep)</span>
-          ) : null}
-        </label>
-        <input
-          id={`a-password-${uid}`}
-          name="password"
-          type="text"
-          className="input font-mono"
-          autoComplete="off"
-          minLength={10}
-          maxLength={200}
-          required={!admin}
-          placeholder={admin ? "unchanged" : "at least 10 characters"}
+          required
         />
         <p className="hint">
-          Shown in plain text so you can copy it before handing it over. There is no
-          password reset — a forgotten password has to be set again here.
+          {admin
+            ? "Temporary passwords are sent here when you create or reset the account."
+            : "A temporary password is emailed here. They must change it at their first sign-in."}
         </p>
-        <FieldError errors={state.errors} name="password" />
+        <FieldError errors={state.errors} name="email" />
       </div>
 
       <fieldset className="space-y-3 rounded-lg border border-ink-700 p-4">

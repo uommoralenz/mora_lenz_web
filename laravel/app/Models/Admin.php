@@ -15,6 +15,7 @@ class Admin extends Model
         'username',
         'email',
         'password',
+        'must_change_password',
         'is_super_admin',
         'permissions',
         'is_active',
@@ -28,6 +29,7 @@ class Admin extends Model
     {
         return [
             'password' => 'hashed',
+            'must_change_password' => 'boolean',
             'is_super_admin' => 'boolean',
             'permissions' => 'array',
             'is_active' => 'boolean',

@@ -104,6 +104,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // --- Super admin only ---
         Route::middleware('admin.super')->group(function () {
+            Route::post('admins/{admin}/reset-password', [AdminUserController::class, 'resetPassword']);
             Route::apiResource('admins', AdminUserController::class)
                 ->parameters(['admins' => 'admin'])
                 ->except('show');

@@ -94,7 +94,7 @@ class AuthController extends Controller
 
         $data = $request->validate([
             'current_password' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:10', 'max:200', 'confirmed'],
+            'password' => ['required', 'string', 'min:10', 'max:200', 'confirmed', 'different:current_password'],
         ]);
 
         if (! Hash::check($data['current_password'], $admin->password)) {
@@ -103,7 +103,7 @@ class AuthController extends Controller
             ]);
         }
 
-        $admin->update(['password' => $data['password']]);
+        $admin->update(['password' => $data['password'], 'must_change_password' => false]);
 
         AdminAuth::revokeAllFor($admin);
 
@@ -130,6 +130,7 @@ class AuthController extends Controller
             'email' => $admin->email,
             'is_super_admin' => $admin->isSuperAdmin(),
             'permissions' => $admin->effectivePermissions(),
+            'must_change_password' => (bool) $admin->must_change_password,
             'is_active' => (bool) $admin->is_active,
             'last_login_at' => $admin->last_login_at?->toIso8601String(),
         ];

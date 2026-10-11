@@ -20,6 +20,8 @@ export interface AdminUser {
   /** Sections this admin can open. Always everything for a super admin. */
   permissions: Permission[];
   is_active: boolean;
+  /** Still on a temporary password that was emailed to them. */
+  must_change_password?: boolean;
   last_login_at: string | null;
   created_at?: string | null;
 }

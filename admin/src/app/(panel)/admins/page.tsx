@@ -6,6 +6,7 @@ import { PERMISSIONS, type AdminUser } from "@/lib/types";
 
 import { deleteAdminAction } from "./actions";
 import AdminForm from "./admin-form";
+import ResetPasswordButton from "./reset-button";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ export default async function AdminsPage() {
     <>
       <PageHeader
         title="Admin accounts"
-        description="Only super admins see this page. Accounts are created here and handed over in person — there is no sign-up and no password reset."
+        description="Only super admins see this page. Creating an account emails a temporary password; resetting one does the same. Admins must choose their own password at first sign-in. There is no sign-up."
       />
 
       <Card className="mb-6">
@@ -54,6 +55,9 @@ export default async function AdminsPage() {
                     ) : null}
                     {isSelf ? <Badge>You</Badge> : null}
                     {!admin.is_active ? <Badge tone="danger">Deactivated</Badge> : null}
+                    {admin.must_change_password ? (
+                      <Badge tone="danger">Temporary password</Badge>
+                    ) : null}
                   </div>
                   <p className="mt-0.5 text-xs text-slate-500">
                     @{admin.username}
@@ -64,6 +68,14 @@ export default async function AdminsPage() {
                   </p>
                 </div>
 
+                <div className="flex flex-wrap items-start gap-2">
+                  {!isSelf ? (
+                    <ResetPasswordButton
+                      id={admin.id}
+                      name={admin.name}
+                      hasEmail={Boolean(admin.email)}
+                    />
+                  ) : null}
                 {!isSelf && !isLastSuper ? (
                   <form action={deleteAdminAction}>
                     <input type="hidden" name="id" value={admin.id} />
@@ -74,6 +86,7 @@ export default async function AdminsPage() {
                     </ConfirmSubmit>
                   </form>
                 ) : null}
+                </div>
               </div>
 
               {isLastSuper ? (

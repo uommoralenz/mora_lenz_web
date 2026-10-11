@@ -23,6 +23,8 @@ $app = Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         // Check authentication before resolving resource IDs or disclosing 404s.
         $middleware->prependToPriorityList(
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
@@ -80,7 +82,15 @@ $app = Application::configure(basePath: dirname(__DIR__))
 
             // setUserResolver() is set by AuthenticateAdmin and survives onto
             // the request, so this is still answerable while rendering.
-            if (! $request->user()) {
+            $admin = $request->user();
+
+            if (! $admin) {
+                return null;
+            }
+
+            // Only a super admin sees file paths and internals; other admins
+            // get the generic message (the real cause is still in the log).
+            if (! ($admin instanceof \App\Models\Admin && $admin->isSuperAdmin())) {
                 return null;
             }
 
