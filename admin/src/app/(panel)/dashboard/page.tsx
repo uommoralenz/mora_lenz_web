@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Card, PageHeader } from "@/components/ui";
 import { api, requireAdmin } from "@/lib/api";
-import type { MigrationStatus, Stats } from "@/lib/types";
+import type { MigrationStatus, Permission, Stats } from "@/lib/types";
 
 import DatabaseUpdates from "./database-updates";
 
@@ -13,12 +13,16 @@ function Stat({
   value,
   href,
   tone,
+  show = true,
 }: {
   label: string;
   value: number;
   href: string;
   tone?: "alert";
+  show?: boolean;
 }) {
+  if (!show) return null;
+
   return (
     <Link
       href={href}
@@ -38,6 +42,8 @@ function Stat({
 
 export default async function DashboardPage() {
   const admin = await requireAdmin();
+
+  const can = (p: Permission) => admin.is_super_admin || admin.permissions.includes(p);
 
   const { data, featured_event } = await api.get<{
     data: Stats;
@@ -65,13 +71,14 @@ export default async function DashboardPage() {
       />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        <Stat label="Upcoming events" value={data.events_upcoming} href="/events" />
-        <Stat label="All events" value={data.events} href="/events" />
-        <Stat label="Galleries" value={data.galleries} href="/gallery" />
-        <Stat label="Packages" value={data.service_packages} href="/services" />
-        <Stat label="Team members" value={data.team_members} href="/team" />
-        <Stat label="Team groups" value={data.team_groups} href="/team" />
+        <Stat show={can("events")} label="Upcoming events" value={data.events_upcoming} href="/events" />
+        <Stat show={can("events")} label="All events" value={data.events} href="/events" />
+        <Stat show={can("gallery")} label="Galleries" value={data.galleries} href="/gallery" />
+        <Stat show={can("services")} label="Packages" value={data.service_packages} href="/services" />
+        <Stat show={can("team")} label="Team members" value={data.team_members} href="/team" />
+        <Stat show={can("team")} label="Team groups" value={data.team_groups} href="/team" />
         <Stat
+          show={can("messages")}
           label="Unread messages"
           value={data.messages_unread}
           href="/messages"
@@ -84,6 +91,16 @@ export default async function DashboardPage() {
 
       {migrations ? <DatabaseUpdates status={migrations} /> : null}
 
+      {!admin.is_super_admin && admin.permissions.length === 0 ? (
+        <Card>
+          <p className="text-sm text-slate-400">
+            Your account has not been given access to any section yet. Ask a super admin
+            to grant it.
+          </p>
+        </Card>
+      ) : null}
+
+      {can("events") ? (
       <Card className="mt-6">
         <h2 className="text-sm font-semibold text-slate-200">Homepage hero event</h2>
         {featured_event ? (
@@ -102,6 +119,7 @@ export default async function DashboardPage() {
           Manage events
         </Link>
       </Card>
+      ) : null}
     </>
   );
 }

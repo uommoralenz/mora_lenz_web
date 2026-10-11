@@ -39,55 +39,68 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('stats', [DashboardController::class, 'stats']);
 
-        Route::post('uploads', [UploadController::class, 'store']);
-        Route::delete('uploads', [UploadController::class, 'destroy']);
+        // Uploads serve every content section, so any granted section is enough.
+        Route::middleware('admin.can:any')->group(function () {
+            Route::post('uploads', [UploadController::class, 'store']);
+            Route::delete('uploads', [UploadController::class, 'destroy']);
+        });
 
-        // Events
-        Route::post('events/preview', [EventController::class, 'preview']);
-        Route::post('events/reorder', [EventController::class, 'reorder']);
-        Route::apiResource('events', EventController::class)
-            ->scoped(['event' => 'id']);
+        Route::middleware('admin.can:events')->group(function () {
+            // Events
+            Route::post('events/preview', [EventController::class, 'preview']);
+            Route::post('events/reorder', [EventController::class, 'reorder']);
+            Route::apiResource('events', EventController::class)
+                ->scoped(['event' => 'id']);
+        });
 
-        // Featured galleries (homepage showcase)
-        Route::post('galleries/reorder', [GalleryController::class, 'reorder']);
-        Route::apiResource('galleries', GalleryController::class)
-            ->parameters(['galleries' => 'gallery'])
-            ->except('show');
+        Route::middleware('admin.can:gallery')->group(function () {
+            // Featured galleries (homepage showcase)
+            Route::post('galleries/reorder', [GalleryController::class, 'reorder']);
+            Route::apiResource('galleries', GalleryController::class)
+                ->parameters(['galleries' => 'gallery'])
+                ->except('show');
+        });
 
-        // Service packages
-        Route::post('service-packages/reorder', [ServicePackageController::class, 'reorder']);
-        Route::apiResource('service-packages', ServicePackageController::class)
-            ->parameters(['service-packages' => 'package'])
-            ->except('show');
+        Route::middleware('admin.can:services')->group(function () {
+            // Service packages
+            Route::post('service-packages/reorder', [ServicePackageController::class, 'reorder']);
+            Route::apiResource('service-packages', ServicePackageController::class)
+                ->parameters(['service-packages' => 'package'])
+                ->except('show');
 
-        // Service carousel images
-        Route::post('service-images/reorder', [ServiceImageController::class, 'reorder']);
-        Route::apiResource('service-images', ServiceImageController::class)
-            ->parameters(['service-images' => 'serviceImage'])
-            ->except('show');
+            // Service carousel images
+            Route::post('service-images/reorder', [ServiceImageController::class, 'reorder']);
+            Route::apiResource('service-images', ServiceImageController::class)
+                ->parameters(['service-images' => 'serviceImage'])
+                ->except('show');
+        });
 
-        // Team hierarchy
-        Route::get('team', [TeamController::class, 'tree']);
+        Route::middleware('admin.can:team')->group(function () {
+            // Team hierarchy
+            Route::get('team', [TeamController::class, 'tree']);
 
-        Route::post('team/groups', [TeamController::class, 'storeGroup']);
-        Route::post('team/groups/reorder', [TeamController::class, 'reorderGroups']);
-        Route::match(['put', 'patch'], 'team/groups/{group}', [TeamController::class, 'updateGroup']);
-        Route::delete('team/groups/{group}', [TeamController::class, 'destroyGroup']);
+            Route::post('team/groups', [TeamController::class, 'storeGroup']);
+            Route::post('team/groups/reorder', [TeamController::class, 'reorderGroups']);
+            Route::match(['put', 'patch'], 'team/groups/{group}', [TeamController::class, 'updateGroup']);
+            Route::delete('team/groups/{group}', [TeamController::class, 'destroyGroup']);
 
-        Route::post('team/subgroups', [TeamController::class, 'storeSubgroup']);
-        Route::post('team/subgroups/reorder', [TeamController::class, 'reorderSubgroups']);
-        Route::match(['put', 'patch'], 'team/subgroups/{subgroup}', [TeamController::class, 'updateSubgroup']);
-        Route::delete('team/subgroups/{subgroup}', [TeamController::class, 'destroySubgroup']);
+            Route::post('team/subgroups', [TeamController::class, 'storeSubgroup']);
+            Route::post('team/subgroups/reorder', [TeamController::class, 'reorderSubgroups']);
+            Route::match(['put', 'patch'], 'team/subgroups/{subgroup}', [TeamController::class, 'updateSubgroup']);
+            Route::delete('team/subgroups/{subgroup}', [TeamController::class, 'destroySubgroup']);
 
-        Route::post('team/members', [TeamController::class, 'storeMember']);
-        Route::post('team/members/reorder', [TeamController::class, 'reorderMembers']);
-        Route::match(['put', 'patch'], 'team/members/{member}', [TeamController::class, 'updateMember']);
-        Route::delete('team/members/{member}', [TeamController::class, 'destroyMember']);
+            Route::post('team/members', [TeamController::class, 'storeMember']);
+            Route::post('team/members/reorder', [TeamController::class, 'reorderMembers']);
+            Route::match(['put', 'patch'], 'team/members/{member}', [TeamController::class, 'updateMember']);
+            Route::delete('team/members/{member}', [TeamController::class, 'destroyMember']);
+        });
 
-        // Contact inbox
-        Route::apiResource('messages', MessageController::class)
-            ->parameters(['messages' => 'message'])
-            ->only(['index', 'update', 'destroy']);
+        Route::middleware('admin.can:messages')->group(function () {
+            // Contact inbox
+            Route::apiResource('messages', MessageController::class)
+                ->parameters(['messages' => 'message'])
+                ->only(['index', 'update', 'destroy']);
+        });
 
         // --- Super admin only ---
         Route::middleware('admin.super')->group(function () {

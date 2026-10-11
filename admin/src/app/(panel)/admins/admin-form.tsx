@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useRef, useState } from "react";
 
 import { FieldError, FormMessage, SubmitButton } from "@/components/form";
-import { EMPTY_ACTION_STATE, type AdminUser } from "@/lib/types";
+import { EMPTY_ACTION_STATE, PERMISSIONS, type AdminUser } from "@/lib/types";
 
 import { saveAdminAction } from "./actions";
 
@@ -17,6 +17,7 @@ export default function AdminForm({
   const formRef = useRef<HTMLFormElement>(null);
   const uid = admin?.id ?? "new";
   const isSelf = admin?.id === currentAdminId;
+  const [isSuper, setIsSuper] = useState(admin?.is_super_admin ?? false);
 
   const [state, formAction] = useActionState(
     async (prev: typeof EMPTY_ACTION_STATE, data: FormData) => {
@@ -140,7 +141,8 @@ export default function AdminForm({
             type="checkbox"
             name="is_super_admin"
             value="1"
-            defaultChecked={admin?.is_super_admin ?? false}
+            checked={isSuper}
+            onChange={(e) => setIsSuper(e.target.checked)}
             disabled={isSelf}
             className="mt-0.5"
           />
@@ -149,7 +151,7 @@ export default function AdminForm({
             <span className="block text-xs text-slate-500">
               {isSelf
                 ? "You cannot remove your own super admin rights."
-                : "Can create, edit and delete admin accounts."}
+                : "Full access to every section, and can manage admin accounts."}
             </span>
           </span>
         </label>
@@ -161,6 +163,36 @@ export default function AdminForm({
             <input type="hidden" name="is_super_admin" value="1" />
           </>
         ) : null}
+      </fieldset>
+
+      <fieldset
+        className="space-y-3 rounded-lg border border-ink-700 p-4"
+        disabled={isSuper}
+      >
+        <legend className="px-1 text-xs uppercase tracking-wide text-slate-500">
+          Sections this admin can manage
+        </legend>
+
+        {isSuper ? (
+          <p className="text-xs text-slate-500">Super admins can manage every section.</p>
+        ) : null}
+
+        {PERMISSIONS.map((p) => (
+          <label key={p.value} className="flex items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              name="permissions"
+              value={p.value}
+              defaultChecked={admin ? admin.permissions.includes(p.value) : false}
+              className="mt-0.5"
+            />
+            <span>
+              <span className="font-medium text-slate-200">{p.label}</span>
+              <span className="block text-xs text-slate-500">{p.hint}</span>
+            </span>
+          </label>
+        ))}
+        <FieldError errors={state.errors} name="permissions" />
       </fieldset>
 
       <SubmitButton>{admin ? "Save changes" : "Create admin"}</SubmitButton>

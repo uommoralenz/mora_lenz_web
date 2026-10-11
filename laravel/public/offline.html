@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#030508">
+  <title>Offline | Mora Lenz</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: radial-gradient(circle at 50% 10%, #17304a, #030508 55%);
+      color: #fff;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      text-align: center;
+    }
+    main { width: min(440px, 100%); }
+    img { width: 88px; height: 88px; border-radius: 22px; }
+    h1 { margin: 24px 0 10px; font-size: clamp(2rem, 8vw, 3rem); letter-spacing: -0.04em; }
+    p { margin: 0 auto 28px; color: #b5c0cf; line-height: 1.65; }
+    button {
+      min-height: 48px;
+      padding: 0 24px;
+      border: 0;
+      border-radius: 999px;
+      background: #fff;
+      color: #05070b;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="/img/pwa-icon-192.png" alt="Mora Lenz">
+    <h1>You’re offline</h1>
+    <p>Mora Lenz needs a connection to load the latest events, stories and gallery updates.</p>
+    <button type="button" onclick="window.location.reload()">Try again</button>
+  </main>
+</body>
+</html>

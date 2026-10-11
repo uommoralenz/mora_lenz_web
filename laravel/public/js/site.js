@@ -416,6 +416,116 @@
     }
   }
 
+  /* ---------------------------------------------------- installable app */
+
+  function initInstallApp() {
+    var installButtons = document.querySelectorAll("[data-install-app]");
+    var banner = document.querySelector("[data-install-banner]");
+    var confirmButton = banner && banner.querySelector("[data-install-confirm]");
+    var dismissButton = banner && banner.querySelector("[data-install-dismiss]");
+    var description = banner && banner.querySelector("[data-install-description]");
+    var deferredPrompt = null;
+    var isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+    var isStandalone = window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
+    var dismissalKey = "mora-lenz-install-dismissed";
+
+    if ("serviceWorker" in window.navigator) {
+      window.addEventListener("load", function () {
+        window.navigator.serviceWorker.register("/sw.js").catch(function () {
+          // The website remains fully usable if registration is unavailable.
+        });
+      });
+    }
+
+    if (isStandalone) return;
+
+    function wasRecentlyDismissed() {
+      try {
+        var dismissedAt = Number(window.localStorage.getItem(dismissalKey));
+        return dismissedAt && Date.now() - dismissedAt < 14 * 24 * 60 * 60 * 1000;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function setButtonsVisible(visible) {
+      Array.prototype.forEach.call(installButtons, function (button) {
+        button.hidden = !visible;
+      });
+    }
+
+    function showBanner(force) {
+      if (!banner || (!force && wasRecentlyDismissed())) return;
+      if (isIos && !deferredPrompt) {
+        description.textContent = "Tap Share, then choose Add to Home Screen.";
+        confirmButton.textContent = "Got it";
+      } else {
+        description.textContent = "Add the site to your device for quick, app-like access.";
+        confirmButton.textContent = "Install";
+      }
+      banner.hidden = false;
+    }
+
+    function hideBanner(remember) {
+      if (banner) banner.hidden = true;
+      if (remember) {
+        try {
+          window.localStorage.setItem(dismissalKey, String(Date.now()));
+        } catch (e) {
+          // Private browsing may block storage; dismissal still works for this page.
+        }
+      }
+    }
+
+    function requestInstall() {
+      if (!deferredPrompt) {
+        if (isIos && banner && !banner.hidden) {
+          hideBanner(true);
+          return;
+        }
+        showBanner(true);
+        return;
+      }
+
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function () {
+        deferredPrompt = null;
+        setButtonsVisible(false);
+        hideBanner(false);
+      });
+    }
+
+    window.addEventListener("beforeinstallprompt", function (event) {
+      event.preventDefault();
+      deferredPrompt = event;
+      setButtonsVisible(true);
+      window.setTimeout(function () { showBanner(false); }, 1800);
+    });
+
+    window.addEventListener("appinstalled", function () {
+      deferredPrompt = null;
+      setButtonsVisible(false);
+      hideBanner(false);
+    });
+
+    Array.prototype.forEach.call(installButtons, function (button) {
+      button.addEventListener("click", requestInstall);
+    });
+
+    if (confirmButton) confirmButton.addEventListener("click", requestInstall);
+    if (dismissButton) {
+      dismissButton.addEventListener("click", function () { hideBanner(true); });
+    }
+
+    // Safari on iOS does not emit beforeinstallprompt, so show its manual path.
+    if (isIos) {
+      setButtonsVisible(true);
+      window.setTimeout(function () { showBanner(false); }, 1800);
+    }
+
+  }
+
   function ready(fn) {
     if (document.readyState !== "loading") {
       fn();
@@ -432,5 +542,6 @@
     initLightbox();
     initReveal();
     initContactForm();
+    initInstallApp();
   });
 })();

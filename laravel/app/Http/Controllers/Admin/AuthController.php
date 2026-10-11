@@ -129,6 +129,7 @@ class AuthController extends Controller
             'username' => $admin->username,
             'email' => $admin->email,
             'is_super_admin' => $admin->isSuperAdmin(),
+            'permissions' => $admin->effectivePermissions(),
             'is_active' => (bool) $admin->is_active,
             'last_login_at' => $admin->last_login_at?->toIso8601String(),
         ];

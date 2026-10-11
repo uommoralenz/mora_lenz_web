@@ -37,6 +37,8 @@ class AdminUserController extends Controller
             'email' => ['nullable', 'email:rfc', 'max:180'],
             'password' => ['required', 'string', 'min:10', 'max:200'],
             'is_super_admin' => ['boolean'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['string', Rule::in(Admin::PERMISSIONS)],
             'is_active' => ['boolean'],
         ]);
 
@@ -46,6 +48,7 @@ class AdminUserController extends Controller
             'email' => $data['email'] ?? null,
             'password' => $data['password'],
             'is_super_admin' => (bool) ($data['is_super_admin'] ?? false),
+            'permissions' => array_values(array_unique($data['permissions'] ?? [])),
             'is_active' => (bool) ($data['is_active'] ?? true),
         ]);
 
@@ -66,6 +69,8 @@ class AdminUserController extends Controller
             // Optional: leave blank to keep the existing password.
             'password' => ['nullable', 'string', 'min:10', 'max:200'],
             'is_super_admin' => ['boolean'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['string', Rule::in(Admin::PERMISSIONS)],
             'is_active' => ['boolean'],
         ]);
 
@@ -104,6 +109,10 @@ class AdminUserController extends Controller
 
         if (array_key_exists('is_super_admin', $data)) {
             $admin->is_super_admin = (bool) $data['is_super_admin'];
+        }
+
+        if (array_key_exists('permissions', $data)) {
+            $admin->permissions = array_values(array_unique($data['permissions'] ?? []));
         }
 
         if (array_key_exists('is_active', $data)) {
@@ -151,6 +160,7 @@ class AdminUserController extends Controller
             'username' => $admin->username,
             'email' => $admin->email,
             'is_super_admin' => $admin->isSuperAdmin(),
+            'permissions' => $admin->effectivePermissions(),
             'is_active' => (bool) $admin->is_active,
             'last_login_at' => $admin->last_login_at?->toIso8601String(),
             'created_at' => $admin->created_at?->toIso8601String(),

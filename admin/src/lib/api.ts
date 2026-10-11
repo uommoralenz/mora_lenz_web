@@ -4,7 +4,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { getToken } from "./session";
-import type { ActionState, AdminUser } from "./types";
+import type { ActionState, AdminUser, Permission } from "./types";
 
 const BASE = (process.env.LARAVEL_API_URL || "").replace(/\/+$/, "");
 
@@ -294,6 +294,17 @@ export async function requireSuperAdmin(): Promise<AdminUser> {
   const admin = await requireAdmin();
 
   if (!admin.is_super_admin) {
+    redirect("/dashboard");
+  }
+
+  return admin;
+}
+
+/** Sends an admin without access to this section back to the dashboard. */
+export async function requirePermission(permission: Permission): Promise<AdminUser> {
+  const admin = await requireAdmin();
+
+  if (!admin.is_super_admin && !admin.permissions.includes(permission)) {
     redirect("/dashboard");
   }
 

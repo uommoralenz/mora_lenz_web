@@ -4,15 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-import type { AdminUser } from "@/lib/types";
+import type { AdminUser, Permission } from "@/lib/types";
 
-const NAV = [
+const NAV: { href: string; label: string; permission?: Permission }[] = [
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/events", label: "Events" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/services", label: "Services" },
-  { href: "/team", label: "Team" },
-  { href: "/messages", label: "Messages" },
+  { href: "/events", label: "Events", permission: "events" },
+  { href: "/gallery", label: "Gallery", permission: "gallery" },
+  { href: "/services", label: "Services", permission: "services" },
+  { href: "/team", label: "Team", permission: "team" },
+  { href: "/messages", label: "Messages", permission: "messages" },
 ];
 
 const SUPER_NAV = [{ href: "/admins", label: "Admin accounts" }];
@@ -29,7 +29,11 @@ export default function Shell({
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const links = admin.is_super_admin ? [...NAV, ...SUPER_NAV] : NAV;
+  const allowed = NAV.filter(
+    (link) =>
+      !link.permission || admin.is_super_admin || admin.permissions.includes(link.permission)
+  );
+  const links = admin.is_super_admin ? [...allowed, ...SUPER_NAV] : allowed;
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`);

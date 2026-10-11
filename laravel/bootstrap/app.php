@@ -28,9 +28,14 @@ $app = Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\AuthenticateAdmin::class,
         );
+        $middleware->prependToPriorityList(
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\EnsureAdminCan::class,
+        );
         // Named middleware used by the admin API routes.
         $middleware->alias([
             'admin.auth' => \App\Http\Middleware\AuthenticateAdmin::class,
+            'admin.can' => \App\Http\Middleware\EnsureAdminCan::class,
             'admin.super' => \App\Http\Middleware\EnsureSuperAdmin::class,
         ]);
 

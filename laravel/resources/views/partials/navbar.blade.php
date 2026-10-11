@@ -57,6 +57,15 @@
         </nav>
 
         <div class="navbar__actions">
+            <button type="button" class="navbar__install" data-install-app hidden aria-label="Install Mora Lenz app">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 3v12"></path>
+                    <path d="m7 10 5 5 5-5"></path>
+                    <path d="M5 21h14"></path>
+                </svg>
+                <span>Install</span>
+            </button>
             <button type="button" class="navbar__toggle" data-navbar-toggle
                     aria-expanded="false" aria-controls="mobile-menu" aria-label="Toggle menu">
                 <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -85,5 +94,14 @@
         <a href="{{ \App\Support\Links::gallery() }}">Gallery</a>
         <a href="{{ \App\Support\Links::team() }}">Our Team</a>
         <a href="{{ $anchor('#contact') }}">Contact</a>
+        <button type="button" class="navbar__mobile-install" data-install-app hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3v12"></path>
+                <path d="m7 10 5 5 5-5"></path>
+                <path d="M5 21h14"></path>
+            </svg>
+            Install Mora Lenz
+        </button>
     </div>
 </header>

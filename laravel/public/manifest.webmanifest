@@ -1,0 +1,33 @@
+{
+  "id": "/",
+  "name": "Mora Lenz",
+  "short_name": "Mora Lenz",
+  "description": "The Mass Media Club of the University of Moratuwa — photography, videography and visual storytelling.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#030508",
+  "theme_color": "#030508",
+  "orientation": "any",
+  "categories": ["photography", "entertainment", "education"],
+  "icons": [
+    {
+      "src": "/img/pwa-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/pwa-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

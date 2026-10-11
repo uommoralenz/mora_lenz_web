@@ -20,7 +20,12 @@ export async function saveAdminAction(
     formData.delete("password");
   }
 
-  const body = Object.fromEntries(formData.entries());
+  // Checkboxes: always send the ticked sections as a list (empty means "no
+  // sections"), so unticking everything is actually saved.
+  const permissions = formData.getAll("permissions").map(String);
+  formData.delete("permissions");
+
+  const body = { ...Object.fromEntries(formData.entries()), permissions };
 
   try {
     if (id) {

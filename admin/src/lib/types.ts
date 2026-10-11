@@ -1,11 +1,24 @@
 export type ServiceType = "photography" | "videography";
 
+/** Sections a non-super admin can be given. Mirrors the PHP Admin::PERMISSIONS. */
+export type Permission = "events" | "gallery" | "services" | "team" | "messages";
+
+export const PERMISSIONS: { value: Permission; label: string; hint: string }[] = [
+  { value: "events", label: "Events", hint: "Create, edit and delete events and their pages." },
+  { value: "gallery", label: "Gallery", hint: "Manage the featured galleries and albums." },
+  { value: "services", label: "Services", hint: "Photography and videography packages and carousel images." },
+  { value: "team", label: "Team", hint: "Team groups, subgroups and members." },
+  { value: "messages", label: "Messages", hint: "Read and delete messages from the contact form." },
+];
+
 export interface AdminUser {
   id: number;
   name: string;
   username: string;
   email: string | null;
   is_super_admin: boolean;
+  /** Sections this admin can open. Always everything for a super admin. */
+  permissions: Permission[];
   is_active: boolean;
   last_login_at: string | null;
   created_at?: string | null;

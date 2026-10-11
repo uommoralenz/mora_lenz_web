@@ -2,7 +2,7 @@ import Disclosure from "@/components/disclosure";
 import { ConfirmSubmit } from "@/components/form";
 import { Badge, Card, PageHeader, formatDateTime } from "@/components/ui";
 import { api, requireSuperAdmin } from "@/lib/api";
-import type { AdminUser } from "@/lib/types";
+import { PERMISSIONS, type AdminUser } from "@/lib/types";
 
 import { deleteAdminAction } from "./actions";
 import AdminForm from "./admin-form";
@@ -42,6 +42,15 @@ export default async function AdminsPage() {
                     <p className="font-medium text-slate-100">{admin.name}</p>
                     {admin.is_super_admin ? (
                       <Badge tone="info">Super admin</Badge>
+                    ) : null}
+                    {!admin.is_super_admin ? (
+                      <Badge>
+                        {admin.permissions.length === 0
+                          ? "No sections"
+                          : admin.permissions
+                              .map((p) => PERMISSIONS.find((x) => x.value === p)?.label ?? p)
+                              .join(", ")}
+                      </Badge>
                     ) : null}
                     {isSelf ? <Badge>You</Badge> : null}
                     {!admin.is_active ? <Badge tone="danger">Deactivated</Badge> : null}
