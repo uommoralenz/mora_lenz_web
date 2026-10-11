@@ -21,10 +21,12 @@
         @endif
     </div>
 
-    <h4 class="member-card__name">{{ $member->name }}</h4>
-    <p class="member-card__role">{{ $member->profession }}</p>
+    <div class="member-card__content">
+        <h4 class="member-card__name">{{ $member->name }}</h4>
+        <p class="member-card__role">{{ $member->profession }}</p>
 
-    @if ($member->description)
-        <p class="member-card__bio">{{ $member->description }}</p>
-    @endif
+        @if ($member->description)
+            <p class="member-card__bio">{{ $member->description }}</p>
+        @endif
+    </div>
 </article>

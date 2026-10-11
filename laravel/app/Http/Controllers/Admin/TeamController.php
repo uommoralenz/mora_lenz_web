@@ -228,7 +228,7 @@ class TeamController extends Controller
             'name' => [$member ? 'sometimes' : 'required', 'string', 'max:150'],
             'profession' => [$member ? 'sometimes' : 'required', 'string', 'max:150'],
             'tier' => ['nullable', 'integer', Rule::in(TeamMember::TIERS)],
-            'description' => ['nullable', 'string', 'max:1000'],
+            'description' => ['required', 'string', 'max:1000'],
             'image' => ['nullable', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
             'remove_image' => ['boolean'],
             'is_active' => ['boolean'],

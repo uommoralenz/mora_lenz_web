@@ -460,6 +460,10 @@
       if (isIos && !deferredPrompt) {
         description.textContent = "Tap Share, then choose Add to Home Screen.";
         confirmButton.textContent = "Got it";
+      } else if (!deferredPrompt) {
+        // Browsers that cannot show an install dialog on their own.
+        description.textContent = "Open your browser menu (⋮ or ☰), then tap Install app or Add to Home screen.";
+        confirmButton.textContent = "Got it";
       } else {
         description.textContent = "Add the site to your device for quick, app-like access.";
         confirmButton.textContent = "Install";
@@ -480,7 +484,7 @@
 
     function requestInstall() {
       if (!deferredPrompt) {
-        if (isIos && banner && !banner.hidden) {
+        if (banner && !banner.hidden && confirmButton && confirmButton.textContent === "Got it") {
           hideBanner(true);
           return;
         }
@@ -516,6 +520,15 @@
     if (confirmButton) confirmButton.addEventListener("click", requestInstall);
     if (dismissButton) {
       dismissButton.addEventListener("click", function () { hideBanner(true); });
+    }
+
+    // Some mobile browsers never emit beforeinstallprompt (Firefox, Samsung
+    // Internet, in-app browsers). Offer the install button anyway after a
+    // moment, so it shows the manual steps instead of nothing at all.
+    if (!isIos && /android|mobile/i.test(window.navigator.userAgent)) {
+      window.setTimeout(function () {
+        if (!deferredPrompt) setButtonsVisible(true);
+      }, 4000);
     }
 
     // Safari on iOS does not emit beforeinstallprompt, so show its manual path.

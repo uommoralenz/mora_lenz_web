@@ -867,17 +867,26 @@ button {
   animation: wordmarkIn 2s ease-out both;
 }
 
-.hero__wordmark h2 {
-  margin: 0;
-  font-size: clamp(3.5rem, 13vw, 11rem);
+.hero__wordmark-svg {
+  display: block;
+  width: clamp(28rem, 55vw, 48rem);
+  height: auto;
+  overflow: visible;
+}
+
+.hero__wordmark-text {
+  fill: transparent;
+  stroke: rgba(255, 255, 255, 0.42);
+  stroke-width: 3.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  paint-order: stroke;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.78));
+  font-family: "Mona Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size: 130px;
   font-weight: 900;
-  text-transform: uppercase;
-  line-height: 0.85;
   letter-spacing: -0.04em;
-  background: linear-gradient(to bottom, #fff, #e5e7eb 45%, #6b7280);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
 }
 
 @keyframes wordmarkIn {
@@ -1971,14 +1980,25 @@ body.has-lightbox { overflow: hidden; }
   );
 }
 
-/* Tier 1 — the top role, alone and widest. */
+/* Tier 1 — the top role, alone in a wider horizontal card. */
 .member-grid--is-lead .member-card {
-  max-width: 420px;
+  display: flex;
+  max-width: 640px;
+  align-items: center;
+  gap: 28px;
+  text-align: left;
 }
 
 .member-grid--is-lead .member-card__avatar {
+  flex: 0 0 auto;
   width: 164px;
   height: 164px;
+  margin: 0;
+}
+
+.member-grid--is-lead .member-card__content {
+  flex: 1;
+  min-width: 0;
 }
 
 .member-grid--is-lead .member-card__name {
@@ -2018,14 +2038,21 @@ body.has-lightbox { overflow: hidden; }
 }
 
 @media (max-width: 600px) {
-  /* Ranks stop meaning much once every card is full width, so drop the size
-     difference and keep only the order. */
-  .member-grid--is-lead .member-card,
+  .member-grid--is-lead .member-card {
+    max-width: 420px;
+    gap: 18px;
+    padding: 18px;
+  }
+
   .member-grid--is-senior .member-card {
     max-width: 320px;
   }
 
-  .member-grid--is-lead .member-card__avatar,
+  .member-grid--is-lead .member-card__avatar {
+    width: 104px;
+    height: 104px;
+  }
+
   .member-grid--is-senior .member-card__avatar {
     width: 128px;
     height: 128px;
@@ -3508,19 +3535,37 @@ html { scrollbar-color: #2a3344 #05070b; scrollbar-width: thin; }
 .hero__eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 13px;
   align-self: flex-start;
-  padding: 7px 16px;
-  border-radius: 999px;
+  padding: 10px 19px;
+  border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   background: rgba(255, 255, 255, 0.07);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   color: #d9ecff;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: clamp(0.85rem, 1.15vw, 1rem);
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  line-height: 1.2;
   text-transform: uppercase;
+}
+
+.hero__eyebrow-copy {
+  display: grid;
+  gap: 3px;
+}
+
+.hero__eyebrow-copy > span {
+  display: block;
+  font-size: 1.6em;
+  white-space: nowrap;
+}
+
+.hero__eyebrow-copy > span:last-child {
+  color: rgba(217, 236, 255, 0.76);
+  font-size: 1.2em;
+  letter-spacing: 0.12em;
 }
 
 .hero__eyebrow::before {
@@ -3530,6 +3575,13 @@ html { scrollbar-color: #2a3344 #05070b; scrollbar-width: thin; }
   border-radius: 50%;
   background: #60a5fa;
   box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.25);
+}
+
+@media (max-width: 480px) {
+  .hero__eyebrow {
+    gap: 11px;
+    padding: 9px 15px;
+  }
 }
 
 .hero__title {
@@ -3560,12 +3612,10 @@ html { scrollbar-color: #2a3344 #05070b; scrollbar-width: thin; }
   opacity: 1;
 }
 
-.hero__wordmark h2 {
-  text-align: right;
-  background: none;
-  -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.28);
-  color: transparent;
+.hero__wordmark-text {
+  /* Rounded SVG stroke joins soften the corners of every letter. */
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 @keyframes wordmarkIn {

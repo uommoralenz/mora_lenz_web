@@ -18,12 +18,20 @@
         </div>
 
         <div class="hero__wordmark" aria-hidden="true">
-            <h2>Mora<br>Lenz</h2>
+            <svg class="hero__wordmark-svg" viewBox="0 0 720 330" focusable="false">
+                <text class="hero__wordmark-text" x="700" y="145" text-anchor="end">MORA</text>
+                <text class="hero__wordmark-text" x="700" y="310" text-anchor="end">LENZ</text>
+            </svg>
         </div>
 
         <div class="hero__inner">
             <div class="hero__content">
-                <span class="hero__eyebrow">Mass Media Club &middot; University of Moratuwa</span>
+                <span class="hero__eyebrow">
+                    <span class="hero__eyebrow-copy">
+                        <span>Mass Media Club</span>
+                        <span>University of Moratuwa</span>
+                    </span>
+                </span>
 
                 <h1 class="hero__title">
                     <span class="hero__line">

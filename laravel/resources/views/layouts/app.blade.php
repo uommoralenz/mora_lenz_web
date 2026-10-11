@@ -26,7 +26,7 @@
     @stack('head')
     <link rel="icon" href="{{ asset('img/favicon.png') }}" type="image/png">
     <link rel="apple-touch-icon" href="{{ asset('img/apple-touch-icon.png') }}">
-    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="{{ asset('css/site.css') }}?v={{ config('app.asset_version', '1') }}-{{ @filemtime(public_path('css/site.css')) ?: '' }}">
