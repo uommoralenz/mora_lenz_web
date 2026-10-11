@@ -294,7 +294,7 @@ export function MemberForm({
 
       <div>
         <label className="label" htmlFor={`m-desc-${uid}`}>
-          Short bio
+          Short bio <span className="font-normal text-slate-500">(optional)</span>
         </label>
         <textarea
           id={`m-desc-${uid}`}
@@ -302,7 +302,6 @@ export function MemberForm({
           className="textarea min-h-20"
           defaultValue={member?.description ?? ""}
           maxLength={1000}
-          required
         />
         <FieldError errors={state.errors} name="description" />
       </div>
