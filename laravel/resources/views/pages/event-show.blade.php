@@ -83,11 +83,6 @@
 
     <section class="section event-body event-body--{{ $page['width'] }}" style="padding-top: 48px;">
         <div class="container">
-            @if ($event->description)
-                {{-- The intro takes the same inline marks as the content blocks. --}}
-                <div class="prose">{!! \App\Support\EventBlocks::rich($event->description) !!}</div>
-            @endif
-
             @if (! empty($event->content))
                 @include('partials.event-blocks', ['blocks' => $event->content])
             @endif

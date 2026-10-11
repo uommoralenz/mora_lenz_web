@@ -1885,10 +1885,6 @@ body.has-lightbox { overflow: hidden; }
 
 /* ------------------------------------------------------------------ team */
 
-.team {
-  background: linear-gradient(to bottom, var(--gray-900), #000);
-}
-
 .team__groups {
   display: flex;
   flex-direction: column;
