@@ -23,6 +23,15 @@ export async function saveGalleryAction(
   } else {
     formData.delete("show_on_homepage");
   }
+  // One link per line in the form; the API takes a list.
+  const links = String(formData.get("facebook_album_links") ?? "")
+    .split(/[\r\n]+/)
+    .map((link) => link.trim())
+    .filter(Boolean);
+  formData.delete("facebook_album_links");
+  links.forEach((link) => formData.append("facebook_album_urls[]", link));
+  // Sent even when empty so removing every link on update clears them.
+  formData.set("facebook_album_url", links[0] ?? "");
   pruneEmptyFile(formData);
   formData.delete("id");
 

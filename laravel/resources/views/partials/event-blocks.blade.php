@@ -177,10 +177,10 @@
                                     style="height: {{ $frameHeight }}px"
                                     data-fixed-height="1"
                                 @endif
-                                srcdoc="{{ EventBlocks::frameDocument($block['code']) }}"></iframe>
+                                srcdoc="{{ EventBlocks::frameDocument(EventBlocks::expandGalleries($block['code'])) }}"></iframe>
                     </div>
                 @else
-                    <div class="event-blocks__html is-{{ $width }}">{!! $block['code'] !!}</div>
+                    <div class="event-blocks__html is-{{ $width }}">{!! EventBlocks::expandGalleries($block['code']) !!}</div>
                 @endif
                 @break
 

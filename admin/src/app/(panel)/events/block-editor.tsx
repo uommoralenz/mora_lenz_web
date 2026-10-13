@@ -722,7 +722,9 @@ function HtmlFields({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-xs text-slate-500">
           HTML, <code>&lt;style&gt;</code> and <code>&lt;script&gt;</code> together in
-          this one field.
+          this one field. To show a gallery&apos;s photos, type{" "}
+          <code>[gallery id=5]</code> (the Gallery ID is listed in the Gallery section; optional{" "}
+          <code>limit=6 columns=4</code>).
         </span>
         <div className="flex gap-1">
           <button

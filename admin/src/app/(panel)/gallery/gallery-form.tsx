@@ -69,18 +69,18 @@ export default function GalleryForm({
 
       <div>
         <label className="label" htmlFor={`facebook-${item?.id ?? "new"}`}>
-          Facebook album link
+          Facebook album links
         </label>
-        <input
+        <textarea
           id={`facebook-${item?.id ?? "new"}`}
-          name="facebook_album_url"
-          type="url"
-          className="input"
-          defaultValue={item?.facebook_album_url ?? ""}
-          placeholder="https://www.facebook.com/media/set/..."
+          name="facebook_album_links"
+          className="textarea"
+          rows={3}
+          defaultValue={(item?.facebook_album_urls ?? (item?.facebook_album_url ? [item.facebook_album_url] : [])).join("\n")}
+          placeholder={"https://www.facebook.com/media/set/...\nhttps://www.facebook.com/media/set/..."}
         />
-        <p className="hint">Optional. When provided, clicking the album preview opens this Facebook album.</p>
-        <FieldError errors={state.errors} name="facebook_album_url" />
+        <p className="hint">Optional. One link per line (up to 10) &mdash; use several when one gallery covers more than one Facebook album.</p>
+        <FieldError errors={state.errors} name="facebook_album_urls" />
       </div>
 
       <div>

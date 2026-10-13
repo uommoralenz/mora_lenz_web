@@ -32,6 +32,8 @@ class GalleryController extends Controller
             'title' => ['required', 'string', 'max:200'],
             'description' => ['nullable', 'string', 'max:5000'],
             'facebook_album_url' => ['nullable', 'url', 'max:2048'],
+            'facebook_album_urls' => ['nullable', 'array', 'max:10'],
+            'facebook_album_urls.*' => ['nullable', 'url', 'max:2048'],
             'images' => ['required', 'array', 'min:1', 'max:20'],
             'images.*' => ['required', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
             'is_active' => ['boolean'],
@@ -41,7 +43,7 @@ class GalleryController extends Controller
         $gallery = FeaturedGallery::create([
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
-            'facebook_album_url' => $data['facebook_album_url'] ?? null,
+            ...$this->facebookFields($data),
             'image_url' => ImageStore::put($request->file('images')[0], 'gallery'),
             'is_active' => (bool) ($data['is_active'] ?? true),
             'show_on_homepage' => (bool) ($data['show_on_homepage'] ?? false),
@@ -65,6 +67,8 @@ class GalleryController extends Controller
             'title' => ['sometimes', 'required', 'string', 'max:200'],
             'description' => ['nullable', 'string', 'max:5000'],
             'facebook_album_url' => ['nullable', 'url', 'max:2048'],
+            'facebook_album_urls' => ['nullable', 'array', 'max:10'],
+            'facebook_album_urls.*' => ['nullable', 'url', 'max:2048'],
             'images' => ['nullable', 'array', 'max:20'],
             'images.*' => ['required', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
             'is_active' => ['boolean'],
@@ -79,8 +83,8 @@ class GalleryController extends Controller
             $gallery->description = $data['description'];
         }
 
-        if (array_key_exists('facebook_album_url', $data)) {
-            $gallery->facebook_album_url = $data['facebook_album_url'];
+        if (array_key_exists('facebook_album_urls', $data) || array_key_exists('facebook_album_url', $data)) {
+            $gallery->fill($this->facebookFields($data));
         }
 
         if (array_key_exists('is_active', $data)) {
@@ -122,6 +126,21 @@ class GalleryController extends Controller
         return $this->applyOrder($request, FeaturedGallery::class);
     }
 
+    /**
+     * Normalise the album links. The list is the source of truth; the legacy
+     * single column mirrors its first entry so older code keeps working.
+     */
+    protected function facebookFields(array $data): array
+    {
+        $links = $data['facebook_album_urls'] ?? (filled($data['facebook_album_url'] ?? null) ? [$data['facebook_album_url']] : []);
+        $links = array_values(array_unique(array_filter(array_map('trim', (array) $links))));
+
+        return [
+            'facebook_album_urls' => $links ?: null,
+            'facebook_album_url' => $links[0] ?? null,
+        ];
+    }
+
     protected function present(FeaturedGallery $gallery): array
     {
         return [
@@ -129,6 +148,7 @@ class GalleryController extends Controller
             'title' => $gallery->title,
             'description' => $gallery->description,
             'facebook_album_url' => $gallery->facebook_album_url,
+            'facebook_album_urls' => $gallery->facebookLinks(),
             'image_url' => $gallery->image_url,
             'image_count' => (int) ($gallery->images_count ?? $gallery->images()->count()),
             'sort_order' => (int) $gallery->sort_order,

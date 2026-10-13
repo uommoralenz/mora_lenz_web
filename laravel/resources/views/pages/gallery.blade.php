@@ -74,11 +74,12 @@
                             @if ($gallery->description)
                                 <p class="gallery-album__description">{{ $gallery->description }}</p>
                             @endif
-                            @if ($gallery->facebook_album_url)
-                                <a class="gallery-album__facebook" href="{{ $gallery->facebook_album_url }}" target="_blank" rel="noopener noreferrer">
-                                    Open Facebook album <span aria-hidden="true">↗</span>
+                            @php $fbLinks = $gallery->facebookLinks(); @endphp
+                            @foreach ($fbLinks as $fbUrl)
+                                <a class="gallery-album__facebook" href="{{ $fbUrl }}" target="_blank" rel="noopener noreferrer">
+                                    Open Facebook album{{ count($fbLinks) > 1 ? ' '.$loop->iteration : '' }} <span aria-hidden="true">↗</span>
                                 </a>
-                            @endif
+                            @endforeach
                         </div>
                     </article>
                 @empty

@@ -276,6 +276,60 @@ class EventBlocks
             .'</body></html>';
     }
 
+    /**
+     * Swap [gallery id=N] shortcodes in an html block for the photos of that
+     * gallery album (managed under Gallery in the admin panel).
+     *
+     * Options: limit=N (max photos, default all), columns=2-6 (default 3).
+     * Rendered when the page is shown, so adding photos to the album updates
+     * every event that embeds it. Everything printed is escaped; the
+     * admin's own markup around the shortcode is untouched.
+     */
+    public static function expandGalleries(string $code): string
+    {
+        if (stripos($code, '[gallery') === false) {
+            return $code;
+        }
+
+        return preg_replace_callback('/\[gallery\s+([^\]]*)\]/i', function (array $m) {
+            preg_match_all("/(\w+)\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|(\S+))/", $m[1], $pairs, PREG_SET_ORDER);
+
+            $args = [];
+            foreach ($pairs as $pair) {
+                $args[strtolower($pair[1])] = ($pair[4] ?? '') !== '' ? $pair[4] : (($pair[3] ?? '') !== '' ? $pair[3] : ($pair[2] ?? ''));
+            }
+
+            $gallery = \App\Models\FeaturedGallery::active()->with('images')->find((int) ($args['id'] ?? 0));
+
+            if (! $gallery) {
+                return '';
+            }
+
+            $photos = $gallery->images->map(fn ($i) => ['src' => $i->image_url, 'caption' => $i->description]);
+
+            if ($photos->isEmpty() && $gallery->image_url) {
+                $photos = collect([['src' => $gallery->image_url, 'caption' => null]]);
+            }
+
+            $limit = (int) ($args['limit'] ?? 0);
+            if ($limit > 0) {
+                $photos = $photos->take($limit);
+            }
+
+            $columns = max(2, min(6, (int) ($args['columns'] ?? 3)));
+
+            $html = '<div class="ml-event-gallery" style="display:grid;grid-template-columns:repeat('.$columns.',minmax(0,1fr));gap:10px;margin:1.5rem 0">';
+            foreach ($photos as $photo) {
+                $src = e($photo['src']);
+                $alt = e($photo['caption'] ?: $gallery->title);
+                $html .= '<a href="'.$src.'" target="_blank" rel="noopener" style="display:block;aspect-ratio:4/3;overflow:hidden;border-radius:10px">'
+                    .'<img src="'.$src.'" alt="'.$alt.'" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"></a>';
+            }
+
+            return $html.'</div>';
+        }, $code) ?? $code;
+    }
+
     /** Is this a complete HTML document rather than a fragment? */
     public static function isFullDocument(string $code): bool
     {

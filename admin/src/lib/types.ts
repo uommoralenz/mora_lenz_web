@@ -99,6 +99,7 @@ export interface GalleryItem {
   title: string;
   description: string | null;
   facebook_album_url: string | null;
+  facebook_album_urls?: string[];
   image_url: string | null;
   image_count: number;
   sort_order: number;
