@@ -77,3 +77,22 @@ export async function reorderGalleriesAction(formData: FormData) {
   await api.post("/galleries/reorder", { items: JSON.parse(raw) });
   revalidatePath("/gallery");
 }
+
+export async function deleteGalleryPhotoAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const galleryId = String(formData.get("gallery_id") ?? "");
+  const photoId = String(formData.get("photo_id") ?? "");
+
+  if (!/^\d+$/.test(galleryId) || !/^\d+$/.test(photoId)) {
+    return { ok: false, message: "Select a valid photo to remove." };
+  }
+
+  try {
+    await api.del(`/galleries/${galleryId}/photos/${photoId}`);
+  } catch (error) {
+    return toActionState(error);
+  }
+
+  revalidatePath("/gallery");
+  revalidatePath("/dashboard");
+  return { ok: true, message: "Photo removed." };
+}

@@ -1,11 +1,12 @@
 import Disclosure from "@/components/disclosure";
 import { Badge, Card, EmptyState, PageHeader, SectionTitle, Thumb } from "@/components/ui";
 import { api } from "@/lib/api";
-import type { GalleryItem } from "@/lib/types";
+import type { GalleryItem, GalleryPhoto } from "@/lib/types";
 
 import { reorderGalleriesAction } from "./actions";
 import DeleteGalleryForm from "./delete-gallery-form";
 import GalleryForm from "./gallery-form";
+import PhotoManager from "./photo-manager";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,9 @@ function swapPayload(items: GalleryItem[], index: number, delta: number) {
 
 export default async function GalleryPage() {
   const { data: items } = await api.get<{ data: GalleryItem[] }>("/galleries");
+  const photoLists = await Promise.all(
+    items.map((item) => api.get<{ data: GalleryPhoto[] }>(`/galleries/${item.id}/photos`).then((r) => r.data))
+  );
 
   return (
     <>
@@ -44,6 +48,7 @@ export default async function GalleryPage() {
 
           <ul className="space-y-3">
             {items.map((item, index) => {
+              const photos = photoLists[index];
               const up = swapPayload(items, index, -1);
               const down = swapPayload(items, index, 1);
 
@@ -98,6 +103,7 @@ export default async function GalleryPage() {
 
                   <div className="mt-4 border-t border-ink-700 pt-4">
                     <Disclosure label="Edit" variant="ghost">
+                      <PhotoManager galleryId={item.id} photos={photos} />
                       <GalleryForm item={item} />
                     </Disclosure>
                   </div>

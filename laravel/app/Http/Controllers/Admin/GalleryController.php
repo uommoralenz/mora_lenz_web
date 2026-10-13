@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Admin\Concerns\ReordersRecords;
 use App\Models\FeaturedGallery;
+use App\Models\GalleryImage;
 use App\Support\ImageStore;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -110,6 +111,32 @@ class GalleryController extends Controller
         $gallery->save();
 
         return response()->json(['data' => $this->present($gallery->loadCount('images'))]);
+    }
+
+    /** The photos of one album, for the edit form. */
+    public function photos(FeaturedGallery $gallery): JsonResponse
+    {
+        return response()->json([
+            'data' => $gallery->images->map(fn ($i) => ['id' => $i->id, 'image_url' => $i->image_url])->values(),
+        ]);
+    }
+
+    public function destroyPhoto(FeaturedGallery $gallery, GalleryImage $image): JsonResponse
+    {
+        abort_unless($image->gallery_id === $gallery->id, 404);
+
+        $url = $image->image_url;
+        $image->delete();
+
+        // The cover is a copy of one photo's address; move it on if that photo went.
+        if ($gallery->image_url === $url) {
+            $gallery->image_url = $gallery->images()->value('image_url');
+            $gallery->save();
+        }
+
+        ImageStore::delete($url);
+
+        return response()->json(['message' => 'Photo removed.']);
     }
 
     public function destroy(FeaturedGallery $gallery): JsonResponse

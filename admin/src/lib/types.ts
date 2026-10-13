@@ -222,3 +222,8 @@ export interface ActionState {
 }
 
 export const EMPTY_ACTION_STATE: ActionState = { ok: false, message: "" };
+
+export interface GalleryPhoto {
+  id: number;
+  image_url: string;
+}

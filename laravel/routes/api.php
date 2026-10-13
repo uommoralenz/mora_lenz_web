@@ -56,6 +56,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::middleware('admin.can:gallery')->group(function () {
             // Featured galleries (homepage showcase)
             Route::post('galleries/reorder', [GalleryController::class, 'reorder']);
+            Route::get('galleries/{gallery}/photos', [GalleryController::class, 'photos']);
+            Route::delete('galleries/{gallery}/photos/{image}', [GalleryController::class, 'destroyPhoto']);
             Route::apiResource('galleries', GalleryController::class)
                 ->parameters(['galleries' => 'gallery'])
                 ->except('show');
