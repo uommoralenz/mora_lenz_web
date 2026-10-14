@@ -1051,10 +1051,6 @@ button {
   color: rgba(255, 255, 255, 0.82);
   font-size: clamp(1rem, 1.65vw, 1.22rem);
   line-height: 1.62;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .meta-list {
@@ -1431,10 +1427,6 @@ button {
   color: var(--gray-400);
   font-size: 0.92rem;
   line-height: 1.65;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .event-card__more {
