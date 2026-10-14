@@ -67,7 +67,6 @@
             </div>
         </div>
 
-        <span class="hero__scroll" aria-hidden="true"></span>
     </section>
 
     {{-- -------------------------------------------------- featured event --}}
@@ -85,9 +84,9 @@
 
                     <div class="featured__body">
                         <div class="featured__text">
-                            <span class="badge">
-                                <span class="badge__dot" aria-hidden="true"></span>
-                                Featured Event
+                            <span class="featured__label">
+                                <span class="featured__label-icon" aria-hidden="true">&#10022;</span>
+                                <span>Featured Event</span>
                             </span>
 
                             <h2 class="featured__title">{{ $featuredEvent->title }}</h2>

@@ -992,36 +992,42 @@ button {
   gap: 18px;
 }
 
-.badge {
+.featured__label {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   align-self: flex-start;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  font-size: 0.8rem;
-  font-weight: 500;
+  padding: 6px 13px 6px 7px;
+  border: 1px solid rgba(125, 211, 252, 0.22);
+  border-radius: 12px;
+  background: linear-gradient(110deg, rgba(14, 34, 54, 0.82), rgba(7, 16, 28, 0.68));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 12px 32px rgba(0, 0, 0, 0.24);
+  color: #eaf8ff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-.badge__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #ef4444;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.35;
-  }
+.featured__label-icon {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  flex: 0 0 27px;
+  border: 1px solid rgba(186, 230, 253, 0.34);
+  border-radius: 8px;
+  background: linear-gradient(145deg, rgba(96, 165, 250, 0.38), rgba(6, 182, 212, 0.16));
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.18);
+  color: #bae6fd;
+  font-size: 0.86rem;
+  line-height: 1;
 }
 
 .featured__title {
@@ -3623,39 +3629,6 @@ html { scrollbar-color: #2a3344 #05070b; scrollbar-width: thin; }
 @media (max-width: 900px) {
   .hero__wordmark { display: none; }
 }
-
-.hero__scroll {
-  position: absolute;
-  left: 50%;
-  bottom: 22px;
-  z-index: 3;
-  width: 26px;
-  height: 42px;
-  transform: translateX(-50%);
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  border-radius: 999px;
-}
-
-.hero__scroll::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 8px;
-  width: 4px;
-  height: 8px;
-  margin-left: -2px;
-  border-radius: 2px;
-  background: #fff;
-  animation: heroScroll 1.8s ease-in-out infinite;
-}
-
-@keyframes heroScroll {
-  0% { opacity: 0; transform: translateY(0); }
-  30% { opacity: 1; }
-  100% { opacity: 0; transform: translateY(14px); }
-}
-
-@media (max-width: 600px) { .hero__scroll { display: none; } }
 
 /* ------------------------------------------------------------ brand logos */
 
