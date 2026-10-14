@@ -277,12 +277,13 @@ class EventBlocks
     }
 
     /**
-     * Swap [gallery id=N] shortcodes in an html block for the photos of that
-     * gallery album (managed under Gallery in the admin panel).
+     * Swap [gallery event=<slug>] shortcodes in an html block for the photo
+     * album of that event. [gallery id=N] still shows an album from the old
+     * Gallery section.
      *
      * Options: limit=N (max photos, default all), columns=2-6 (default 3).
      * Rendered when the page is shown, so adding photos to the album updates
-     * every event that embeds it. Everything printed is escaped; the
+     * every page that embeds it. Everything printed is escaped; the
      * admin's own markup around the shortcode is untouched.
      */
     public static function expandGalleries(string $code): string
@@ -299,16 +300,31 @@ class EventBlocks
                 $args[strtolower($pair[1])] = ($pair[4] ?? '') !== '' ? $pair[4] : (($pair[3] ?? '') !== '' ? $pair[3] : ($pair[2] ?? ''));
             }
 
-            $gallery = \App\Models\FeaturedGallery::active()->with('images')->find((int) ($args['id'] ?? 0));
+            if (filled($args['event'] ?? null)) {
+                // An event's own album, by slug.
+                $event = \App\Models\Event::active()->with('photos')->where('slug', $args['event'])->first();
 
-            if (! $gallery) {
-                return '';
-            }
+                if (! $event) {
+                    return '';
+                }
 
-            $photos = $gallery->images->map(fn ($i) => ['src' => $i->image_url, 'caption' => $i->description]);
+                $title = $event->title;
+                $photos = $event->photos->map(fn ($p) => ['src' => $p->image_url, 'caption' => $p->caption]);
+            } else {
+                // id=N: an album from the old Gallery section, kept so pages
+                // written before it was retired still render.
+                $gallery = \App\Models\FeaturedGallery::active()->with('images')->find((int) ($args['id'] ?? 0));
 
-            if ($photos->isEmpty() && $gallery->image_url) {
-                $photos = collect([['src' => $gallery->image_url, 'caption' => null]]);
+                if (! $gallery) {
+                    return '';
+                }
+
+                $title = $gallery->title;
+                $photos = $gallery->images->map(fn ($i) => ['src' => $i->image_url, 'caption' => $i->description]);
+
+                if ($photos->isEmpty() && $gallery->image_url) {
+                    $photos = collect([['src' => $gallery->image_url, 'caption' => null]]);
+                }
             }
 
             $limit = (int) ($args['limit'] ?? 0);
@@ -321,7 +337,7 @@ class EventBlocks
             $html = '<div class="ml-event-gallery" style="display:grid;grid-template-columns:repeat('.$columns.',minmax(0,1fr));gap:10px;margin:1.5rem 0">';
             foreach ($photos as $photo) {
                 $src = e($photo['src']);
-                $alt = e($photo['caption'] ?: $gallery->title);
+                $alt = e($photo['caption'] ?: $title);
                 $html .= '<a href="'.$src.'" target="_blank" rel="noopener" style="display:block;aspect-ratio:4/3;overflow:hidden;border-radius:10px">'
                     .'<img src="'.$src.'" alt="'.$alt.'" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"></a>';
             }

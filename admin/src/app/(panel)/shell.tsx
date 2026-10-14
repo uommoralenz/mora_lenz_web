@@ -9,9 +9,9 @@ import type { AdminUser, Permission } from "@/lib/types";
 const NAV: { href: string; label: string; permission?: Permission }[] = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/events", label: "Events", permission: "events" },
-  { href: "/gallery", label: "Gallery", permission: "gallery" },
   { href: "/services", label: "Services", permission: "services" },
   { href: "/team", label: "Team", permission: "team" },
+  { href: "/about", label: "About page", permission: "pages" },
   { href: "/messages", label: "Messages", permission: "messages" },
 ];
 

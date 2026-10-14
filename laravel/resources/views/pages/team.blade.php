@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Our Team | Mora Lenz')
+@php
+    // A past year's page names its year; the current team is just "Our Team".
+    $isPastTerm = $term && ! $term->is_current && request()->routeIs('team.show');
+@endphp
+
+@section('title', ($isPastTerm ? 'Team '.$term->name : 'Our Team').' | Mora Lenz')
 @section('description', 'Meet the photographers, videographers and organisers behind Mora Lenz at the University of Moratuwa.')
 
 @section('content')
@@ -8,12 +13,39 @@
     <section class="section team" style="padding-top: calc(var(--nav-h) + 56px);">
         <div class="container">
             <div class="section__head">
-                <h1 class="section__title">Our Team</h1>
+                @if ($isPastTerm)
+                    <span class="gallery-hero__eyebrow">Past team</span>
+                    <h1 class="section__title">The {{ $term->name }} Team</h1>
+                @else
+                    <h1 class="section__title">Our Team</h1>
+                    @if ($term)
+                        <span class="gallery-hero__eyebrow">{{ $term->name }}</span>
+                    @endif
+                @endif
                 <p class="section__lede">
-                    Meet the talented individuals who make the Mora Lenz Mass Media Club a thriving
-                    community of creative professionals.
+                    {{ $term?->description ?: 'Meet the talented individuals who make the Mora Lenz Mass Media Club a thriving community of creative professionals.' }}
                 </p>
             </div>
+
+            @if ($terms->count() > 1)
+                <nav class="team-years" aria-label="Teams by year">
+                    <span class="team-years__label">Teams by year</span>
+                    <ul>
+                        @foreach ($terms as $item)
+                            <li>
+                                <a href="{{ $item->is_current ? \App\Support\Links::team() : \App\Support\Links::teamTerm($item) }}"
+                                   class="team-years__link{{ $term && $item->id === $term->id ? ' is-active' : '' }}"
+                                   @if ($term && $item->id === $term->id) aria-current="page" @endif>
+                                    {{ $item->name }}
+                                    @if ($item->is_current)
+                                        <small>Current</small>
+                                    @endif
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </nav>
+            @endif
 
             @if ($groups->isEmpty())
                 <div class="empty-state">

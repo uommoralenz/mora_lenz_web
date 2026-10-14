@@ -1,5 +1,5 @@
 /* Mora Lenz PWA service worker. */
-var CACHE_NAME = "mora-lenz-static-v1";
+var CACHE_NAME = "mora-lenz-static-v2";
 var OFFLINE_URL = "/offline.html";
 var PRECACHE = [
   OFFLINE_URL,
@@ -56,9 +56,14 @@ self.addEventListener("fetch", function (event) {
     caches.match(request).then(function (cached) {
       var update = fetch(request).then(function (response) {
         if (response && response.ok) {
-          caches.open(CACHE_NAME).then(function (cache) {
-            cache.put(request, response.clone());
-          });
+          // Clone now, synchronously: by the time caches.open() resolves the
+          // page may already be reading the body, and clone() would throw.
+          var copy = response.clone();
+          event.waitUntil(
+            caches.open(CACHE_NAME).then(function (cache) {
+              return cache.put(request, copy);
+            }).catch(function () {})
+          );
         }
         return response;
       }).catch(function () {

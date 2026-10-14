@@ -3,6 +3,7 @@
 use App\Http\Controllers\Public_\ContactController;
 use App\Http\Controllers\Public_\EventController;
 use App\Http\Controllers\Public_\HomeController;
+use App\Http\Controllers\Public_\PageController;
 use App\Http\Controllers\Public_\ServiceController;
 use App\Http\Controllers\Public_\TeamController;
 use Illuminate\Support\Facades\Route;
@@ -27,8 +28,14 @@ Route::get('/events/preview/{token}', [EventController::class, 'preview'])
 Route::get('/events/{slug}', [EventController::class, 'show'])->name('events.show');
 
 Route::get('/team', [TeamController::class, 'index'])->name('team');
+Route::get('/team/{slug}', [TeamController::class, 'show'])
+    ->where('slug', '[A-Za-z0-9_-]+')
+    ->name('team.show');
 
-Route::get('/gallery', [\App\Http\Controllers\Public_\GalleryController::class, 'index'])->name('gallery');
+Route::get('/about', [PageController::class, 'about'])->name('about');
+
+// The gallery became the Past Events section; old links land there.
+Route::get('/gallery', fn () => redirect()->to(\App\Support\Links::pastEvents(), 301))->name('gallery');
 
 Route::get('/services/{type}', [ServiceController::class, 'show'])
     ->whereIn('type', ['photography', 'videography'])

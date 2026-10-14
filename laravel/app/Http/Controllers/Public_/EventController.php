@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Public_;
 
 use App\Models\Event;
+use App\Models\EventPhoto;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -15,15 +17,22 @@ class EventController extends Controller
     {
         return view('pages.events', [
             'events' => Event::active()
+                ->upcoming()
                 ->orderBy('sort_order')
                 ->orderBy('event_date')
+                ->get(),
+            // Most recent first: last month's event is the one people look for.
+            'pastEvents' => Event::active()
+                ->past()
+                ->with('photos')
+                ->orderByDesc('event_date')
                 ->get(),
         ]);
     }
 
     public function show(string $slug): View
     {
-        $event = Event::active()->where('slug', $slug)->first();
+        $event = Event::active()->with('photos')->where('slug', $slug)->first();
 
         if (! $event) {
             throw new NotFoundHttpException('Event not found.');
@@ -53,9 +62,13 @@ class EventController extends Controller
             'location' => $draft['location'],
             'image_url' => $draft['image_url'],
             'countdown_enabled' => $draft['countdown_enabled'],
+            'facebook_album_urls' => $draft['facebook_album_urls'] ?? [],
         ]);
         $event->event_date = $draft['event_date'] ? Carbon::parse($draft['event_date']) : now()->addWeek();
         $event->end_date = $draft['end_date'] ? Carbon::parse($draft['end_date']) : null;
+        $event->setRelation('photos', ! empty($draft['event_id'])
+            ? EventPhoto::where('event_id', $draft['event_id'])->orderBy('sort_order')->orderBy('id')->get()
+            : new Collection);
 
         return view('pages.event-show', [
             'event' => $event,

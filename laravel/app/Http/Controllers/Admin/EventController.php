@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Admin\Concerns\ReordersRecords;
 use App\Models\Event;
+use App\Models\EventPhoto;
 use App\Support\EventBlocks;
 use App\Support\ImageStore;
 use App\Support\Links;
@@ -21,7 +22,7 @@ class EventController extends Controller
     public function index(): JsonResponse
     {
         return response()->json([
-            'data' => Event::orderBy('sort_order')
+            'data' => Event::withCount('photos')->orderBy('sort_order')
                 ->orderBy('event_date')
                 ->get()
                 ->map(fn (Event $e) => $this->present($e)),
@@ -76,6 +77,8 @@ class EventController extends Controller
             'location' => ['nullable', 'string', 'max:200'],
             'image_url' => ['nullable', 'url:http,https', 'max:500'],
             'countdown_enabled' => ['nullable', 'boolean'],
+            'facebook_album_urls' => ['nullable', 'array', 'max:10'],
+            'facebook_album_urls.*' => ['nullable', 'string', 'max:2048'],
             'event_id' => ['nullable', 'integer'],
         ]);
 
@@ -93,6 +96,12 @@ class EventController extends Controller
             'location' => $data['location'] ?? null,
             'image_url' => ($data['image_url'] ?? null) ?: $existing?->image_url,
             'countdown_enabled' => (bool) ($data['countdown_enabled'] ?? false),
+            'facebook_album_urls' => array_values(array_filter(
+                (array) ($data['facebook_album_urls'] ?? []),
+                fn ($url) => is_string($url) && preg_match('#^https?://#i', $url) && filter_var($url, FILTER_VALIDATE_URL)
+            )),
+            // Photos are not part of the form, so the draft shows the saved album.
+            'event_id' => $existing?->id,
         ], now()->addMinutes(30));
 
         return response()->json(['url' => Links::eventPreview($token)]);
@@ -101,6 +110,11 @@ class EventController extends Controller
     public function destroy(Event $event): JsonResponse
     {
         ImageStore::delete($event->image_url);
+
+        foreach ($event->photos()->pluck('image_url') as $url) {
+            ImageStore::delete($url);
+        }
+
         $event->delete();
 
         return response()->json(['message' => 'Event deleted.']);
@@ -109,6 +123,66 @@ class EventController extends Controller
     public function reorder(Request $request): JsonResponse
     {
         return $this->applyOrder($request, Event::class);
+    }
+
+    // ---------------------------------------------------------------- photos
+
+    /** The event's photo album, for the edit screen. */
+    public function photos(Event $event): JsonResponse
+    {
+        return response()->json([
+            'data' => $event->photos->map(fn (EventPhoto $p) => $this->presentPhoto($p))->values(),
+        ]);
+    }
+
+    /**
+     * Add photos to the album. The panel sends several small batches rather
+     * than one large one, because its upload passes through a size-capped
+     * server function.
+     */
+    public function storePhotos(Request $request, Event $event): JsonResponse
+    {
+        $request->validate([
+            'images' => ['required', 'array', 'min:1', 'max:30'],
+            'images.*' => ['required', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
+        ]);
+
+        $next = (int) $event->photos()->max('sort_order') + 1;
+
+        foreach ($request->file('images') as $image) {
+            $event->photos()->create([
+                'image_url' => ImageStore::put($image, 'events'),
+                'sort_order' => $next++,
+            ]);
+        }
+
+        return response()->json([
+            'data' => $event->photos()->get()->map(fn (EventPhoto $p) => $this->presentPhoto($p))->values(),
+        ], 201);
+    }
+
+    public function updatePhoto(Request $request, Event $event, EventPhoto $photo): JsonResponse
+    {
+        abort_unless($photo->event_id === $event->id, 404);
+
+        $data = $request->validate([
+            'caption' => ['nullable', 'string', 'max:300'],
+        ]);
+
+        $photo->caption = filled($data['caption'] ?? null) ? trim($data['caption']) : null;
+        $photo->save();
+
+        return response()->json(['data' => $this->presentPhoto($photo)]);
+    }
+
+    public function destroyPhoto(Event $event, EventPhoto $photo): JsonResponse
+    {
+        abort_unless($photo->event_id === $event->id, 404);
+
+        ImageStore::delete($photo->image_url);
+        $photo->delete();
+
+        return response()->json(['message' => 'Photo removed.']);
     }
 
     protected function validated(Request $request, ?Event $event = null): array
@@ -126,6 +200,8 @@ class EventController extends Controller
             'end_date' => ['nullable', 'date', 'after_or_equal:event_date'],
             'location' => ['nullable', 'string', 'max:200'],
             'image_url' => ['nullable', 'url:http,https', 'max:500'],
+            'facebook_album_urls' => ['nullable', 'array', 'max:10'],
+            'facebook_album_urls.*' => ['nullable', 'url:http,https', 'max:2048'],
             'image' => ['nullable', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
             'countdown_enabled' => ['boolean'],
             'is_featured' => ['boolean'],
@@ -145,6 +221,11 @@ class EventController extends Controller
             if (array_key_exists($flag, $data)) {
                 $event->{$flag} = (bool) $data[$flag];
             }
+        }
+
+        if (array_key_exists('facebook_album_urls', $data)) {
+            $links = array_values(array_unique(array_filter(array_map('trim', (array) $data['facebook_album_urls']))));
+            $event->facebook_album_urls = $links ?: null;
         }
 
         if (array_key_exists('content', $data)) {
@@ -200,11 +281,23 @@ class EventController extends Controller
             'end_date' => $event->end_date?->toIso8601String(),
             'location' => $event->location,
             'image_url' => $event->image_url,
+            'facebook_album_urls' => $event->facebookLinks(),
+            'photo_count' => (int) ($event->photos_count ?? $event->photos()->count()),
+            'is_past' => $event->isPast(),
             'countdown_enabled' => (bool) $event->countdown_enabled,
             'is_featured' => (bool) $event->is_featured,
             'is_active' => (bool) $event->is_active,
             'sort_order' => (int) $event->sort_order,
             'created_at' => $event->created_at?->toIso8601String(),
+        ];
+    }
+
+    protected function presentPhoto(EventPhoto $photo): array
+    {
+        return [
+            'id' => $photo->id,
+            'image_url' => $photo->image_url,
+            'caption' => $photo->caption,
         ];
     }
 }

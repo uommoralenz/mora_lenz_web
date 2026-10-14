@@ -46,7 +46,7 @@ export default function DatabaseUpdates({ status }: { status: MigrationStatus })
 
           <p className="mt-2 text-xs text-slate-500">
             The site was updated but its database was not. Pages still load, because
-            a missing column reads as empty — but saving an event, a gallery or a team
+            a missing column reads as empty — but saving an event, a page or a team
             member can fail with a server error until this is run. It is safe: it only
             adds what is missing and never touches content you have added.
           </p>

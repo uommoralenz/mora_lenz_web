@@ -1,11 +1,11 @@
 export type ServiceType = "photography" | "videography";
 
 /** Sections a non-super admin can be given. Mirrors the PHP Admin::PERMISSIONS. */
-export type Permission = "events" | "gallery" | "services" | "team" | "messages";
+export type Permission = "events" | "pages" | "services" | "team" | "messages";
 
 export const PERMISSIONS: { value: Permission; label: string; hint: string }[] = [
-  { value: "events", label: "Events", hint: "Create, edit and delete events and their pages." },
-  { value: "gallery", label: "Gallery", hint: "Manage the featured galleries and albums." },
+  { value: "events", label: "Events", hint: "Create, edit and delete events, their pages and their photo albums." },
+  { value: "pages", label: "About page", hint: "Edit the content of the About page." },
   { value: "services", label: "Services", hint: "Photography and videography packages and carousel images." },
   { value: "team", label: "Team", hint: "Team groups, subgroups and members." },
   { value: "messages", label: "Messages", hint: "Read and delete messages from the contact form." },
@@ -86,6 +86,11 @@ export interface EventItem {
   end_date: string | null;
   location: string | null;
   image_url: string | null;
+  /** Facebook albums with the event's photos. */
+  facebook_album_urls: string[];
+  photo_count: number;
+  /** Its end (or start) has passed; it shows under Past Events. */
+  is_past: boolean;
   countdown_enabled: boolean;
   is_featured: boolean;
   is_active: boolean;
@@ -93,18 +98,21 @@ export interface EventItem {
   created_at: string | null;
 }
 
-export interface GalleryItem {
-  show_on_homepage: boolean;
+export interface EventPhoto {
   id: number;
+  image_url: string;
+  caption: string | null;
+}
+
+/** A free-form page (the About page), built like an event page. */
+export interface PageItem {
+  slug: string;
   title: string;
   description: string | null;
-  facebook_album_url: string | null;
-  facebook_album_urls?: string[];
+  content: EventBlock[];
+  page_options: EventPageOptions;
   image_url: string | null;
-  image_count: number;
-  sort_order: number;
-  is_active: boolean;
-  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface ServicePackageItem {
@@ -161,8 +169,21 @@ export interface TeamSubgroupItem {
   members: TeamMemberItem[];
 }
 
+/** One year's team. Each has its own page on the site. */
+export interface TeamTermItem {
+  id: number;
+  name: string;
+  slug: string;
+  year: number;
+  description: string | null;
+  is_current: boolean;
+  is_active: boolean;
+  group_count: number;
+}
+
 export interface TeamGroupItem {
   id: number;
+  term_id: number;
   name: string;
   description: string | null;
   sort_order: number;
@@ -194,10 +215,12 @@ export interface Stats {
   events: number;
   events_active: number;
   events_upcoming: number;
-  galleries: number;
+  events_past: number;
+  event_photos: number;
   service_packages: number;
   team_groups: number;
   team_members: number;
+  team_terms: number;
   admins: number;
   messages: number;
   messages_unread: number;
@@ -222,8 +245,3 @@ export interface ActionState {
 }
 
 export const EMPTY_ACTION_STATE: ActionState = { ok: false, message: "" };
-
-export interface GalleryPhoto {
-  id: number;
-  image_url: string;
-}

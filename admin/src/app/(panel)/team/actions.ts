@@ -1,13 +1,73 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { api, asUpdate, pruneEmptyFile, setBool, toActionState } from "@/lib/api";
-import type { ActionState } from "@/lib/types";
+import type { ActionState, TeamTermItem } from "@/lib/types";
 
 function refresh() {
   revalidatePath("/team");
   revalidatePath("/dashboard");
+}
+
+// --------------------------------------------------------------------- terms
+
+/** Create or update one year's team. A new one opens straight after saving. */
+export async function saveTermAction(
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const id = String(formData.get("id") ?? "");
+
+  setBool(formData, "is_active");
+  setBool(formData, "is_current");
+  formData.delete("id");
+
+  // "" means "start empty"; Laravel wants that as no value at all.
+  if (!String(formData.get("copy_from") ?? "").trim()) {
+    formData.delete("copy_from");
+  }
+
+  const body = Object.fromEntries(formData.entries());
+  let created: TeamTermItem | null = null;
+
+  try {
+    if (id) {
+      await api.put(`/team/terms/${id}`, body);
+    } else {
+      created = (await api.post<{ data: TeamTermItem }>("/team/terms", body)).data;
+    }
+  } catch (error) {
+    return toActionState(error);
+  }
+
+  refresh();
+
+  if (created) redirect(`/team?term=${created.id}`);
+
+  return { ok: true, message: "Team year updated." };
+}
+
+export async function deleteTermAction(
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const id = String(formData.get("id") ?? "");
+
+  if (!/^\d+$/.test(id)) {
+    return { ok: false, message: "Select a valid team year to delete." };
+  }
+
+  try {
+    await api.del(`/team/terms/${id}`);
+  } catch (error) {
+    const state = toActionState(error);
+    return { ...state, message: state.errors?.term ?? state.message };
+  }
+
+  refresh();
+  redirect("/team");
 }
 
 // -------------------------------------------------------------------- groups

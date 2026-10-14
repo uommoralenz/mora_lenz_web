@@ -3673,3 +3673,112 @@ html { scrollbar-color: #2a3344 #05070b; scrollbar-width: thin; }
   height: auto;
   width: min(100%, 380px);
 }
+
+/* ------------------------------------------------- event photo albums */
+
+.event-photos { margin-top: 3rem; }
+
+.event-photos__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.event-photos__head h2 { margin: 0; color: #fff; font-size: 1.6rem; font-weight: 700; }
+.event-photos__head span { color: var(--gray-500); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+
+.event-photos__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+
+.event-photos__item {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius);
+  background: #0b0f17;
+  aspect-ratio: 4 / 3;
+  cursor: zoom-in;
+}
+
+.event-photos__item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.event-photos__item:hover img,
+.event-photos__item:focus-visible img { transform: scale(1.05); }
+
+/* ------------------------------------------------------ team by year */
+
+.team-years {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: -1rem 0 3rem;
+}
+
+.team-years__label { color: var(--gray-500); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+
+.team-years ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+
+.team-years__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  color: var(--gray-400);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.team-years__link small { color: var(--accent-soft); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.team-years__link:hover { color: #fff; border-color: rgba(96, 165, 250, 0.55); }
+.team-years__link.is-active { color: #fff; border-color: var(--accent); background: rgba(59, 130, 246, 0.18); }
+
+/* --------------------------------------------- about: teams by year */
+
+.about-teams__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about-teams__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  height: 100%;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.about-teams__card:hover { border-color: rgba(96, 165, 250, 0.55); transform: translateY(-4px); }
+.about-teams__year { color: #fff; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.01em; }
+.about-teams__tag { align-self: flex-start; padding: 2px 10px; border-radius: 999px; background: rgba(59, 130, 246, 0.18); color: var(--accent-soft); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.about-teams__count { color: var(--gray-400); font-size: 0.9rem; }
+.about-teams__more { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: auto; padding-top: 0.6rem; color: var(--accent-soft); font-size: 0.85rem; font-weight: 600; }
+.about-teams__more svg { width: 16px; height: 16px; }

@@ -6,15 +6,20 @@ use App\Http\Controllers\Admin\Concerns\ReordersRecords;
 use App\Models\TeamGroup;
 use App\Models\TeamMember;
 use App\Models\TeamSubgroup;
+use App\Models\TeamTerm;
 use App\Support\ImageStore;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Group -> Subgroup -> Member management.
+ * Term -> Group -> Subgroup -> Member management.
+ *
+ * A term is one year's team. Groups belong to a term, so last year's
+ * committee stays exactly as it was when this year's is entered.
  *
  * One controller for the whole tree, because the three levels share validation
  * and the panel edits them together on one screen.
@@ -23,18 +28,32 @@ class TeamController extends Controller
 {
     use ReordersRecords;
 
-    /** The full tree in one request — what the panel's Team tab renders from. */
-    public function tree(): JsonResponse
+    /**
+     * One term's full tree in one request — what the panel's Team tab renders
+     * from. ?term=<id> picks the term; without it, the current one.
+     */
+    public function tree(Request $request): JsonResponse
     {
-        $groups = TeamGroup::with([
-            'directMembers',
-            'subgroups',
-            'subgroups.members',
-        ])->orderBy('sort_order')->get();
+        $terms = TeamTerm::withCount('groups')->newest()->get();
+
+        $term = $terms->firstWhere('id', (int) $request->query('term'))
+            ?? $terms->firstWhere('is_current', true)
+            ?? $terms->first();
+
+        $groups = $term
+            ? TeamGroup::with([
+                'directMembers',
+                'subgroups',
+                'subgroups.members',
+            ])->where('term_id', $term->id)->orderBy('sort_order')->get()
+            : collect();
 
         return response()->json([
+            'terms' => $terms->map(fn (TeamTerm $t) => $this->presentTerm($t))->values(),
+            'term' => $term ? $this->presentTerm($term) : null,
             'data' => $groups->map(fn (TeamGroup $group) => [
                 'id' => $group->id,
+                'term_id' => $group->term_id,
                 'name' => $group->name,
                 'description' => $group->description,
                 'sort_order' => (int) $group->sort_order,
@@ -53,21 +72,149 @@ class TeamController extends Controller
         ]);
     }
 
+    // ----------------------------------------------------------------- terms
+
+    /**
+     * Start a new year's team. copy_from copies that term's groups and
+     * subgroups (not its members, who change every year) so the new
+     * committee can be filled in without rebuilding the structure.
+     */
+    public function storeTerm(Request $request): JsonResponse
+    {
+        $data = $this->validateTerm($request);
+        $extra = $request->validate([
+            'copy_from' => ['nullable', 'integer', 'exists:team_terms,id'],
+        ]);
+
+        $term = DB::transaction(function () use ($data, $extra) {
+            $term = new TeamTerm;
+            $this->fillTerm($term, $data);
+            $term->save();
+
+            if (! empty($extra['copy_from'])) {
+                $this->copyStructure(TeamTerm::findOrFail($extra['copy_from']), $term);
+            }
+
+            $this->syncCurrent($term);
+
+            return $term;
+        });
+
+        return response()->json(['data' => $this->presentTerm($term->loadCount('groups'))], 201);
+    }
+
+    public function updateTerm(Request $request, TeamTerm $term): JsonResponse
+    {
+        $data = $this->validateTerm($request, $term);
+
+        $this->fillTerm($term, $data);
+        $term->save();
+        $this->syncCurrent($term);
+
+        return response()->json(['data' => $this->presentTerm($term->loadCount('groups'))]);
+    }
+
+    /** Deletes the term with every group, subgroup and member in it. */
+    public function destroyTerm(TeamTerm $term): JsonResponse
+    {
+        if ($term->is_current) {
+            throw ValidationException::withMessages([
+                'term' => 'This is the current team. Mark another term as current before deleting it.',
+            ]);
+        }
+
+        $photos = TeamMember::whereIn('group_id', $term->groups()->select('id'))->pluck('image_url');
+
+        $term->delete();
+
+        foreach ($photos as $url) {
+            ImageStore::delete($url);
+        }
+
+        return response()->json(['message' => 'Team deleted.']);
+    }
+
+    protected function validateTerm(Request $request, ?TeamTerm $term = null): array
+    {
+        return $request->validate([
+            'name' => [$term ? 'sometimes' : 'required', 'string', 'max:100'],
+            'slug' => ['nullable', 'string', 'max:100', 'alpha_dash', Rule::unique('team_terms', 'slug')->ignore($term?->id)],
+            'year' => [$term ? 'sometimes' : 'required', 'integer', 'min:1990', 'max:2100'],
+            'description' => ['nullable', 'string', 'max:300'],
+            'is_current' => ['boolean'],
+            'is_active' => ['boolean'],
+        ]);
+    }
+
+    protected function fillTerm(TeamTerm $term, array $data): void
+    {
+        foreach (['name', 'year', 'description'] as $field) {
+            if (array_key_exists($field, $data)) {
+                $term->{$field} = $data[$field];
+            }
+        }
+
+        foreach (['is_current', 'is_active'] as $flag) {
+            if (array_key_exists($flag, $data)) {
+                $term->{$flag} = (bool) $data[$flag];
+            }
+        }
+
+        // A blank slug means "build it from the name", e.g. 2025/26 -> 2025-26.
+        if (array_key_exists('slug', $data) || ! $term->exists) {
+            $term->slug = TeamTerm::uniqueSlug(
+                filled($data['slug'] ?? null) ? $data['slug'] : $term->name,
+                $term->id
+            );
+        }
+    }
+
+    /** Only one term is the current team, so marking one unmarks the rest. */
+    protected function syncCurrent(TeamTerm $term): void
+    {
+        if ($term->is_current) {
+            TeamTerm::where('id', '!=', $term->id)->where('is_current', true)->update(['is_current' => false]);
+        }
+    }
+
+    protected function copyStructure(TeamTerm $from, TeamTerm $to): void
+    {
+        foreach ($from->groups()->with('subgroups')->get() as $group) {
+            $copy = $to->groups()->create([
+                'name' => $group->name,
+                'description' => $group->description,
+                'sort_order' => $group->sort_order,
+                'is_active' => $group->is_active,
+            ]);
+
+            foreach ($group->subgroups as $subgroup) {
+                $copy->subgroups()->create([
+                    'name' => $subgroup->name,
+                    'description' => $subgroup->description,
+                    'sort_order' => $subgroup->sort_order,
+                    'is_active' => $subgroup->is_active,
+                ]);
+            }
+        }
+    }
+
     // ---------------------------------------------------------------- groups
 
     public function storeGroup(Request $request): JsonResponse
     {
         $data = $request->validate([
+            'term_id' => ['required', 'integer', 'exists:team_terms,id'],
             'name' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string', 'max:300'],
             'is_active' => ['boolean'],
         ]);
 
         $group = TeamGroup::create([
+            'term_id' => $data['term_id'],
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'is_active' => (bool) ($data['is_active'] ?? true),
-            'sort_order' => $this->nextSortOrder(TeamGroup::class),
+            'sort_order' => $this->nextSortOrder(TeamGroup::class, ['term_id' => $data['term_id']]),
         ]);
 
         return response()->json(['data' => $this->presentGroup($group)], 201);
@@ -282,10 +429,25 @@ class TeamController extends Controller
         }
     }
 
+    protected function presentTerm(TeamTerm $term): array
+    {
+        return [
+            'id' => $term->id,
+            'name' => $term->name,
+            'slug' => $term->slug,
+            'year' => (int) $term->year,
+            'description' => $term->description,
+            'is_current' => (bool) $term->is_current,
+            'is_active' => (bool) $term->is_active,
+            'group_count' => (int) ($term->groups_count ?? $term->groups()->count()),
+        ];
+    }
+
     protected function presentGroup(TeamGroup $group): array
     {
         return [
             'id' => $group->id,
+            'term_id' => $group->term_id,
             'name' => $group->name,
             'description' => $group->description,
             'sort_order' => (int) $group->sort_order,

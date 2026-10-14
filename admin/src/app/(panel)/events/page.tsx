@@ -34,7 +34,7 @@ export default async function EventsPage() {
     <>
       <PageHeader
         title="Events"
-        description="These appear on /events. The one marked Featured fills the homepage hero."
+        description="These appear on /events. Once an event is over it moves to Past Events with its photo album and Facebook links. The one marked Featured fills the homepage hero."
         action={
           <Link href="/events/new" className="btn-primary">
             New event
@@ -62,6 +62,13 @@ export default async function EventsPage() {
                     <p className="truncate font-medium text-slate-100">{event.title}</p>
                     {event.is_featured ? <Badge tone="info">Featured</Badge> : null}
                     {event.countdown_enabled ? <Badge>Countdown</Badge> : null}
+                    {event.is_past ? <Badge>Past</Badge> : null}
+                    {event.photo_count ? (
+                      <Badge>
+                        {event.photo_count} photo{event.photo_count === 1 ? "" : "s"}
+                      </Badge>
+                    ) : null}
+                    {event.facebook_album_urls?.length ? <Badge>Facebook</Badge> : null}
                     {!event.is_active ? <Badge tone="danger">Hidden</Badge> : null}
                   </div>
                   <p className="mt-1 truncate text-xs text-slate-500">

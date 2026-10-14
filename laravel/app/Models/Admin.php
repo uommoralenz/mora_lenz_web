@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Admin extends Model
 {
     /** Sections a non-super admin can be given. Keep in sync with the panel. */
-    public const PERMISSIONS = ['events', 'gallery', 'services', 'team', 'messages'];
+    public const PERMISSIONS = ['events', 'pages', 'services', 'team', 'messages'];
 
     protected $fillable = [
         'name',

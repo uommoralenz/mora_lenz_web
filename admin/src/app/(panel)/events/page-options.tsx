@@ -28,9 +28,12 @@ const PAGE_CODE_PLACEHOLDER = `<style>
 export default function PageOptionsEditor({
   initial,
   name = "page_options",
+  showMetaOption = true,
 }: {
   initial: EventPageOptions;
   name?: string;
+  /** The date/time/location pills only exist on event pages. */
+  showMetaOption?: boolean;
 }) {
   // The API may be a deploy behind this panel and not send every option yet,
   // so each one is filled in here rather than trusted to be present.
@@ -95,6 +98,7 @@ export default function PageOptionsEditor({
         </div>
       </div>
 
+      {showMetaOption ? (
       <label className="flex items-start gap-3 text-sm">
         <input
           type="checkbox"
@@ -109,6 +113,7 @@ export default function PageOptionsEditor({
           </span>
         </span>
       </label>
+      ) : null}
 
       <div>
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -147,7 +152,7 @@ export default function PageOptionsEditor({
           stylesheet — so rules here win over the site&apos;s own. Use it for styles and
           fonts that several blocks share; for one-off markup add a{" "}
           <strong>Custom HTML</strong> block to the content below instead. Applies to
-          this event page only.
+          this page only.
         </p>
       </div>
     </div>

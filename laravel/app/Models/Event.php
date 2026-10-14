@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Event extends Model
@@ -18,6 +19,7 @@ class Event extends Model
         'end_date',
         'location',
         'image_url',
+        'facebook_album_urls',
         'countdown_enabled',
         'is_featured',
         'is_active',
@@ -29,6 +31,7 @@ class Event extends Model
         return [
             'content' => 'array',
             'page_options' => 'array',
+            'facebook_album_urls' => 'array',
             'event_date' => 'datetime',
             'end_date' => 'datetime',
             'countdown_enabled' => 'boolean',
@@ -93,5 +96,36 @@ class Event extends Model
         }
 
         return $this->end_date ?: $this->event_date;
+    }
+
+    /** The event's photo album, shown once the event is over. */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(EventPhoto::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    /** Facebook albums with more photos from the event. */
+    public function facebookLinks(): array
+    {
+        return array_values(array_filter((array) $this->facebook_album_urls, 'is_string'));
+    }
+
+    /** Over once its end (or, without one, its start) has passed. */
+    public function isPast(): bool
+    {
+        $end = $this->end_date ?: $this->event_date;
+
+        return $end !== null && $end->isPast();
+    }
+
+    /** Events whose end (or start) is still ahead. */
+    public function scopeUpcoming(Builder $query): Builder
+    {
+        return $query->whereRaw('COALESCE(end_date, event_date) >= ?', [now()]);
+    }
+
+    public function scopePast(Builder $query): Builder
+    {
+        return $query->whereRaw('COALESCE(end_date, event_date) < ?', [now()]);
     }
 }

@@ -49,7 +49,7 @@
                 <h2>Quick Links</h2>
                 <ul>
                     <li><a href="{{ route('home') }}">Home</a></li>
-                    <li><a href="{{ \App\Support\Links::gallery() }}">Gallery</a></li>
+                    <li><a href="{{ \App\Support\Links::about() }}">About</a></li>
                     <li><a href="{{ \App\Support\Links::events() }}">Events</a></li>
                     <li><a href="{{ $anchor('#contact') }}">Contact</a></li>
                 </ul>
@@ -59,6 +59,7 @@
                 <h2>Club</h2>
                 <ul>
                     <li><a href="{{ \App\Support\Links::team() }}">Our Team</a></li>
+                    <li><a href="{{ \App\Support\Links::pastEvents() }}">Past Events</a></li>
                     <li><a href="{{ \App\Support\Links::service('photography') }}">Photography</a></li>
                     <li><a href="{{ \App\Support\Links::service('videography') }}">Videography</a></li>
                 </ul>

@@ -192,7 +192,10 @@
 
   /* ----------------------------------------------------------- lightbox */
 
-  /* Photo viewer for the gallery page: arrows, keyboard, swipe, thumbnails. */
+  /*
+    Photo viewer for event albums: arrows, keyboard, swipe, thumbnails.
+    data-lightbox-index on the opener starts at that photo instead of the first.
+  */
   function initLightbox() {
     var box = document.querySelector("[data-lightbox]");
     var openers = document.querySelectorAll("[data-lightbox-open]");
@@ -273,7 +276,7 @@
 
       box.hidden = false;
       document.body.classList.add("has-lightbox");
-      show(0);
+      show(parseInt(button.getAttribute("data-lightbox-index"), 10) || 0);
       box.querySelector("[data-lightbox-close]").focus();
     }
 

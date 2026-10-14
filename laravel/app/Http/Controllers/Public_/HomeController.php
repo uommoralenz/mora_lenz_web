@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Public_;
 
 use App\Models\Event;
-use App\Models\FeaturedGallery;
 use Illuminate\Routing\Controller;
 use Illuminate\View\View;
 
@@ -13,10 +12,12 @@ class HomeController extends Controller
     {
         return view('pages.home', [
             'featuredEvent' => static::featuredEvent(),
-            'galleries' => FeaturedGallery::with('images')->active()
-                ->where('show_on_homepage', true)
-                ->orderBy('sort_order')
-                ->orderByDesc('created_at')
+            // The latest three events that have photos to show.
+            'pastEvents' => Event::active()
+                ->past()
+                ->whereHas('photos')
+                ->with('photos')
+                ->orderByDesc('event_date')
                 ->limit(3)
                 ->get(),
         ]);

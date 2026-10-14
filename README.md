@@ -24,10 +24,13 @@ Laravel 12, PHP 8.2+, MySQL. No Node, no build step: the CSS and JS are hand-wri
 
 | Route | Page |
 |---|---|
-| `/` | Home — hero, featured event with countdown, featured galleries, contact form |
-| `/events` | All events |
-| `/events/{slug}` | One event |
-| `/team` | Group → Subgroup → Member hierarchy |
+| `/` | Home — hero, featured event with countdown, recent past events, contact form |
+| `/events` | Upcoming events, then Past Events with photo albums and Facebook album links |
+| `/events/{slug}` | One event, with its photo album once it has one |
+| `/team` | The current year's team: Group → Subgroup → Member hierarchy |
+| `/team/{slug}` | One earlier year's team, e.g. `/team/2025-26` |
+| `/about` | About page, edited in the panel, plus a list of every year's team |
+| `/gallery` | Redirects to `/events#past` (the Gallery page was retired) |
 | `/services/photography` `/services/videography` | Carousel, feature list, packages |
 | `POST /contact` | Contact form (saved to the database; email optional) |
 
@@ -58,10 +61,10 @@ Next.js 15 (App Router), React 19, Tailwind, TypeScript. Deployed to Vercel.
 | Screen | What it manages |
 |---|---|
 | Dashboard | Counts, and which event is in the homepage hero |
-| Events | Full CRUD, ordering, featured flag, countdown toggle |
-| Featured gallery | The homepage showcase rows |
+| Events | Full CRUD, ordering, featured flag, countdown toggle, photo album and Facebook album links |
 | Services | Packages and carousel images, per service type |
-| Team | Groups, subgroups, members, with ordering |
+| Team | One team per year; groups, subgroups and members in each, with ordering |
+| About page | The whole About page, built with the event block editor |
 | Messages | Contact form inbox, read/unread |
 | Admin accounts | Super admin only |
 | Your account | Change your own password |
@@ -86,9 +89,12 @@ Every request to Laravel is made by Vercel's server, never the browser. The toke
 |---|---|
 | `admins`, `admin_tokens` | Admin accounts and their sessions |
 | `events` | Events, with slug, featured flag, countdown settings |
-| `featured_galleries` | Homepage showcase rows |
+| `event_photos` | Each event's photo album |
+| `pages` | Free-form pages (About) |
+| `featured_galleries`, `gallery_images` | The retired Gallery section; kept so old uploads are not lost |
 | `service_packages`, `service_images` | Service page packages and carousel |
-| `team_groups`, `team_subgroups`, `team_members` | The team hierarchy |
+| `team_terms` | One row per year's team |
+| `team_groups`, `team_subgroups`, `team_members` | The team hierarchy, per term |
 | `contact_messages` | Contact form submissions |
 
 The site connects as `moralenz_web1@localhost`. `moralenz_admin@%` is not used by any code here.

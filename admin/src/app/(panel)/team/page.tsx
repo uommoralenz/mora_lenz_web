@@ -1,8 +1,10 @@
+import Link from "next/link";
+
 import Disclosure from "@/components/disclosure";
 import { ConfirmSubmit } from "@/components/form";
 import { Badge, Card, EmptyState, PageHeader, Thumb } from "@/components/ui";
 import { api } from "@/lib/api";
-import type { TeamGroupItem, TeamMemberItem } from "@/lib/types";
+import type { TeamGroupItem, TeamMemberItem, TeamTermItem } from "@/lib/types";
 
 import {
   deleteGroupAction,
@@ -13,6 +15,7 @@ import {
   reorderSubgroupsAction,
 } from "./actions";
 import { GroupForm, MemberForm, SubgroupForm } from "./team-forms";
+import { DeleteTermForm, TermForm } from "./term-forms";
 
 export const dynamic = "force-dynamic";
 
@@ -102,25 +105,89 @@ function MemberRow({
   );
 }
 
-export default async function TeamPage() {
-  const { data: groups } = await api.get<{ data: TeamGroupItem[] }>("/team");
+export default async function TeamPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ term?: string }>;
+}) {
+  const { term: termParam } = await searchParams;
+  const query = termParam && /^\d+$/.test(termParam) ? `?term=${termParam}` : "";
+
+  const {
+    data: groups,
+    terms,
+    term,
+  } = await api.get<{ data: TeamGroupItem[]; terms: TeamTermItem[]; term: TeamTermItem | null }>(
+    `/team${query}`
+  );
 
   return (
     <>
       <PageHeader
         title="Team"
-        description="The Team page is built from groups, optional subgroups inside them, and members in either."
+        description="Each year's team is kept separately with its own page on the site. Pick a year, then build it from groups, optional subgroups and members."
       />
 
+      {/* Team years */}
+      <Card className="mb-6">
+        <div className="flex flex-wrap items-center gap-2">
+          {terms.map((t) => (
+            <Link
+              key={t.id}
+              href={`/team?term=${t.id}`}
+              className={`rounded-full border px-3 py-1 text-sm transition-colors ${
+                term?.id === t.id
+                  ? "border-sky-500 bg-sky-600/15 text-sky-200"
+                  : "border-ink-700 text-slate-400 hover:border-ink-500 hover:text-slate-200"
+              }`}
+            >
+              {t.name}
+              {t.is_current ? <span className="ml-1.5 text-xs text-sky-400">current</span> : null}
+              {!t.is_active ? <span className="ml-1.5 text-xs text-rose-400">hidden</span> : null}
+            </Link>
+          ))}
+        </div>
+
+        {term ? (
+          <p className="mt-3 text-xs text-slate-500">
+            Editing the <span className="text-slate-300">{term.name}</span> team ·{" "}
+            {term.is_current ? "shown at /team" : `shown at /team/${term.slug}`}
+          </p>
+        ) : null}
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Disclosure label="New team year" variant="primary">
+            <TermForm terms={terms} />
+          </Disclosure>
+          {term ? (
+            <Disclosure label="Edit this year" variant="ghost">
+              <div className="space-y-6">
+                <TermForm key={term.id} term={term} terms={terms} />
+                <div className="border-t border-ink-700 pt-4">
+                  <DeleteTermForm term={term} />
+                </div>
+              </div>
+            </Disclosure>
+          ) : null}
+        </div>
+      </Card>
+
+      {!term ? (
+        <EmptyState
+          title="No team years yet."
+          hint="Create the first team year, then add its groups and members."
+        />
+      ) : (
+        <>
       <Card className="mb-6">
         <Disclosure label="New group" variant="primary">
-          <GroupForm />
+          <GroupForm termId={term.id} />
         </Disclosure>
       </Card>
 
       {groups.length === 0 ? (
         <EmptyState
-          title="No groups yet."
+          title="No groups in this year's team yet."
           hint="Create a group first — members live inside groups."
         />
       ) : (
@@ -330,6 +397,8 @@ export default async function TeamPage() {
             );
           })}
         </div>
+      )}
+        </>
       )}
     </>
   );

@@ -73,10 +73,12 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         <Stat show={can("events")} label="Upcoming events" value={data.events_upcoming} href="/events" />
         <Stat show={can("events")} label="All events" value={data.events} href="/events" />
-        <Stat show={can("gallery")} label="Galleries" value={data.galleries} href="/gallery" />
+        <Stat show={can("events")} label="Past events" value={data.events_past ?? 0} href="/events" />
+        <Stat show={can("events")} label="Event photos" value={data.event_photos ?? 0} href="/events" />
         <Stat show={can("services")} label="Packages" value={data.service_packages} href="/services" />
         <Stat show={can("team")} label="Team members" value={data.team_members} href="/team" />
         <Stat show={can("team")} label="Team groups" value={data.team_groups} href="/team" />
+        <Stat show={can("team")} label="Team years" value={data.team_terms ?? 0} href="/team" />
         <Stat
           show={can("messages")}
           label="Unread messages"

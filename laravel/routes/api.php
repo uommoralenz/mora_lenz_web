@@ -4,8 +4,8 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventController;
-use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\MessageController;
+use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\ServiceImageController;
 use App\Http\Controllers\Admin\ServicePackageController;
 use App\Http\Controllers\Admin\SystemController;
@@ -49,18 +49,21 @@ Route::prefix('admin')->name('admin.')->group(function () {
             // Events
             Route::post('events/preview', [EventController::class, 'preview']);
             Route::post('events/reorder', [EventController::class, 'reorder']);
+
+            // The photo album of a (usually past) event
+            Route::get('events/{event:id}/photos', [EventController::class, 'photos']);
+            Route::post('events/{event:id}/photos', [EventController::class, 'storePhotos']);
+            Route::match(['put', 'patch'], 'events/{event:id}/photos/{photo}', [EventController::class, 'updatePhoto']);
+            Route::delete('events/{event:id}/photos/{photo}', [EventController::class, 'destroyPhoto']);
+
             Route::apiResource('events', EventController::class)
                 ->scoped(['event' => 'id']);
         });
 
-        Route::middleware('admin.can:gallery')->group(function () {
-            // Featured galleries (homepage showcase)
-            Route::post('galleries/reorder', [GalleryController::class, 'reorder']);
-            Route::get('galleries/{gallery}/photos', [GalleryController::class, 'photos']);
-            Route::delete('galleries/{gallery}/photos/{image}', [GalleryController::class, 'destroyPhoto']);
-            Route::apiResource('galleries', GalleryController::class)
-                ->parameters(['galleries' => 'gallery'])
-                ->except('show');
+        Route::middleware('admin.can:pages')->group(function () {
+            // Free-form pages (About)
+            Route::get('pages/{slug}', [PageController::class, 'show'])->whereIn('slug', \App\Models\Page::SLUGS);
+            Route::match(['put', 'patch'], 'pages/{slug}', [PageController::class, 'update'])->whereIn('slug', \App\Models\Page::SLUGS);
         });
 
         Route::middleware('admin.can:services')->group(function () {
@@ -80,6 +83,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::middleware('admin.can:team')->group(function () {
             // Team hierarchy
             Route::get('team', [TeamController::class, 'tree']);
+
+            // One team per year
+            Route::post('team/terms', [TeamController::class, 'storeTerm']);
+            Route::match(['put', 'patch'], 'team/terms/{term}', [TeamController::class, 'updateTerm']);
+            Route::delete('team/terms/{term}', [TeamController::class, 'destroyTerm']);
 
             Route::post('team/groups', [TeamController::class, 'storeGroup']);
             Route::post('team/groups/reorder', [TeamController::class, 'reorderGroups']);

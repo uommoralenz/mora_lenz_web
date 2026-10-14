@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Event;
+use App\Models\TeamTerm;
 
 /**
  * URL builder that copes with a server whose nginx cannot rewrite to index.php.
@@ -89,9 +90,25 @@ class Links
         return static::page('team', '/team');
     }
 
-    public static function gallery(): string
+    /** One year's team. One page per year, so compat mode uses /team/?t=. */
+    public static function teamTerm(TeamTerm $term): string
     {
-        return static::page('gallery', '/gallery');
+        if (! static::compat()) {
+            return route('team.show', $term->slug);
+        }
+
+        return static::dir('/team').'?t='.rawurlencode($term->slug);
+    }
+
+    public static function about(): string
+    {
+        return static::page('about', '/about');
+    }
+
+    /** The Past Events section, which replaced the old Gallery page. */
+    public static function pastEvents(): string
+    {
+        return static::events().'#past';
     }
 
     public static function service(string $type): string

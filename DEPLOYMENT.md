@@ -211,7 +211,9 @@ Open `https://your-site`. You should get the dark homepage with sample events an
 | Add an event | Admin → Events → New event |
 | Build a timeline, schedule table or anything custom on an event page | Admin → Events → the event → **Custom HTML** block (see below) |
 | Change the big homepage event | Tick **Featured** on an event (only one can be featured) |
-| Add photos to the homepage | Admin → Featured gallery |
+| Add photos from a past event | Admin → Events → the event → **Photo album** (and paste its Facebook album links in the form) |
+| Start next year's committee | Admin → Team → **New team year** (last year's team stays at `/team/<year>`) |
+| Edit the About page | Admin → About page |
 | Change prices | Admin → Services |
 | Add a committee member | Admin → Team |
 | Read contact form messages | Admin → Messages |

@@ -2,9 +2,10 @@ import { notFound } from "next/navigation";
 
 import { BackLink, Card, PageHeader } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
-import type { EventItem } from "@/lib/types";
+import type { EventItem, EventPhoto } from "@/lib/types";
 
 import EventForm from "../event-form";
+import PhotoAlbum from "../photo-album";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,8 @@ export default async function EditEventPage({
     throw error;
   }
 
+  const { data: photos } = await api.get<{ data: EventPhoto[] }>(`/events/${event.id}/photos`);
+
   return (
     <>
       <BackLink href="/events">Back to events</BackLink>
@@ -35,6 +38,16 @@ export default async function EditEventPage({
       </div>
       <Card>
         <EventForm event={event} />
+      </Card>
+
+      <Card className="mt-6">
+        <h2 className="text-sm font-semibold text-slate-200">Photo album</h2>
+        <p className="mb-4 mt-1 text-xs text-slate-500">
+          {event.is_past
+            ? "This event is over, so it is listed under Past Events with these photos."
+            : "Shown on the event page now, and under Past Events once the event is over."}
+        </p>
+        <PhotoAlbum eventId={event.id} initial={photos} />
       </Card>
     </>
   );

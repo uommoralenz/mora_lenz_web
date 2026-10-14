@@ -1,6 +1,6 @@
 @php
-    // "Gallery", "Stories" and "Contact" are sections of the homepage, so from
-    // any other page they need to link back to "/" before the anchor.
+    // "Contact" is a section of the homepage, so from any other page it
+    // needs to link back to "/" before the anchor.
     $onHome = request()->routeIs('home');
     $anchor = fn (string $hash) => $onHome ? $hash : url('/').$hash;
 @endphp
@@ -44,11 +44,12 @@
                        @if (request()->routeIs('events.*')) aria-current="page" @endif>Events</a>
                 </li>
                 <li class="navbar__item">
-                    <a class="navbar__link" href="{{ \App\Support\Links::gallery() }}" @if(request()->routeIs('gallery')) aria-current="page" @endif>Gallery</a>
+                    <a class="navbar__link" href="{{ \App\Support\Links::team() }}"
+                       @if (request()->routeIs('team', 'team.show')) aria-current="page" @endif>Our Team</a>
                 </li>
                 <li class="navbar__item">
-                    <a class="navbar__link" href="{{ \App\Support\Links::team() }}"
-                       @if (request()->routeIs('team')) aria-current="page" @endif>Our Team</a>
+                    <a class="navbar__link" href="{{ \App\Support\Links::about() }}"
+                       @if (request()->routeIs('about')) aria-current="page" @endif>About</a>
                 </li>
                 <li class="navbar__item">
                     <a class="navbar__link" href="{{ $anchor('#contact') }}">Contact</a>
@@ -91,8 +92,8 @@
             <a href="{{ \App\Support\Links::service('videography') }}">Videography Services</a>
         </div>
         <a href="{{ \App\Support\Links::events() }}">Events</a>
-        <a href="{{ \App\Support\Links::gallery() }}">Gallery</a>
         <a href="{{ \App\Support\Links::team() }}">Our Team</a>
+        <a href="{{ \App\Support\Links::about() }}">About</a>
         <a href="{{ $anchor('#contact') }}">Contact</a>
         <button type="button" class="navbar__mobile-install" data-install-app hidden>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"

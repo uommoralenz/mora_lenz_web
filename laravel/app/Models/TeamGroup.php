@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TeamGroup extends Model
 {
     protected $fillable = [
+        'term_id',
         'name',
         'description',
         'sort_order',
@@ -20,6 +22,11 @@ class TeamGroup extends Model
         return [
             'is_active' => 'boolean',
         ];
+    }
+
+    public function term(): BelongsTo
+    {
+        return $this->belongsTo(TeamTerm::class, 'term_id');
     }
 
     public function subgroups(): HasMany

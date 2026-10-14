@@ -54,6 +54,7 @@ return [
         'types' => [
             'events' => 'events',
             'gallery' => 'gallery',
+            'pages' => 'pages',
             'services' => 'services',
             'service-images' => 'service-images',
             'team' => 'team',

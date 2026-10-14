@@ -16,7 +16,7 @@ import { saveGroupAction, saveMemberAction, saveSubgroupAction } from "./actions
 
 /* ------------------------------------------------------------------ group */
 
-export function GroupForm({ group }: { group?: TeamGroupItem }) {
+export function GroupForm({ group, termId }: { group?: TeamGroupItem; termId?: number }) {
   const formRef = useRef<HTMLFormElement>(null);
   const uid = group?.id ?? "new";
 
@@ -32,6 +32,7 @@ export function GroupForm({ group }: { group?: TeamGroupItem }) {
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
       {group ? <input type="hidden" name="id" value={group.id} /> : null}
+      {!group && termId ? <input type="hidden" name="term_id" value={termId} /> : null}
 
       <FormMessage state={state} />
 

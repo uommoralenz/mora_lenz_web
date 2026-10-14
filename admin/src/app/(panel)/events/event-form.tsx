@@ -201,6 +201,25 @@ export default function EventForm({ event }: { event?: EventItem }) {
         <FieldError errors={state.errors} name="image" />
       </div>
 
+      <div>
+        <label className="label" htmlFor="facebook_album_links">
+          Facebook album links <span className="font-normal text-slate-500">(optional)</span>
+        </label>
+        <textarea
+          id="facebook_album_links"
+          name="facebook_album_links"
+          className="textarea"
+          rows={3}
+          defaultValue={(event?.facebook_album_urls ?? []).join("\n")}
+          placeholder={"https://www.facebook.com/media/set/...\nhttps://www.facebook.com/media/set/..."}
+        />
+        <p className="hint">
+          One link per line, up to 10. Once the event is over it moves to Past Events on the
+          site, with these links and the photo album{event ? " below" : " (add photos after saving)"}.
+        </p>
+        <FieldError errors={state.errors} name="facebook_album_urls" />
+      </div>
+
       <fieldset className="space-y-3 rounded-lg border border-ink-700 p-4">
         <legend className="px-1 text-xs uppercase tracking-wide text-slate-500">
           Display

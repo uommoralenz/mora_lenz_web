@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { ApiError, api, asUpdate, pruneEmptyFile, setBool, toActionState } from "@/lib/api";
-import type { ActionState } from "@/lib/types";
+import type { ActionState, EventPhoto } from "@/lib/types";
 
 const BOOLS = ["countdown_enabled", "is_featured", "is_active"];
 
@@ -12,12 +12,28 @@ function normalise(form: FormData) {
   BOOLS.forEach((field) => setBool(form, field));
   pruneEmptyFile(form);
 
+  // One Facebook album link per line in the form; the API takes a list. Sent
+  // as "" when there are none, so clearing the box clears the links.
+  if (form.has("facebook_album_links")) {
+    const links = facebookLinks(form);
+    form.delete("facebook_album_links");
+    if (links.length === 0) form.set("facebook_album_urls", "");
+    links.forEach((link) => form.append("facebook_album_urls[]", link));
+  }
+
   // An empty end date must not be sent as "", which fails the `date` rule.
   if (!String(form.get("end_date") ?? "").trim()) {
     form.delete("end_date");
   }
 
   return form;
+}
+
+function facebookLinks(form: FormData): string[] {
+  return String(form.get("facebook_album_links") ?? "")
+    .split(/[\r\n]+/)
+    .map((link) => link.trim())
+    .filter(Boolean);
 }
 
 export async function saveEventAction(
@@ -115,6 +131,7 @@ export async function previewEventAction(
     page_options: text("page_options"),
     location: text("location"),
     countdown_enabled: formData.get("countdown_enabled") ? true : false,
+    facebook_album_urls: facebookLinks(formData),
   };
 
   for (const field of ["event_date", "end_date", "event_id"]) {
@@ -131,4 +148,71 @@ export async function previewEventAction(
     }
     throw error;
   }
+}
+
+// --------------------------------------------------------------- photo album
+
+function refreshEvent(eventId: string) {
+  revalidatePath("/events");
+  revalidatePath(`/events/${eventId}`);
+  revalidatePath("/dashboard");
+}
+
+/**
+ * Add one batch of photos to an event's album. The editor splits a large
+ * selection into batches small enough for the server action body limit.
+ */
+export async function uploadEventPhotosAction(
+  formData: FormData
+): Promise<{ ok: boolean; message: string; photos?: EventPhoto[] }> {
+  const eventId = String(formData.get("event_id") ?? "");
+
+  if (!/^\d+$/.test(eventId)) {
+    return { ok: false, message: "Save the event before adding photos." };
+  }
+
+  const form = new FormData();
+  for (const file of formData.getAll("images[]")) {
+    if (file instanceof File && file.size > 0) form.append("images[]", file);
+  }
+
+  if (!form.has("images[]")) {
+    return { ok: false, message: "Choose at least one photo." };
+  }
+
+  try {
+    const result = await api.post<{ data: EventPhoto[] }>(`/events/${eventId}/photos`, form);
+    refreshEvent(eventId);
+    return { ok: true, message: "Photos added.", photos: result.data };
+  } catch (error) {
+    const state = toActionState(error);
+    const first = state.errors ? Object.values(state.errors)[0] : "";
+    return { ok: false, message: first || state.message };
+  }
+}
+
+export async function saveEventPhotoCaptionAction(
+  eventId: number,
+  photoId: number,
+  caption: string
+): Promise<ActionState> {
+  try {
+    await api.put(`/events/${eventId}/photos/${photoId}`, { caption });
+  } catch (error) {
+    return toActionState(error);
+  }
+
+  refreshEvent(String(eventId));
+  return { ok: true, message: "Caption saved." };
+}
+
+export async function deleteEventPhotoAction(eventId: number, photoId: number): Promise<ActionState> {
+  try {
+    await api.del(`/events/${eventId}/photos/${photoId}`);
+  } catch (error) {
+    return toActionState(error);
+  }
+
+  refreshEvent(String(eventId));
+  return { ok: true, message: "Photo removed." };
 }

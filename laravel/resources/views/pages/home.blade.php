@@ -55,9 +55,9 @@
                 </p>
 
                 <div class="hero__actions">
-                    <a href="{{ \App\Support\Links::gallery() }}" class="cta">
-                        <span class="cta__label">Explore Gallery</span>
-                        @include('partials.icons', ['icon' => 'arrow-down'])
+                    <a href="{{ \App\Support\Links::pastEvents() }}" class="cta">
+                        <span class="cta__label">Past Events</span>
+                        @include('partials.icons', ['icon' => 'arrow-right'])
                     </a>
                     <a href="{{ \App\Support\Links::events() }}" class="cta cta--ghost">
                         <span class="cta__label">Upcoming Events</span>
@@ -133,35 +133,36 @@
         </section>
     @endif
 
-    {{-- ----------------------------------------------- featured galleries --}}
-    @if ($galleries->isNotEmpty())
+    {{-- ---------------------------------------------------- past events --}}
+    @if ($pastEvents->isNotEmpty())
         <section id="gallery" class="showcase">
             <div class="showcase__glow" aria-hidden="true"></div>
 
             <div class="container">
                 <div class="section__head">
-                    <h2 class="section__title">Featured Galleries</h2>
-                    <a class="cta cta--ghost" href="{{ \App\Support\Links::gallery() }}">View all galleries</a>
+                    <h2 class="section__title">From Our Past Events</h2>
+                    <a class="cta cta--ghost" href="{{ \App\Support\Links::pastEvents() }}">View all past events</a>
                 </div>
 
                 <div class="showcase__list">
-                    @foreach ($galleries as $gallery)
+                    @foreach ($pastEvents as $past)
                         <article class="showcase__row" data-reveal>
-                            <a class="showcase__media gallery-album__link" href="{{ $gallery->facebook_album_url ?: \App\Support\Links::gallery() }}" @if($gallery->facebook_album_url) target="_blank" rel="noopener noreferrer" @endif>
+                            <a class="showcase__media gallery-album__link" href="{{ \App\Support\Links::event($past) }}">
                                 <div class="gallery-slideshow gallery-slideshow--showcase" data-gallery-slideshow>
-                                    @forelse ($gallery->images as $image)
-                                        <figure class="gallery-slideshow__slide{{ $loop->first ? ' is-active' : '' }}"><img src="{{ $image->image_url }}" alt="{{ $gallery->title }}" loading="lazy"></figure>
-                                    @empty
-                                        @if ($gallery->image_url)<img src="{{ $gallery->image_url }}" alt="{{ $gallery->title }}" loading="lazy">@endif
-                                    @endforelse
+                                    @foreach ($past->photos->take(8) as $photo)
+                                        <figure class="gallery-slideshow__slide{{ $loop->first ? ' is-active' : '' }}"><img src="{{ $photo->image_url }}" alt="{{ $photo->caption ?: $past->title }}" loading="lazy"></figure>
+                                    @endforeach
                                 </div>
                             </a>
 
                             <div class="showcase__text">
-                                <h3 class="showcase__title">{{ $gallery->title }}</h3>
-                                @if ($gallery->description)
-                                    <p class="showcase__desc">{{ $gallery->description }}</p>
-                                @endif
+                                <h3 class="showcase__title">{{ $past->title }}</h3>
+                                <p class="showcase__desc">
+                                    {{ $past->event_date->format('F Y') }}
+                                    @if ($past->description)
+                                        &middot; {{ \Illuminate\Support\Str::limit($past->description, 180) }}
+                                    @endif
+                                </p>
                                 <div class="showcase__rule" aria-hidden="true"></div>
                             </div>
                         </article>
