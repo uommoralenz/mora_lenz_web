@@ -112,20 +112,20 @@
                                 @endif
                             </div>
 
+                            @if ($countdownTarget && $countdownTarget->isFuture())
+                                <div class="countdown-panel">
+                                    <h3 class="countdown-panel__title">Event Starts In</h3>
+                                    @include('partials.countdown', ['target' => $countdownTarget, 'size' => 'md'])
+                                </div>
+                            @endif
+
                             <div>
-                                <a href="{{ \App\Support\Links::event($featuredEvent) }}" class="cta">
+                                <a href="{{ \App\Support\Links::event($featuredEvent) }}" class="cta featured__cta">
                                     <span class="cta__label">View Details</span>
                                     @include('partials.icons', ['icon' => 'arrow-right'])
                                 </a>
                             </div>
                         </div>
-
-                        @if ($countdownTarget && $countdownTarget->isFuture())
-                            <div class="countdown-panel">
-                                <h3 class="countdown-panel__title">Event Starts In</h3>
-                                @include('partials.countdown', ['target' => $countdownTarget, 'size' => 'md'])
-                            </div>
-                        @endif
                     </div>
                 </article>
             </div>
