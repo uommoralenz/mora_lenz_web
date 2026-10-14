@@ -55,12 +55,12 @@
                 </p>
 
                 <div class="hero__actions">
-                    <a href="{{ \App\Support\Links::pastEvents() }}" class="cta">
-                        <span class="cta__label">Past Events</span>
+                    <a href="{{ \App\Support\Links::events() }}" class="cta">
+                        <span class="cta__label">Events</span>
                         @include('partials.icons', ['icon' => 'arrow-right'])
                     </a>
-                    <a href="{{ \App\Support\Links::events() }}" class="cta cta--ghost">
-                        <span class="cta__label">Upcoming Events</span>
+                    <a href="{{ \App\Support\Links::about() }}" class="cta cta--ghost">
+                        <span class="cta__label">About</span>
                         @include('partials.icons', ['icon' => 'arrow-right'])
                     </a>
                 </div>
