@@ -15,7 +15,7 @@ import BlockEditor from "./block-editor";
 import PageOptionsEditor from "./page-options";
 import { previewEventAction, saveEventAction } from "./actions";
 
-export default function EventForm({ event }: { event?: EventItem }) {
+export default function EventForm({ event, past = false }: { event?: EventItem; past?: boolean }) {
   const [state, formAction] = useActionState(saveEventAction, EMPTY_ACTION_STATE);
   const formRef = useRef<HTMLFormElement>(null);
   const [previewing, setPreviewing] = useState(false);
@@ -58,6 +58,22 @@ export default function EventForm({ event }: { event?: EventItem }) {
   return (
     <form ref={formRef} action={formAction} className="space-y-5">
       {event ? <input type="hidden" name="id" value={event.id} /> : null}
+      {past && !event ? <input type="hidden" name="_after" value="photos" /> : null}
+
+      {past && !event ? (
+        <div className="rounded-lg border border-sky-700/50 bg-sky-950/30 p-4 text-sm text-slate-300">
+          <p className="font-medium text-slate-100">Adding an event that already happened</p>
+          <ol className="mt-2 list-decimal space-y-1 pl-5 text-slate-400">
+            <li>Fill in the title and a short description.</li>
+            <li>
+              Set <strong>Starts</strong> to the date it took place. A date in the past is what
+              puts it under Past Events.
+            </li>
+            <li>Paste the Facebook album links, if any.</li>
+            <li>Click <strong>Create event</strong>. You&rsquo;ll go straight to its photo album to upload photos.</li>
+          </ol>
+        </div>
+      ) : null}
 
       <FormMessage state={state} />
 

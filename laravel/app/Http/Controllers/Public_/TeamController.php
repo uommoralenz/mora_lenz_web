@@ -33,7 +33,7 @@ class TeamController extends Controller
     {
         return view('pages.team', [
             'term' => $term,
-            'terms' => TeamTerm::active()->newest()->get(),
+            'terms' => TeamTerm::listing(),
             'groups' => $term ? static::structure($term) : new Collection,
         ]);
     }

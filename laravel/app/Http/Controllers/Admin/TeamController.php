@@ -34,7 +34,10 @@ class TeamController extends Controller
      */
     public function tree(Request $request): JsonResponse
     {
-        $terms = TeamTerm::withCount('groups')->newest()->get();
+        $terms = TeamTerm::withCount([
+            'groups',
+            'groups as member_count' => fn ($q) => $q->join('team_members', 'team_members.group_id', '=', 'team_groups.id'),
+        ])->newest()->get();
 
         $term = $terms->firstWhere('id', (int) $request->query('term'))
             ?? $terms->firstWhere('is_current', true)
@@ -440,6 +443,7 @@ class TeamController extends Controller
             'is_current' => (bool) $term->is_current,
             'is_active' => (bool) $term->is_active,
             'group_count' => (int) ($term->groups_count ?? $term->groups()->count()),
+            'member_count' => (int) ($term->member_count ?? 0),
         ];
     }
 

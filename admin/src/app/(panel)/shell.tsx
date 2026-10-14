@@ -6,10 +6,26 @@ import { useState } from "react";
 
 import type { AdminUser, Permission } from "@/lib/types";
 
-const NAV: { href: string; label: string; permission?: Permission }[] = [
+interface NavLink {
+  href: string;
+  label: string;
+  permission?: Permission;
+  /** Sub-pages, listed indented under the parent. */
+  children?: { href: string; label: string }[];
+}
+
+const NAV: NavLink[] = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/events", label: "Events", permission: "events" },
-  { href: "/services", label: "Services", permission: "services" },
+  {
+    href: "/services",
+    label: "Services",
+    permission: "services",
+    children: [
+      { href: "/services/photography", label: "Photography" },
+      { href: "/services/videography", label: "Videography" },
+    ],
+  },
   { href: "/team", label: "Team", permission: "team" },
   { href: "/about", label: "About page", permission: "pages" },
   { href: "/messages", label: "Messages", permission: "messages" },
@@ -33,27 +49,56 @@ export default function Shell({
     (link) =>
       !link.permission || admin.is_super_admin || admin.permissions.includes(link.permission)
   );
-  const links = admin.is_super_admin ? [...allowed, ...SUPER_NAV] : allowed;
+  const links: NavLink[] = admin.is_super_admin ? [...allowed, ...SUPER_NAV] : allowed;
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`);
 
   const navLinks = (
     <nav className="space-y-1">
-      {links.map((link) => (
-        <Link
-          key={link.href}
-          href={link.href}
-          onClick={() => setMenuOpen(false)}
-          className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
-            isActive(link.href)
-              ? "bg-sky-600/15 font-medium text-sky-300"
-              : "text-slate-400 hover:bg-ink-800 hover:text-slate-200"
-          }`}
-        >
-          {link.label}
-        </Link>
-      ))}
+      {links.map((link) =>
+        link.children ? (
+          <div key={link.href}>
+            {/* A parent is a heading for its sub-pages, not a page of its own. */}
+            <span
+              className={`block px-3 py-2 text-sm ${
+                isActive(link.href) ? "font-medium text-slate-200" : "text-slate-400"
+              }`}
+            >
+              {link.label}
+            </span>
+            <div className="ml-3 space-y-1 border-l border-ink-700 pl-2">
+              {link.children.map((child) => (
+                <Link
+                  key={child.href}
+                  href={child.href}
+                  onClick={() => setMenuOpen(false)}
+                  className={`block rounded-lg px-3 py-1.5 text-sm transition-colors ${
+                    isActive(child.href)
+                      ? "bg-sky-600/15 font-medium text-sky-300"
+                      : "text-slate-400 hover:bg-ink-800 hover:text-slate-200"
+                  }`}
+                >
+                  {child.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={() => setMenuOpen(false)}
+            className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
+              isActive(link.href)
+                ? "bg-sky-600/15 font-medium text-sky-300"
+                : "text-slate-400 hover:bg-ink-800 hover:text-slate-200"
+            }`}
+          >
+            {link.label}
+          </Link>
+        )
+      )}
     </nav>
   );
 

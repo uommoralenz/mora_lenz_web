@@ -34,7 +34,7 @@ export async function savePackageAction(
     return toActionState(error);
   }
 
-  revalidatePath("/services");
+  revalidatePath("/services", "layout");
   revalidatePath("/dashboard");
 
   return { ok: true, message: id ? "Package updated." : "Package added." };
@@ -45,7 +45,7 @@ export async function deletePackageAction(formData: FormData) {
 
   if (id) {
     await api.del(`/service-packages/${id}`);
-    revalidatePath("/services");
+    revalidatePath("/services", "layout");
     revalidatePath("/dashboard");
   }
 }
@@ -56,7 +56,7 @@ export async function reorderPackagesAction(formData: FormData) {
   if (!raw) return;
 
   await api.post("/service-packages/reorder", { items: JSON.parse(raw) });
-  revalidatePath("/services");
+  revalidatePath("/services", "layout");
 }
 
 // -------------------------------------------------------------------- images
@@ -79,7 +79,7 @@ export async function addServiceImagesAction(
     return toActionState(error);
   }
 
-  revalidatePath("/services");
+  revalidatePath("/services", "layout");
 
   return {
     ok: true,
@@ -92,7 +92,7 @@ export async function deleteServiceImageAction(formData: FormData) {
 
   if (id) {
     await api.del(`/service-images/${id}`);
-    revalidatePath("/services");
+    revalidatePath("/services", "layout");
   }
 }
 
@@ -102,5 +102,5 @@ export async function reorderServiceImagesAction(formData: FormData) {
   if (!raw) return;
 
   await api.post("/service-images/reorder", { items: JSON.parse(raw) });
-  revalidatePath("/services");
+  revalidatePath("/services", "layout");
 }

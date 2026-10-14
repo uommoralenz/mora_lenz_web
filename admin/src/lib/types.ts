@@ -179,6 +179,7 @@ export interface TeamTermItem {
   is_current: boolean;
   is_active: boolean;
   group_count: number;
+  member_count: number;
 }
 
 export interface TeamGroupItem {

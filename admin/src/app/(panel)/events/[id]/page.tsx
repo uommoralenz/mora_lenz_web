@@ -41,7 +41,7 @@ export default async function EditEventPage({
       </Card>
 
       <Card className="mt-6">
-        <h2 className="text-sm font-semibold text-slate-200">Photo album</h2>
+        <h2 id="photos" className="scroll-mt-6 text-sm font-semibold text-slate-200">Photo album</h2>
         <p className="mb-4 mt-1 text-xs text-slate-500">
           {event.is_past
             ? "This event is over, so it is listed under Past Events with these photos."

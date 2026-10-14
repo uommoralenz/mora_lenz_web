@@ -7,7 +7,8 @@ import { api, asUpdate, pruneEmptyFile, setBool, toActionState } from "@/lib/api
 import type { ActionState, TeamTermItem } from "@/lib/types";
 
 function refresh() {
-  revalidatePath("/team");
+  // "layout" covers the list and every team's own page under it.
+  revalidatePath("/team", "layout");
   revalidatePath("/dashboard");
 }
 
@@ -44,7 +45,7 @@ export async function saveTermAction(
 
   refresh();
 
-  if (created) redirect(`/team?term=${created.id}`);
+  if (created) redirect(`/team/${created.id}`);
 
   return { ok: true, message: "Team year updated." };
 }

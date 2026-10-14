@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { ApiError, api, asUpdate, pruneEmptyFile, setBool, toActionState } from "@/lib/api";
-import type { ActionState, EventPhoto } from "@/lib/types";
+import type { ActionState, EventItem, EventPhoto } from "@/lib/types";
 
 const BOOLS = ["countdown_enabled", "is_featured", "is_active"];
 
@@ -41,14 +41,19 @@ export async function saveEventAction(
   formData: FormData
 ): Promise<ActionState> {
   const id = String(formData.get("id") ?? "");
+  // A past event is created to hold photos, so it opens on its album next.
+  const openAfter = String(formData.get("_after") ?? "") === "photos";
   const form = normalise(formData);
   form.delete("id");
+  form.delete("_after");
+
+  let created: EventItem | null = null;
 
   try {
     if (id) {
       await api.post(`/events/${id}`, asUpdate(form));
     } else {
-      await api.post("/events", form);
+      created = (await api.post<{ data: EventItem }>("/events", form)).data;
     }
   } catch (error) {
     return toActionState(error);
@@ -63,6 +68,7 @@ export async function saveEventAction(
   // save that actually succeeded.
   if (id) revalidatePath(`/events/${id}`);
 
+  if (created && openAfter) redirect(`/events/${created.id}#photos`);
   if (!id) redirect("/events");
 
   return { ok: true, message: "Event saved." };

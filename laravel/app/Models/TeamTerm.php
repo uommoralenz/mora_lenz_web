@@ -54,6 +54,16 @@ class TeamTerm extends Model
             ?? static::active()->newest()->first();
     }
 
+    /** Every visible term, newest first, with how many visible members it has. */
+    public static function listing(): \Illuminate\Database\Eloquent\Collection
+    {
+        return static::active()->newest()->withCount([
+            'groups as member_count' => fn ($q) => $q->where('team_groups.is_active', true)
+                ->join('team_members', 'team_members.group_id', '=', 'team_groups.id')
+                ->where('team_members.is_active', true),
+        ])->get();
+    }
+
     public static function uniqueSlug(string $name, ?int $ignoreId = null): string
     {
         $base = Str::slug(str_replace('/', '-', $name)) ?: 'team';

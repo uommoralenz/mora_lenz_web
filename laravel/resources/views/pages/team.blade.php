@@ -3,6 +3,9 @@
 @php
     // A past year's page names its year; the current team is just "Our Team".
     $isPastTerm = $term && ! $term->is_current && request()->routeIs('team.show');
+
+    // Every year other than the current one, newest first.
+    $pastTerms = $terms->reject(fn ($t) => $t->is_current)->values();
 @endphp
 
 @section('title', ($isPastTerm ? 'Team '.$term->name : 'Our Team').' | Mora Lenz')
@@ -27,24 +30,21 @@
                 </p>
             </div>
 
-            @if ($terms->count() > 1)
-                <nav class="team-years" aria-label="Teams by year">
-                    <span class="team-years__label">Teams by year</span>
-                    <ul>
-                        @foreach ($terms as $item)
-                            <li>
-                                <a href="{{ $item->is_current ? \App\Support\Links::team() : \App\Support\Links::teamTerm($item) }}"
-                                   class="team-years__link{{ $term && $item->id === $term->id ? ' is-active' : '' }}"
-                                   @if ($term && $item->id === $term->id) aria-current="page" @endif>
-                                    {{ $item->name }}
-                                    @if ($item->is_current)
-                                        <small>Current</small>
-                                    @endif
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </nav>
+            {{-- The current team comes first; earlier years are below it. --}}
+            @if ($isPastTerm)
+                <p class="team-years">
+                    <a class="team-years__link" href="{{ \App\Support\Links::team() }}">
+                        @include('partials.icons', ['icon' => 'arrow-left'])
+                        Back to the current team
+                    </a>
+                    <a class="team-years__link" href="#past-teams">All past teams</a>
+                </p>
+            @elseif ($pastTerms->isNotEmpty())
+                <p class="team-years">
+                    <a class="team-years__link" href="#past-teams">
+                        See past teams ({{ $pastTerms->count() }})
+                    </a>
+                </p>
             @endif
 
             @if ($groups->isEmpty())
@@ -87,5 +87,21 @@
             @endif
         </div>
     </section>
+
+    @if ($pastTerms->isNotEmpty())
+        <section class="section about-teams" id="past-teams">
+            <div class="container">
+                <div class="section__head">
+                    <h2 class="section__title">Past Teams</h2>
+                    <p class="section__lede">The committees that led Mora Lenz in earlier years.</p>
+                </div>
+
+                @include('partials.team-years', [
+                    'terms' => $pastTerms,
+                    'activeId' => $isPastTerm ? $term->id : null,
+                ])
+            </div>
+        </section>
+    @endif
 
 @endsection

@@ -3782,3 +3782,5 @@ html { scrollbar-color: #2a3344 #05070b; scrollbar-width: thin; }
 .about-teams__count { color: var(--gray-400); font-size: 0.9rem; }
 .about-teams__more { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: auto; padding-top: 0.6rem; color: var(--accent-soft); font-size: 0.85rem; font-weight: 600; }
 .about-teams__more svg { width: 16px; height: 16px; }
+.about-teams__card.is-active { border-color: var(--accent); background: rgba(59, 130, 246, 0.14); }
+.team-years__link svg { width: 16px; height: 16px; }
