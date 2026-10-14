@@ -3784,3 +3784,34 @@ html { scrollbar-color: #2a3344 #05070b; scrollbar-width: thin; }
 .about-teams__more svg { width: 16px; height: 16px; }
 .about-teams__card.is-active { border-color: var(--accent); background: rgba(59, 130, 246, 0.14); }
 .team-years__link svg { width: 16px; height: 16px; }
+
+/* --------------------------------------------- fully custom pages (About) */
+
+/*
+   Nothing but the admin's blocks: no hero, no section padding, no reading
+   column unless the page asks for one. The top padding only clears the fixed
+   navbar so the first block is not hidden under it.
+*/
+.custom-page {
+  padding-top: var(--nav-h);
+}
+
+.custom-page .event-blocks {
+  margin-top: 0;
+  padding-inline: 20px;
+}
+
+.custom-page--wide .event-blocks { --col: 64rem; }
+
+/* "Full width": blocks run edge to edge with no gaps, so a page designed
+   elsewhere and pasted in as Custom HTML sits exactly as it was built. */
+.custom-page--full .event-blocks {
+  --col: none;
+  max-width: none;
+  padding-inline: 0;
+  gap: 0;
+}
+
+.custom-page--full .event-blocks__html.is-full {
+  width: 100%;
+}

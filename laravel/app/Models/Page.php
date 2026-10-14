@@ -30,9 +30,15 @@ class Page extends Model
         ];
     }
 
+    /**
+     * The event layout options, plus show_teams: whether the About page adds
+     * the list of every year's team under the admin's own content.
+     */
     public function pageOptions(): array
     {
-        return \App\Support\EventBlocks::pageOptions($this->page_options);
+        return \App\Support\EventBlocks::pageOptions($this->page_options) + [
+            'show_teams' => filter_var($this->page_options['show_teams'] ?? false, FILTER_VALIDATE_BOOL),
+        ];
     }
 
     /** The row for a slug, created on the spot if a migration was skipped. */

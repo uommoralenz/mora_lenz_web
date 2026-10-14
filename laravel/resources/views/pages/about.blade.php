@@ -1,5 +1,11 @@
 @extends('layouts.app')
 
+{{--
+    A fully custom page: nothing is drawn but the admin's own blocks, between
+    the site's navbar and footer. The title and intro are only used for the
+    browser tab, search results and link previews.
+--}}
+
 @section('title', $page->title.' | Mora Lenz')
 @section('description', \Illuminate\Support\Str::limit(strip_tags((string) $page->description), 160) ?: 'About Mora Lenz, the Mass Media Club of the University of Moratuwa.')
 @if ($page->image_url)
@@ -7,11 +13,8 @@
 @endif
 
 @php
-    // The same layout options and page-wide code an event page has; see
-    // event-show.blade.php and App\Support\EventBlocks.
     $options = $page->pageOptions();
     $customCode = $options['custom_code'] ?? '';
-    $showHeroImage = $options['hero'] !== 'plain' && $page->image_url;
 @endphp
 
 @if ($customCode !== '')
@@ -22,31 +25,15 @@
 
 @section('content')
 
-    <section class="event-hero event-hero--{{ $options['hero'] }}">
-        <div class="event-hero__bg">
-            @if ($showHeroImage)
-                <img src="{{ $page->image_url }}" alt="" fetchpriority="high">
-            @endif
-        </div>
+    <div class="custom-page custom-page--{{ $options['width'] }}">
+        <h1 class="visually-hidden">{{ $page->title }}</h1>
 
-        <div class="event-hero__inner">
-            <h1 class="event-hero__title">{{ $page->title }}</h1>
-        </div>
-    </section>
+        @if (! empty($page->content))
+            @include('partials.event-blocks', ['blocks' => $page->content])
+        @endif
+    </div>
 
-    <section class="section event-body event-body--{{ $options['width'] }}" style="padding-top: 48px;">
-        <div class="container">
-            @if (filled($page->description))
-                <div class="prose event-blocks__text is-lead">{!! \App\Support\EventBlocks::rich($page->description) !!}</div>
-            @endif
-
-            @if (! empty($page->content))
-                @include('partials.event-blocks', ['blocks' => $page->content])
-            @endif
-        </div>
-    </section>
-
-    @if ($terms->isNotEmpty())
+    @if ($options['show_teams'] && $terms->isNotEmpty())
         <section class="section about-teams" id="teams">
             <div class="container">
                 <div class="section__head">

@@ -13,7 +13,7 @@ export default async function AboutPage() {
     <>
       <PageHeader
         title="About page"
-        description="Everything on /about is edited here. Below your content, the site lists every year's team automatically."
+        description="/about is a fully custom page: it shows only the content you build here, between the site's navbar and footer."
       />
       <Card>
         <AboutForm page={page} />

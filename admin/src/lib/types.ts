@@ -110,7 +110,8 @@ export interface PageItem {
   title: string;
   description: string | null;
   content: EventBlock[];
-  page_options: EventPageOptions;
+  /** show_teams: add the list of every year's team under the content. */
+  page_options: EventPageOptions & { show_teams?: boolean };
   image_url: string | null;
   updated_at: string | null;
 }

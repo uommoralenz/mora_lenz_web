@@ -32,6 +32,7 @@ class PageController extends Controller
             'page_options' => ['nullable'],
             'image' => ['nullable', 'image', 'mimes:'.implode(',', config('moralenz.upload.mimes')), 'max:'.config('moralenz.upload.max_kb')],
             'remove_image' => ['boolean'],
+            'show_teams' => ['boolean'],
         ]);
 
         foreach (['title', 'description'] as $field) {
@@ -45,9 +46,17 @@ class PageController extends Controller
             $page->content = $blocks === [] ? null : $blocks;
         }
 
-        if (array_key_exists('page_options', $data)) {
-            $options = EventBlocks::pageOptions($data['page_options']);
-            $page->page_options = $options === EventBlocks::PAGE_DEFAULTS ? null : $options;
+        if (array_key_exists('page_options', $data) || array_key_exists('show_teams', $data)) {
+            $options = array_key_exists('page_options', $data)
+                ? EventBlocks::pageOptions($data['page_options'])
+                : EventBlocks::pageOptions($page->page_options);
+            $showTeams = array_key_exists('show_teams', $data)
+                ? (bool) $data['show_teams']
+                : $page->pageOptions()['show_teams'];
+
+            $page->page_options = $options === EventBlocks::PAGE_DEFAULTS && ! $showTeams
+                ? null
+                : $options + ['show_teams' => $showTeams];
         }
 
         if ($request->hasFile('image')) {

@@ -29,11 +29,14 @@ export default function PageOptionsEditor({
   initial,
   name = "page_options",
   showMetaOption = true,
+  showHeroOption = true,
 }: {
   initial: EventPageOptions;
   name?: string;
   /** The date/time/location pills only exist on event pages. */
   showMetaOption?: boolean;
+  /** A fully custom page has no hero to choose. */
+  showHeroOption?: boolean;
 }) {
   // The API may be a deploy behind this panel and not send every option yet,
   // so each one is filled in here rather than trusted to be present.
@@ -53,6 +56,7 @@ export default function PageOptionsEditor({
       <input type="hidden" name={name} value={JSON.stringify(options)} />
 
       <div className="grid gap-4 sm:grid-cols-2">
+        {showHeroOption ? (
         <div>
           <label className="label" htmlFor="page-hero">
             Top of the page
@@ -77,6 +81,7 @@ export default function PageOptionsEditor({
             The cover image is still used for link previews when the page hides it.
           </p>
         </div>
+        ) : null}
 
         <div>
           <label className="label" htmlFor="page-width">

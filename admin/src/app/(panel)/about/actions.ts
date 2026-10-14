@@ -10,6 +10,7 @@ export async function saveAboutAction(
   formData: FormData
 ): Promise<ActionState> {
   setBool(formData, "remove_image");
+  setBool(formData, "show_teams");
   pruneEmptyFile(formData);
 
   try {
