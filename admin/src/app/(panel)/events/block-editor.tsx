@@ -691,9 +691,36 @@ function checkCode(code: string, mode: "inline" | "frame"): string[] {
  * Always sandboxed, even for inline blocks, because a half-written script
  * should not be able to reach the panel.
  */
+const RESPONSIVE_PREVIEW_STYLE = `
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { max-width: 100%; overflow-x: hidden; }
+  body { overflow-wrap: anywhere; }
+  body * { min-width: 0; }
+  body > * { max-width: 100% !important; }
+  img, video, canvas, svg { max-width: 100% !important; height: auto; }
+  iframe, embed, object { max-width: 100% !important; }
+  table { display: block; max-width: 100% !important; overflow-x: auto; }
+  pre { max-width: 100%; overflow-x: auto; }
+  input, select, textarea, button { max-width: 100%; }
+  @media (max-width: 600px) {
+    .ml-event-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  }
+`;
+
 function previewDocument(code: string): string {
-  // A whole page previews as itself, exactly as the live page renders it.
-  if (isFullDocument(code)) return code;
+  // Mirror the responsive safeguards added to isolated blocks on the live site.
+  if (isFullDocument(code)) {
+    const viewport = /<meta\s+[^>]*name\s*=\s*["']viewport["']/i.test(code)
+      ? ""
+      : '<meta name="viewport" content="width=device-width, initial-scale=1">';
+    const additions = `${viewport}<style data-mora-lenz-responsive>${RESPONSIVE_PREVIEW_STYLE}</style>`;
+
+    if (/<\/head>/i.test(code)) {
+      return code.replace(/<\/head>/i, `${additions}</head>`);
+    }
+
+    return code.replace(/<html\b[^>]*>/i, (html) => `${html}<head>${additions}</head>`);
+  }
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -701,8 +728,8 @@ function previewDocument(code: string): string {
   :root { color-scheme: dark; }
   html, body { margin: 0; padding: 16px; background: #0b0f16; }
   body { font-family: system-ui, sans-serif; color: #e5e7eb; line-height: 1.7; }
-  img, video, svg, canvas { max-width: 100%; }
   a { color: #93c5fd; }
+  ${RESPONSIVE_PREVIEW_STYLE}
 </style></head><body>${code}</body></html>`;
 }
 
@@ -850,6 +877,12 @@ function HtmlFields({
           {note}
         </p>
       ))}
+
+      <p className="hint">
+        Use fluid widths, wrapping grids and mobile media queries for the best result.
+        The public page prevents wide content from breaking the site, but the layout
+        inside your HTML block is still controlled by the CSS you paste here.
+      </p>
 
       <p className="hint">
         {block.code.length.toLocaleString()} / {EVENT_HTML_MAX.toLocaleString()} characters.

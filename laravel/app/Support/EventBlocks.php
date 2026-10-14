@@ -219,20 +219,38 @@ class EventBlocks
      */
     public static function frameDocument(string $code): string
     {
+        // Preserve custom styling while preventing fixed-width content from
+        // breaking the layout on phones and other narrow viewports.
+        $safety = <<<'CSS'
+            *, *::before, *::after { box-sizing: border-box; }
+            html, body { max-width: 100%; overflow-x: hidden; }
+            body { overflow-wrap: anywhere; }
+            body * { min-width: 0; }
+            body > * { max-width: 100% !important; }
+            img, video, canvas, svg { max-width: 100% !important; height: auto; }
+            iframe, embed, object { max-width: 100% !important; }
+            table { display: block; max-width: 100% !important; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            pre { max-width: 100%; overflow-x: auto; }
+            input, select, textarea, button { max-width: 100%; }
+            @media (max-width: 600px) {
+                .ml-event-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+            }
+            CSS;
+
         // Matches the site's dark surface so an embed looks at home without
         // the admin having to restate any of it.
-        $base = <<<'CSS'
+        $theme = <<<'CSS'
             :root { color-scheme: dark; }
             html, body { margin: 0; padding: 0; background: transparent; }
             body {
                 font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
                 color: #e5e7eb;
                 line-height: 1.7;
-                overflow-x: hidden;
             }
-            img, video, canvas, svg, iframe { max-width: 100%; }
             a { color: #93c5fd; }
             CSS;
+
+        $base = $theme."\n".$safety;
 
         $bootstrap = <<<'JS'
             (function () {
@@ -265,7 +283,13 @@ class EventBlocks
         // nest one document inside another, so it is used as it is and only
         // the height reporter is added.
         if (static::isFullDocument($code)) {
-            return static::withScript($code, $bootstrap);
+            $head = '<style data-mora-lenz-responsive>'.$safety.'</style>';
+
+            if (! preg_match('/<meta\s+[^>]*name\s*=\s*["\']viewport["\']/i', $code)) {
+                $head = '<meta name="viewport" content="width=device-width, initial-scale=1">'.$head;
+            }
+
+            return static::withScript(static::withHead($code, $head), $bootstrap);
         }
 
         return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
@@ -366,6 +390,24 @@ class EventBlocks
         return $at === false
             ? $document.$script
             : substr($document, 0, $at).$script.substr($document, $at);
+    }
+
+    /** Put responsive metadata and styles at the end of a full document head. */
+    protected static function withHead(string $document, string $markup): string
+    {
+        $at = strripos($document, '</head>');
+
+        if ($at !== false) {
+            return substr($document, 0, $at).$markup.substr($document, $at);
+        }
+
+        if (preg_match('/<html\b[^>]*>/i', $document, $match, PREG_OFFSET_CAPTURE)) {
+            $end = $match[0][1] + strlen($match[0][0]);
+
+            return substr($document, 0, $end).'<head>'.$markup.'</head>'.substr($document, $end);
+        }
+
+        return '<head>'.$markup.'</head>'.$document;
     }
 
     /** Which brand a link points at, so buttons can show the right icon. */

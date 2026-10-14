@@ -45,7 +45,7 @@
         $showHeroImage = $page['hero'] !== 'plain' && $event->image_url;
     @endphp
 
-    <section class="event-hero event-hero--{{ $page['hero'] }}">
+    <section class="event-hero event-hero--{{ $page['hero'] }}{{ $showHeroImage ? ' has-image' : ' event-hero--no-image' }}">
         <div class="event-hero__bg">
             @if ($showHeroImage)
                 <img src="{{ $event->image_url }}" alt="" fetchpriority="high">

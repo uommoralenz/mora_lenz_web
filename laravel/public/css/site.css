@@ -3357,6 +3357,21 @@ body.has-lightbox { overflow: hidden; }
   font-size: clamp(1.9rem, 5vw, 2.8rem);
 }
 
+/* A missing cover should not leave a photo-sized empty area above the event
+   title. It falls back to the compact gradient header automatically. */
+.event-hero--no-image {
+  min-height: 0;
+  background: linear-gradient(to bottom, var(--gray-900), #000);
+}
+
+.event-hero--no-image .event-hero__bg {
+  display: none;
+}
+
+.event-hero--no-image .event-hero__inner {
+  padding-block: calc(var(--nav-h) + 32px) 36px;
+}
+
 /* =========================================================================
    Modern polish layer — glass surfaces, softer borders, calmer motion.
    Placed last so it refines the rules above without rewriting them.
@@ -3774,4 +3789,190 @@ html { scrollbar-color: #2a3344 #05070b; scrollbar-width: thin; }
 
 .custom-page--full .event-blocks__html.is-full {
   width: 100%;
+}
+
+/* ------------------------------------------------ responsive safety layer */
+
+/* Keep long admin-entered copy, URLs and flex/grid children from deciding the
+   page width. This protects every public layout without changing its design. */
+.site-main,
+.site-main section,
+.site-main article,
+.site-main .container,
+.event-blocks,
+.event-blocks > *,
+.custom-page {
+  min-width: 0;
+}
+
+.site-main :is(h1, h2, h3, h4, p, li, blockquote, figcaption, a) {
+  overflow-wrap: anywhere;
+}
+
+/* Custom HTML is intentionally flexible, but it must never make the whole
+   site scroll sideways. Wide content stays usable inside its own block. */
+.event-blocks__html {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.event-blocks__html :where(*) {
+  min-width: 0;
+  max-inline-size: 100%;
+  box-sizing: border-box;
+}
+
+.event-blocks__html :where(img, video, canvas, svg) {
+  height: auto;
+  max-inline-size: 100% !important;
+}
+
+.event-blocks__html :where(iframe, embed, object) {
+  max-inline-size: 100% !important;
+}
+
+.event-blocks__html :where(pre, table) {
+  display: block;
+  max-width: 100% !important;
+  overflow-x: auto;
+  white-space: revert;
+  -webkit-overflow-scrolling: touch;
+}
+
+.event-blocks__html pre {
+  white-space: pre;
+}
+
+.event-blocks__html :where(input, select, textarea, button) {
+  max-width: 100%;
+}
+
+/* Gallery shortcodes may request up to six columns. Two useful columns are a
+   better mobile result than six thumbnails squeezed into a few pixels each. */
+@media (max-width: 600px) {
+  .event-blocks .ml-event-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .event-hero:not(.event-hero--no-image) {
+    min-height: min(28rem, 62svh);
+  }
+
+  .event-hero__inner {
+    padding: calc(var(--nav-h) + 28px) 20px 40px;
+  }
+
+  .event-hero__title {
+    font-size: clamp(2rem, 11vw, 3rem);
+  }
+
+  .meta-pill {
+    max-width: 100%;
+  }
+
+  .countdown-block {
+    padding: 22px 12px;
+  }
+
+  .countdown-block .countdown {
+    width: 100%;
+    gap: 5px;
+  }
+
+  .countdown-block .countdown__unit,
+  .countdown-block .countdown--lg .countdown__unit {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 9px 4px;
+  }
+
+  .countdown-block .countdown--lg .countdown__value {
+    font-size: clamp(1.1rem, 7vw, 1.55rem);
+  }
+
+  .event-blocks {
+    gap: 22px;
+  }
+
+  .event-blocks__quote,
+  .event-blocks__callout {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .event-blocks__buttons .cta {
+    width: 100%;
+  }
+
+  .featured__card {
+    min-height: 0;
+    border-radius: 20px;
+  }
+
+  .featured__body {
+    min-height: 500px;
+    padding: 30px 24px;
+  }
+
+  .featured__title {
+    font-size: clamp(2.15rem, 11vw, 3rem);
+  }
+
+  .service-hero__features {
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 380px) {
+  .container {
+    padding-inline: 16px;
+  }
+
+  .hero__inner,
+  .event-hero__inner {
+    padding-inline: 16px;
+  }
+
+  .cta {
+    padding-inline: 24px;
+  }
+
+  .featured__body {
+    padding-inline: 20px;
+  }
+
+  .featured__label {
+    font-size: 0.68rem;
+  }
+
+  .hero__eyebrow {
+    max-width: 100%;
+    gap: 9px;
+    padding: 8px 11px;
+  }
+
+  .hero__eyebrow-copy {
+    min-width: 0;
+  }
+
+  .hero__eyebrow-copy > span {
+    font-size: 1.25em;
+    white-space: normal;
+  }
+
+  .hero__eyebrow-copy > span:last-child {
+    font-size: 0.95em;
+    letter-spacing: 0.06em;
+  }
+
+  .member-grid--is-lead .member-card {
+    flex-direction: column;
+    text-align: center;
+  }
 }
